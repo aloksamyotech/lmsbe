@@ -17,6 +17,7 @@ import {
   addBook,
   bookManagement,
   deleteBook,
+  getBookCount,
   updateBook,
 } from "../controller/book.management.js";
 import {
@@ -25,9 +26,11 @@ import {
   getContactManagement,
   updateContact,
 } from "../controller/contact.management.js";
+
 import {
   addVenderBook,
   deleteVender,
+  getVenderCount,
   getVenderManagement,
   updateVender,
 } from "../controller/vender.management.js";
@@ -37,21 +40,44 @@ import {
   deletePublications,
   editPublications,
   getPublications,
+  getPublicationsCount,
 } from "../controller/publications.management.js";
 import {
   addRegister,
   deleteRegister,
+  getMarkFavorite,
+  getRegisterStudentCount,
+  getSubscription,
+  markFavorite,
+  markSubscription,
+  profilePage,
   registerManagement,
   updateRegister,
 } from "../controller/register.management.js";
 import {
   bookAllotment,
+  bookAllotmentCount,
+  bookAllotmentReport,
   deleteAllotmentBook,
   editBookAllotment,
   findHistoryBookAllotmentUser,
+  getBookAllotedCount,
   getBookAllotment,
+  getBookMonthVise,
   viewBookAllotmentUser,
 } from "../controller/bookAllotment.js";
+import {
+  deletePurchaseBook,
+  purchaseBook,
+  purchaseManagement,
+  updatePurchaseBook,
+} from "../controller/purchaseBook.js";
+import {
+  addSubscriptionType,
+  deleteSubscriptionType,
+  getSubscriptionTypeTable,
+  updateSubscriptionType,
+} from "../controller/subscriptionType.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -71,19 +97,28 @@ const router = express.Router();
 // router.post("/user/login",loginUser);
 // router.get("/user/getAllUsers",getAllUsers)
 
+// -----------------    SubscriptionManagement       ---------------------------
+
+router.post("/user/subscriptionType", addSubscriptionType);
+router.get("/user/getSubscriptionType", getSubscriptionTypeTable);
+router.delete("/user/deleteSubscriptionType/:id", deleteSubscriptionType);
+router.put("/user/editSubscriptionType/:id", updateSubscriptionType);
+
 //------------------    BOOK MANAGEMENT ---------------------
 
-router.post("/user/addBook", addBook);
+router.post("/user/addBook", upload.single("upload_Book"), addBook);
 router.get("/user/bookManagement", bookManagement);
 router.delete("/user/deleteBook/:id", deleteBook);
 router.put("/user/editBook/:id", updateBook);
+router.get("/user/getBookCount", getBookCount);
 
-//--------------   Vender Management ------------------------
+//--------------   Vendor Management ------------------------
 
 router.post("/user/addVenderBook", addVenderBook);
 router.get("/user/venderManagement", getVenderManagement);
 router.delete("/user/deleteVender/:id", deleteVender);
 router.put("/user/editVender/:id", updateVender);
+router.get("/user/getVenderCount", getVenderCount);
 
 //-----------------  Contact ----------------------
 
@@ -98,6 +133,7 @@ router.post("/user/addPublications", addPublications);
 router.get("/user/getPublications", getPublications);
 router.put("/user/editPublications/:id", editPublications);
 router.delete("/user/deletePublications/:id", deletePublications);
+router.get("/user/getPublicationsCount", getPublicationsCount);
 
 // -----------------  Register Student ---------------------------
 
@@ -105,6 +141,13 @@ router.post("/user/addRegister", upload.single("upload_identity"), addRegister);
 router.get("/user/registerManagement", registerManagement);
 router.put("/user/editRegister/:id", updateRegister);
 router.delete("/user/deleteRegister/:id", deleteRegister);
+router.get("/user/getRegisterStudentCount", getRegisterStudentCount);
+router.post("/user/markFavorite/:id", markFavorite);
+router.get("/user/getMarkFavorite", getMarkFavorite);
+router.get("/user/profilePage", profilePage);
+router.post("/user/markSubscription/:id", markSubscription);
+router.get("/user/getSubscription", getSubscription);
+
 // router.get("/user/getAllUsers",getAllUsers)
 
 //  -------------------   Allotment Management  --------------------------
@@ -118,6 +161,25 @@ router.get("/user/allotmentManagement", getBookAllotment);
 router.put("/user/editBookAllotment/:id", editBookAllotment);
 router.get("/user/viewBookAllotmentUser/:id", viewBookAllotmentUser);
 router.delete("/user/deleteAllotmentBook/:id", deleteAllotmentBook);
+router.get("/user/bookAllotmentCount/:studentId", bookAllotmentCount);
+router.get("/user/getBookMonthVise", getBookMonthVise);
+router.get("/user/getBookAllotedCount", getBookAllotedCount);
+router.get(
+  "/user/bookAllotmentReport/:startDate/:endDate",
+  bookAllotmentReport
+);
+
+//  ----------------------   Purchase    ----------------------
+// purchaseBook
+router.post("/user/purchaseBook", purchaseBook);
+router.get("/user/purchaseManagement", purchaseManagement);
+router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
+router.put("/user/editPurchaseBook/:id", updatePurchaseBook);
+// router.get('/user/getBookCount',getBookCount);
+
+//  -----------------------  Dashboard-Menu  ---------------
+
+// router.get("/user/dashboardCount/",dashboardCount)
 
 //   ------------------    Fine    ----------------------
 

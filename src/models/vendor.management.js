@@ -1,14 +1,18 @@
 import mongoose, { Schema } from "mongoose";
 
 const VenderManagementSchema = new Schema({
+  vendorName: {
+    type: String,
+    required: true,
+  },
   companyName: {
     type: String,
     required: true,
   },
-  cityName: {
-    type: String,
-    required: true,
-  },
+  // cityName: {
+  //   type: String,
+  //   required: true,
+  // },
   phoneNumber: {
     type: String,
     required: true,

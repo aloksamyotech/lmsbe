@@ -1,42 +1,38 @@
 import mongoose, { Schema } from "mongoose";
 
 const ContactManagementSchema = new Schema({
-
-  // Admin: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "Admin",
-  //   required: true,
-  // },
-  firstName: {
+  student_id: {
     type: String,
     required: true,
   },
-  lastName: {
+  student_Name: {
     type: String,
-    required: true,
-  },
- dateOfBirth : {
-    type: Date,
-    default: Date.now(),
-  },
-  phoneNumber: {
-    type: Number,
     required: true,
   },
   email: {
     type: String,
     required: true,
   },
-  gender: {
-    type: String,
-    required:true,
-    // enum: ["male", "female", "other"],
-    // default: "male",
+  mobile_Number: {
+    type: Number,
+    required: true,
   },
-  address: {
+  select_identity: {
     type: String,
     required: true,
   },
+  upload_identity: {
+    type: String,
+    required: false,
+  },
+
+  register_Date: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
-export const ContactManagement = mongoose.model("ContactManagement",ContactManagementSchema);
+export const ContactManagement = mongoose.model(
+  "ContactManagement",
+  ContactManagementSchema
+);

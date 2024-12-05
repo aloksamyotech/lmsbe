@@ -1,9 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 const RegisterManagementSchema = new Schema({
-  student_id: {
-    type: String,
-    required: true,
-  },
+  // student_id: {
+  //   type: String,
+  //   required: true,
+  // },
   student_Name: {
     type: String,
     required: true,
@@ -24,11 +24,23 @@ const RegisterManagementSchema = new Schema({
     type: String,
     required: false,
   },
-
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
   register_Date: {
     type: Date,
     default: Date.now(),
   },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+  subscription:{
+    type:Boolean,
+    default:false,
+  }
 });
 export const RegisterManagement = mongoose.model(
   "RegisterManagement",

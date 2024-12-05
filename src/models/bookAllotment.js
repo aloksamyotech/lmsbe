@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+// import { RegisterManagement } from "./register.management";
 
 const BookAllotmentSchema = new Schema({
   bookId: {
@@ -21,7 +22,8 @@ const BookAllotmentSchema = new Schema({
     type: String,
     required: true,
   },
-});
+  
+}, {timestamps : true});
 
 export const BookAllotment = mongoose.model(
   "BookAllotment",

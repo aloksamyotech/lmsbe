@@ -4,14 +4,13 @@ import mongoose from "mongoose";
 
 export const addContact = async (req, res) => {
   const {
-    // Admin,  
-    firstName,
-    lastName,
-    dateOfBirth,
-    phoneNumber,
+    student_id,
+    student_Name,
     email,
-    gender,
-    address,
+    mobile_Number,
+    select_identity,
+    upload_identity,
+    register_Date,
   } = req.body;
 
   try {
@@ -19,14 +18,13 @@ export const addContact = async (req, res) => {
     console.log("print data", req.body);
 
     const ContactManagementSchema = new ContactManagement({
-      // Admin,    
-      firstName,
-      lastName,
-      dateOfBirth,   
-      phoneNumber,
+      student_id,
+      student_Name,
       email,
-      gender,
-      address,
+      mobile_Number,
+      select_identity,
+      upload_identity,
+      register_Date,
     });
 
     const ContactManagementData = await ContactManagementSchema.save();
@@ -82,26 +80,26 @@ export const deleteContact = async (req, res) => {
 export const updateContact = async (req, res) => {
   const { id } = req.params;
   const {
-    firstName,
-    lastName,
-    dateOfBirth,   
-    phoneNumber,
+    student_id,
+    student_Name,
     email,
-    gender,
-    address,
+    mobile_Number,
+    select_identity,
+    upload_identity,
+    register_Date,
   } = req.body;
 
   try {
     const updatedContact = await ContactManagement.findByIdAndUpdate(
       id,
       {
-        firstName,
-        lastName,
-        dateOfBirth,   
-        phoneNumber,
+        student_id,
+        student_Name,
         email,
-        gender,
-        address,
+        mobile_Number,
+        select_identity,
+        upload_identity,
+        register_Date,
       },
       { new: true } 
     );

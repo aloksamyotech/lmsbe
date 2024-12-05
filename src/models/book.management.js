@@ -3,39 +3,43 @@ import mongoose, { Schema } from "mongoose";
 const BookManagementSchema = new Schema({
   bookName: {
     type: String,
-    required: true,
+    // required: true,
   },
-  bookTitle: {
+  title: {
     type: String,
-    required: true,
+    // required: true,
   },
   bookIssueDate: {
     type: Date,
     default: Date.now(),
   },
-  authorName: {
+  author: {
     type: String,
-    required: true,
+    // required: true,
   },
   publisherName: {
     type: String,
-    required: true,
+    // required: true,
   },
-  totalPrice: {
-    type: Number,
-    required: true,
+  upload_Book: {
+    type: String,
+    // required: false,
   },
-  returnPrice: {
-    type: Number,
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-  },
+  // totalPrice: {
+  //   type: Number,
+  //   required: true,
+  // },
+  // returnPrice: {
+  //   type: Number,
+  //   required: true,
+  // },
+  // quantity: {
+  //   type: Number,
+  //   required: true,
+  // },
   bookDistribution: {
     type: String,
-    required: true,
+    // required: true,
   },
 });
 

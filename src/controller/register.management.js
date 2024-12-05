@@ -7,7 +7,7 @@ export const addRegister = async (req, res) => {
   console.log(`req?.file`, req?.file);
 
   const {
-    student_id,
+    // student_id,
     student_Name,
     email,
     mobile_Number,
@@ -18,7 +18,7 @@ export const addRegister = async (req, res) => {
 
   try {
     const registerData = new RegisterManagement({
-      student_id,
+      // student_id,
       student_Name,
       email,
       mobile_Number,
@@ -76,7 +76,7 @@ export const deleteRegister = async (req, res) => {
 export const updateRegister = async (req, res) => {
   const { id } = req.params;
   const {
-    student_id,
+    // student_id,
     student_Name,
     email,
     mobile_Number,
@@ -89,7 +89,7 @@ export const updateRegister = async (req, res) => {
     const updatedRegister = await RegisterManagement.findByIdAndUpdate(
       id,
       {
-        student_id,
+        // student_id,
         student_Name,
         email,
         mobile_Number,
@@ -131,6 +131,86 @@ export const getUserDetails = async (req, res) => {
   }
 };
 
+export const getRegisterStudentCount = async (req, res) => {
+  try {
+    const bookCount = await RegisterManagement.countDocuments({});
+    res.status(200).json({ count: bookCount });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching book count", error });
+  }
+};
+
+// export const markFavorite = async(req,res)=>{
+//   const { id } = req.params;
+//   try {
+//     const favoriteManagementTable = await RegisterManagement.find().populate(
+//       "user_id",
+//       null,
+//       null,
+//     );
+//     console.log("Favorite Management Table", favoriteManagementTable);
+//     res.status(200).json({
+//       status: true,
+//       message: "Favorite Table successful",
+//       FavoriteManagement : favoriteManagementTable,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: " Internal server error", error });
+//   }
+// }
+
+export const markFavorite = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const student = await RegisterManagement.findById(id);
+
+    if (!student) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Student not found" });
+    }
+
+    student.favorite = !student.favorite;
+
+    const updatedStudent = await student.save();
+
+    res.status(200).json({
+      status: true,
+      message: `Marked as favorite ${student.favorite ? "successfully" : "removed"}`,
+      student: updatedStudent,
+    });
+  } catch (error) {
+    console.error("Error marking favorite:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "Internal server error", error });
+  }
+};
+
+export const getMarkFavorite = async (req, res) => {
+  try {
+    const favoriteStudents = await RegisterManagement.find({ favorite: true });
+    if (favoriteStudents.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No students found with favorite status",
+      });
+    }
+    res.status(200).json({
+      status: true,
+      message: "Favorite students fetched successfully",
+      students: favoriteStudents,
+    });
+  } catch (error) {
+    console.error("Error fetching favorite students:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "Internal server error", error });
+  }
+};
+
 // export const getAllUsers = async (req, res) => {
 //   try {
 //     // Fetch all users from the database, excluding passwords
@@ -148,3 +228,105 @@ export const getUserDetails = async (req, res) => {
 //     res.status(500).json({ message: "Internal Server Error", error });
 //   }
 // };
+
+export const profilePage = async (req, res) => {
+  try {
+    const admin = await RegisterManagement.find({ role: "admin" });
+    if (!admin) {
+      return res.status(404).json({
+        status: false,
+        message: "No  Admin found with  status",
+      });
+    }
+    res.status(200).json({
+      status: true,
+      message: " Admin fetched successfully",
+      students: admin,
+    });
+  } catch (error) {
+    console.error("Error fetching  Admin:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "Internal server error", error });
+  }
+};
+
+// export const profilepage = async (req, res) => {
+//   try {
+//     const studentId = req.params.studentId;
+
+//     const student = await RegisterManagement.findById(studentId);
+
+//     if (!student) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "No student found with the provided ID",
+//       });
+//     }
+
+//     res.status(200).json({
+//       status: true,
+//       message: "Student fetched successfully",
+//       student: student,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching student:", error);
+//     res.status(500).json({
+//       status: false,
+//       message: "Internal server error",
+//       error,
+//     });
+//   }
+// };
+
+
+export const markSubscription = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const student = await RegisterManagement.findById(id);
+
+    if (!student) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Student not found" });
+    }
+
+    student.subscription = !student.subscription;
+
+    const updatedStudent = await student.save();
+
+    res.status(200).json({
+      status: true,
+      message: `Marked as subscription ${student.subscription ? "successfully" : "removed"}`,
+      student: updatedStudent,
+    });
+  } catch (error) {
+    console.error("Error marking subscription:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "Internal server error", error });
+  }
+};
+
+export const getSubscription = async (req, res) => {
+  try {
+    const subscriptionStudents = await RegisterManagement.find({ subscription: true });
+    if (subscriptionStudents.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No students found with subscription status",
+      });
+    }
+    res.status(200).json({
+      status: true,
+      message: "subscription students fetched successfully",
+      students: subscriptionStudents,
+    });
+  } catch (error) {
+    console.error("Error fetching subscription students:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "Internal server error", error });
+  }
+};

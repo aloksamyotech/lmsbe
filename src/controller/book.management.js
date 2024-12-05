@@ -1,39 +1,76 @@
 import { BookManagement } from "../models/book.management.js";
 
+// export const addBook = async (req, res) => {
+//   const {
+//     bookName,
+//     title,
+//     author,
+//     bookIssueDate,
+//     publisherName,
+
+//     // totalPrice,
+//     // returnPrice,
+//     // quantity,
+//     bookDistribution,
+//   } = req.body;
+//   const upload_identity = req.file ? req.file.path : "";
+
+//   try {
+
+//     const BookManagementSchema = new BookManagement({
+//       bookName,
+//       title,
+//       author,
+//       bookIssueDate,
+//       publisherName,
+//       upload_identity ,
+//       // quantity,
+//       // totalPrice,
+//       // returnPrice,
+//       bookDistribution,
+//     });
+
+//     const BookManagementData = await BookManagementSchema.save();
+
+//     return res.status(200).send(BookManagementData);
+//   } catch (error) {
+//     console.error("Error in BookManagement", error);
+//     return res.status(500).send({ message: "Internal Server Error" });
+//   }
+// };
+
+// Set up multer storage
 export const addBook = async (req, res) => {
   const {
     bookName,
-    bookTitle,
-    authorName,
+    title,
+ author,
     bookIssueDate,
     publisherName,
-    totalPrice,
-    returnPrice,
-    quantity,
     bookDistribution,
   } = req.body;
 
-  try {
-    console.log("Loading................................");
-    console.log("print data", req.body);
+  console.log(`req.file`,req.file);
+  
+  let upload_Book = req.file ? req.file.path : "";
+  console.log(`upload_Book--->>>`,upload_Book);
+  
 
-    const BookManagementSchema = new BookManagement({
+  try {
+    const newBook = new BookManagement({
       bookName,
-      bookTitle,
-      authorName,
+      title,
+      author,
       bookIssueDate,
       publisherName,
-      quantity,
-      totalPrice,
-      returnPrice,
+      upload_Book,
       bookDistribution,
     });
 
-    const BookManagementData = await BookManagementSchema.save();
-    console.log("BookManagement Data", BookManagementData);
-    return res.status(200).send(BookManagementData);
+    const savedBook = await newBook.save();
+    return res.status(200).send(savedBook);
   } catch (error) {
-    console.error("Error in BookManagement", error);
+    console.error("Error saving book:", error);
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
@@ -46,14 +83,13 @@ export const bookManagement = async (req, res) => {
       null,
       { strictPopulate: false }
     );
-    console.log("book Management Table", bookManagementTable);
+
     res.status(200).json({
       status: true,
       message: " Book Management Table successful",
       BookManagement: bookManagementTable,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: " Internal server error", error });
   }
 };
@@ -77,13 +113,13 @@ export const updateBook = async (req, res) => {
   const { id } = req.params;
   const {
     bookName,
-    bookTitle,
-    authorName,
+    title,
+    author,
     bookIssueDate,
     publisherName,
-    totalPrice,
-    returnPrice,
-    quantity,
+    // totalPrice,
+    // returnPrice,
+    // quantity,
     bookDistribution,
   } = req.body;
 
@@ -92,13 +128,13 @@ export const updateBook = async (req, res) => {
       id,
       {
         bookName,
-        bookTitle,
-        authorName,
+        title,
+        author,
         bookIssueDate,
         publisherName,
-        totalPrice,
-        returnPrice,
-        quantity,
+        // totalPrice,
+        // returnPrice,
+        // quantity,
         bookDistribution,
       },
       { new: true }
@@ -114,3 +150,31 @@ export const updateBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getBookCount = async (req, res) => {
+  try {
+    const bookCount = await BookManagement.countDocuments({});
+    res.status(200).json({ count: bookCount });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching book count", error });
+  }
+};
+
+//  export const  getBookCount = async (req, res) => {
+//   try {
+//     const totalBooks = await Book.countDocuments();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Total books count retrieved successfully",
+//       totalBooks,
+//     });
+//   } catch (error) {
+//     console.error("Error counting books:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to count books",
+//       error: error.message,
+//     });
+//   }
+// };
