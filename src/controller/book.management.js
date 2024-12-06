@@ -44,17 +44,16 @@ export const addBook = async (req, res) => {
   const {
     bookName,
     title,
- author,
+    author,
     bookIssueDate,
     publisherName,
     bookDistribution,
   } = req.body;
 
-  console.log(`req.file`,req.file);
-  
+  console.log(`req.file`, req.file);
+
   let upload_Book = req.file ? req.file.path : "";
-  console.log(`upload_Book--->>>`,upload_Book);
-  
+  console.log(`upload_Book--->>>`, upload_Book);
 
   try {
     const newBook = new BookManagement({
@@ -178,3 +177,28 @@ export const getBookCount = async (req, res) => {
 //     });
 //   }
 // };
+
+export const viewBookUser = async (req, res) => {
+  const { id } = req.params;
+  console.log("ID---------", id);
+
+  try {
+    const user = await RegisterManagement.findById(id);
+    console.log("user", user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const bookManagements = await BookManagement.find({ user_id: id });
+    console.log("viewBookUser", bookManagements);
+
+    res.status(200).json({
+      user,
+      bookManagements,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -56,6 +56,28 @@ export const registerManagement = async (req, res) => {
   }
 };
 
+
+export const registerManagementView = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const registerManagementTable = await RegisterManagement.findById(id).populate(
+      "user_id",
+      null,
+      null,
+      { strictPopulate: false }
+    );
+    console.log("Register Management Table", registerManagementTable);
+    res.status(200).json({
+      status: true,
+      message: "Register Table successful",
+      RegisterManagement: registerManagementTable,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: " Internal server error", error });
+  }
+};
+
 export const deleteRegister = async (req, res) => {
   const { id } = req.params;
 

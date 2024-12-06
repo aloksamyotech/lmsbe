@@ -19,6 +19,7 @@ import {
   deleteBook,
   getBookCount,
   updateBook,
+  viewBookUser,
 } from "../controller/book.management.js";
 import {
   addContact,
@@ -63,7 +64,9 @@ import {
   findHistoryBookAllotmentUser,
   getBookAllotedCount,
   getBookAllotment,
+  getBookAllotmentById,
   getBookMonthVise,
+  reBookAllotment,
   viewBookAllotmentUser,
 } from "../controller/bookAllotment.js";
 import {
@@ -108,6 +111,7 @@ router.put("/user/editSubscriptionType/:id", updateSubscriptionType);
 
 router.post("/user/addBook", upload.single("upload_Book"), addBook);
 router.get("/user/bookManagement", bookManagement);
+router.get("/user/viewBookUser", viewBookUser);
 router.delete("/user/deleteBook/:id", deleteBook);
 router.put("/user/editBook/:id", updateBook);
 router.get("/user/getBookCount", getBookCount);
@@ -158,7 +162,9 @@ router.get(
 );
 router.post("/user/bookAllotment", bookAllotment);
 router.get("/user/allotmentManagement", getBookAllotment);
+router.get("/user/reBookAllotment",reBookAllotment)
 router.put("/user/editBookAllotment/:id", editBookAllotment);
+router.get("/user/getBookAllotmentById/:id", getBookAllotmentById);
 router.get("/user/viewBookAllotmentUser/:id", viewBookAllotmentUser);
 router.delete("/user/deleteAllotmentBook/:id", deleteAllotmentBook);
 router.get("/user/bookAllotmentCount/:studentId", bookAllotmentCount);
