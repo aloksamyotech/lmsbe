@@ -38,7 +38,9 @@ export const addVenderBook = async (req, res) => {
 export const getVenderManagement = async (req, res) => {
   try {
     const VenderManagementTable = await VenderManagement.find().populate(
-      "user_id",
+      "user_id",  { active: false },
+      { $sort: { _id: -1 } },
+       
       null,
       null,
       { strictPopulate: false }
@@ -78,7 +80,8 @@ export const deleteVender = async (req, res) => {
   }
 
   try {
-    const deletedVender = await VenderManagement.findByIdAndDelete(id);
+    const deletedVender = await VenderManagement.findByIdAndDelete(id,  { active: false },
+     );
     if (!deletedVender) {
       return res.status(404).json({ message: " Vender not found" });
     }
@@ -106,7 +109,8 @@ export const updateVender = async (req, res) => {
 
   try {
     const updatedVender = await VenderManagement.findByIdAndUpdate(
-      id,
+      id,  
+      
       {
         vendorName,
         companyName,

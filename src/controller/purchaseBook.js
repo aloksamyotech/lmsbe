@@ -5,12 +5,13 @@ export const purchaseBook = async (req, res) => {
   const {
     bookId,
     vendorId,
-    discount,
+    // discount,
     price,
     // author,
     // publisherId,
     bookIssueDate,
     quantity,
+    totalPrice,
     bookComment,
   } = req.body;
 
@@ -27,10 +28,11 @@ export const purchaseBook = async (req, res) => {
       vendorId,
       // publisherId,
       // author,
-      discount,
+      // discount,
       price,
       bookIssueDate,
       quantity,
+      totalPrice,
       bookComment,
     });
 
@@ -64,7 +66,9 @@ export const deletePurchaseBook = async (req, res) => {
   console.log(`id---------------->>>>>>>>>>.`, id);
 
   try {
-    const deletedPurchaseBook = await PurchaseManagement.findByIdAndDelete(id);
+    const deletedPurchaseBook = await PurchaseManagement.findByIdAndDelete(id, {
+      active: false,
+    });
     if (!deletedPurchaseBook) {
       return res.status(404).json({ message: "Book not found" });
     }
@@ -168,11 +172,14 @@ export const updatePurchaseBook = async (req, res) => {
   try {
     const updatedBook = await PurchaseManagement.findByIdAndUpdate(
       id,
+      { active: false },
+
       {
         price,
         quantity,
       },
-      { new: true }
+      { new: true },
+      { sort: _id }
     );
 
     if (!updatedBook) {
@@ -189,6 +196,9 @@ export const updatePurchaseBook = async (req, res) => {
 export const purchaseManagement = async (req, res) => {
   try {
     const purchaseManagementTable = await PurchaseManagement.aggregate([
+      {
+        $match: { active: true },
+      },
       {
         $lookup: {
           from: "vendermanagements",

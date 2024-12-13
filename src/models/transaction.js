@@ -21,6 +21,10 @@ const TransactionSchema = new mongoose.Schema({
     enum: ['purchase', 'sale', 'transfer'],  
     required: true,
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   transaction_date: {
     type: Date,
     default: Date.now(),  

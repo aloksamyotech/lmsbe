@@ -14,6 +14,10 @@ const PresaleSchema = new mongoose.Schema({
     default: null, 
     required: true,
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   token_price: {
     type: mongoose.Schema.Types.Decimal128,  
     required: true,

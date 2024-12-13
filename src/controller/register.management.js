@@ -42,6 +42,8 @@ export const registerManagement = async (req, res) => {
       "user_id",
       null,
       null,
+      { active: false },
+
       { strictPopulate: false }
     );
     console.log("Register Management Table", registerManagementTable);
@@ -56,16 +58,12 @@ export const registerManagement = async (req, res) => {
   }
 };
 
-
 export const registerManagementView = async (req, res) => {
   const { id } = req.params;
   try {
-    const registerManagementTable = await RegisterManagement.findById(id).populate(
-      "user_id",
-      null,
-      null,
-      { strictPopulate: false }
-    );
+    const registerManagementTable = await RegisterManagement.findById(id, {
+      active: false,
+    }).populate("user_id", null, null, { strictPopulate: false });
     console.log("Register Management Table", registerManagementTable);
     res.status(200).json({
       status: true,
@@ -82,7 +80,9 @@ export const deleteRegister = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedRegister = await RegisterManagement.findByIdAndDelete(id);
+    const deletedRegister = await RegisterManagement.findByIdAndDelete(id, {
+      active: false,
+    });
     if (!deletedRegister) {
       return res.status(404).json({ message: "Register not found" });
     }
@@ -110,6 +110,7 @@ export const updateRegister = async (req, res) => {
   try {
     const updatedRegister = await RegisterManagement.findByIdAndUpdate(
       id,
+
       {
         // student_id,
         student_Name,
@@ -142,7 +143,7 @@ export const getUserDetails = async (req, res) => {
     const { userId } = req.query;
     console.log("user id", userId);
 
-    const user = await RegisterManagement.findById(userId);
+    const user = await RegisterManagement.findById(userId, { active: false });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -186,7 +187,7 @@ export const markFavorite = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const student = await RegisterManagement.findById(id);
+    const student = await RegisterManagement.findById(id, { active: false });
 
     if (!student) {
       return res
@@ -213,7 +214,10 @@ export const markFavorite = async (req, res) => {
 
 export const getMarkFavorite = async (req, res) => {
   try {
-    const favoriteStudents = await RegisterManagement.find({ favorite: true });
+    const favoriteStudents = await RegisterManagement.find(
+      { favorite: true },
+      { active: false }
+    );
     if (favoriteStudents.length === 0) {
       return res.status(404).json({
         status: false,
@@ -253,7 +257,10 @@ export const getMarkFavorite = async (req, res) => {
 
 export const profilePage = async (req, res) => {
   try {
-    const admin = await RegisterManagement.find({ role: "admin" });
+    const admin = await RegisterManagement.find(
+      { role: "admin" },
+      { active: false }
+    );
     if (!admin) {
       return res.status(404).json({
         status: false,
@@ -301,12 +308,11 @@ export const profilePage = async (req, res) => {
 //   }
 // };
 
-
 export const markSubscription = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const student = await RegisterManagement.findById(id);
+    const student = await RegisterManagement.findById(id, { active: false });
 
     if (!student) {
       return res
@@ -333,7 +339,10 @@ export const markSubscription = async (req, res) => {
 
 export const getSubscription = async (req, res) => {
   try {
-    const subscriptionStudents = await RegisterManagement.find({ subscription: true });
+    const subscriptionStudents = await RegisterManagement.find({
+      subscription: true,
+      active: false,
+    });
     if (subscriptionStudents.length === 0) {
       return res.status(404).json({
         status: false,
@@ -347,6 +356,65 @@ export const getSubscription = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching subscription students:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "Internal server error", error });
+  }
+};
+
+export const updateProfilePage = async (req, res) => {
+  console.log(`body data----------------------->>>>>>>>>> `, req.body);
+  console.log(`file data----------------------->>>>>>>>>>  `, req.file);
+
+  const { id } = req.params;
+  const { email, mobile_Number, student_Name, register_Date } = req.body;
+  const logo = req.file ? req.file.path : "";
+  console.log(`logo`, logo);
+
+  const updatedData = {
+    student_Name,
+    email,
+    mobile_Number,
+    register_Date,
+    email,
+    logo,
+  };
+
+  try {
+    const updatedRegister = await RegisterManagement.findByIdAndUpdate(
+      id,
+
+      updatedData,
+      { new: true }
+    );
+
+    if (!updatedRegister) {
+      return res.status(404).json({ message: "Register not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Register updated successfully", updateRegister });
+  } catch (error) {
+    console.error("Error updating  Register:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getLogo = async (req, res) => {
+  try {
+    const logo = await RegisterManagement.find({
+      role: "admin",
+      active: false,
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "admin data fetched successfully",
+      students: logo,
+    });
+  } catch (error) {
+    console.error("Error fetching admin data:", error);
     res
       .status(500)
       .json({ status: false, message: "Internal server error", error });

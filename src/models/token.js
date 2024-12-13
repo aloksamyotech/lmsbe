@@ -19,6 +19,10 @@ const TokenSchema = new mongoose.Schema({
     enum: ["pending", "confirmed", "withdrawn"],
     default: "pending",
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   total: {
     type: Number,
     required: true,

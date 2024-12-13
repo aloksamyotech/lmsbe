@@ -40,6 +40,8 @@ export const addContact = async (req, res) => {
 export const getContactManagement  = async (req, res) => {
   try {
       const  ContactManagementTable = await  ContactManagement.find().populate(
+        { active: false },
+        
         "user_id",
         null,
         null,
@@ -63,7 +65,8 @@ export const deleteContact = async (req, res) => {
 
   console.log("id", id); 
   try {
-    const deletedContact = await ContactManagement.findByIdAndDelete(new mongoose.Types.ObjectId(id));
+    const deletedContact = await ContactManagement.findByIdAndDelete(new mongoose.Types.ObjectId(id),  { active: false },
+    );
     console.log("deletedContact", deletedContact);
     
     if (!deletedContact) {
@@ -91,7 +94,8 @@ export const updateContact = async (req, res) => {
 
   try {
     const updatedContact = await ContactManagement.findByIdAndUpdate(
-      id,
+      id,  
+      
       {
         student_id,
         student_Name,

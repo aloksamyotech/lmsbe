@@ -25,7 +25,10 @@ const ContactManagementSchema = new Schema({
     type: String,
     required: false,
   },
-
+  active: {
+    type: Boolean,
+    default: true,
+  },
   register_Date: {
     type: Date,
     default: Date.now(),

@@ -25,7 +25,9 @@ export const addSubscriptionType = async (req, res) => {
 export const getSubscriptionTypeTable = async (req, res) => {
   try {
     const SubscriptionTypeTable = await SubscriptionType.find().populate(
-      "user_id",
+      "user_id",  { active: false },
+      { $sort: { _id: -1 } },
+       
       null,
       null,
       {
@@ -54,7 +56,8 @@ export const deleteSubscriptionType = async (req, res) => {
   }
 
   try {
-    const deletedSubscription = await SubscriptionType.findByIdAndDelete(id);
+    const deletedSubscription = await SubscriptionType.findByIdAndDelete(id,  { active: false },
+      );
     if (!deletedSubscription) {
       return res.status(404).json({ message: " Vender not found" });
     }
@@ -79,7 +82,8 @@ export const updateSubscriptionType = async (req, res) => {
 
   try {
     const updateSubscription = await SubscriptionType.findByIdAndUpdate(
-      id,
+      id,   
+       
       {
         title,
         amount,

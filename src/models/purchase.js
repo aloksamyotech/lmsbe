@@ -15,10 +15,10 @@ const PurchaseManagementSchema = new Schema({
   },
   discount: {
     type: Number,
-    required: true,
+    required: false,
   },
   price: {
-    type:  Number,
+    type: Number,
     required: true,
   },
   // totalPrice: {
@@ -30,6 +30,14 @@ const PurchaseManagementSchema = new Schema({
     type: String,
     required: true,
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  totalPrice:{
+    type:Number,
+    required:true
+  }
   //   type: Number,
   //   required: true,
   // },

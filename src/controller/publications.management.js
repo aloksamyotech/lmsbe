@@ -36,7 +36,8 @@ export const addPublications = async (req, res) => {
 export const getPublications = async (req, res) => {
   try {
     const PublicationsManagementTable =
-      await PublicationsManagement.find().populate("user_id", null, null, {
+      await PublicationsManagement.find().populate("user_id", null, null, {   active: false ,
+         $sort: { _id: -1 } ,
         strictPopulate: false,
       });
     console.log("Publication Management Table", PublicationsManagementTable);
@@ -60,7 +61,8 @@ export const deletePublications = async (req, res) => {
 
   try {
     const deletedPublications =
-      await PublicationsManagement.findByIdAndDelete(id);
+      await PublicationsManagement.findByIdAndDelete(id,  { active: false },
+        );
     if (!deletedPublications) {
       return res.status(404).json({ message: "Publication not found" });
     }
@@ -88,7 +90,7 @@ export const editPublications = async (req, res) => {
 
   try {
     const updatedPublications = await PublicationsManagement.findByIdAndUpdate(
-      id,
+      id,  
       {
         publisherName,
         bookName,

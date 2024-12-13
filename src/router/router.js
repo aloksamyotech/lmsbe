@@ -46,6 +46,7 @@ import {
 import {
   addRegister,
   deleteRegister,
+  getLogo,
   getMarkFavorite,
   getRegisterStudentCount,
   getSubscription,
@@ -53,6 +54,7 @@ import {
   markSubscription,
   profilePage,
   registerManagement,
+  updateProfilePage,
   updateRegister,
 } from "../controller/register.management.js";
 import {
@@ -66,7 +68,12 @@ import {
   getBookAllotment,
   getBookAllotmentById,
   getBookMonthVise,
+  getReceiveBook,
+  newReceiveBook,
+  postReceiveBook,
   reBookAllotment,
+  receiveBook,
+  removeReceiveBook,
   viewBookAllotmentUser,
 } from "../controller/bookAllotment.js";
 import {
@@ -149,6 +156,9 @@ router.get("/user/getRegisterStudentCount", getRegisterStudentCount);
 router.post("/user/markFavorite/:id", markFavorite);
 router.get("/user/getMarkFavorite", getMarkFavorite);
 router.get("/user/profilePage", profilePage);
+router.put("/user/editProfilePage/:id",upload.single("logo"),updateProfilePage);
+router.get('/user/getLogo',getLogo);
+
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
 
@@ -162,7 +172,12 @@ router.get(
 );
 router.post("/user/bookAllotment", bookAllotment);
 router.get("/user/allotmentManagement", getBookAllotment);
-router.get("/user/reBookAllotment",reBookAllotment)
+router.get("/user/getReceiveBook",getReceiveBook) 
+router.delete('/user/removeReceiveBook/:id', removeReceiveBook);
+router.get('/user/receiveBook',receiveBook);
+router.post('/user/postReceiveBook',postReceiveBook);
+router.post('/user/newReceiveBook',newReceiveBook)
+router.get("/user/reBookAllotment", reBookAllotment);
 router.put("/user/editBookAllotment/:id", editBookAllotment);
 router.get("/user/getBookAllotmentById/:id", getBookAllotmentById);
 router.get("/user/viewBookAllotmentUser/:id", viewBookAllotmentUser);

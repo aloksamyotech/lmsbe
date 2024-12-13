@@ -15,6 +15,10 @@ const BookAllotmentSchema = new Schema(
       type: Date,
       default: Date.now,
     },
+    active: {
+      type: Boolean,
+      default: true,
+    },
     submissionDate: {
       type: Date,
       required: true,

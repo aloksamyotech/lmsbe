@@ -80,7 +80,9 @@ export const bookManagement = async (req, res) => {
       "user_id",
       null,
       null,
-      { strictPopulate: false }
+      { strictPopulate: false },
+      { active: false },
+      { $sort: { _id: -1 } },
     );
 
     res.status(200).json({
@@ -97,7 +99,11 @@ export const deleteBook = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedBook = await BookManagement.findByIdAndDelete(id);
+    const deletedBook = await BookManagement.findByIdAndDelete(
+      id,
+      { active: false },
+    );
+    
     if (!deletedBook) {
       return res.status(404).json({ message: "Book not found" });
     }
@@ -124,7 +130,7 @@ export const updateBook = async (req, res) => {
 
   try {
     const updatedBook = await BookManagement.findByIdAndUpdate(
-      id,
+      id, 
       {
         bookName,
         title,
@@ -183,7 +189,9 @@ export const viewBookUser = async (req, res) => {
   console.log("ID---------", id);
 
   try {
-    const user = await RegisterManagement.findById(id);
+    const user = await RegisterManagement.findById(id
+      , { active: false },
+    );
     console.log("user", user);
 
     if (!user) {

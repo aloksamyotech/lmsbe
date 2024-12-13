@@ -14,6 +14,10 @@ const ReferralSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,  
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 export const Referral = mongoose.model('referral', ReferralSchema);

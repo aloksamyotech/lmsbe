@@ -1,9 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 const RegisterManagementSchema = new Schema({
-  // student_id: {
-  //   type: String,
-  //   required: true,
-  // },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   student_Name: {
     type: String,
     required: true,
@@ -33,14 +30,23 @@ const RegisterManagementSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   favorite: {
     type: Boolean,
     default: false,
   },
-  subscription:{
-    type:Boolean,
-    default:false,
-  }
+  logo: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  subscription: {
+    type: Boolean,
+    default: false,
+  },
 });
 export const RegisterManagement = mongoose.model(
   "RegisterManagement",

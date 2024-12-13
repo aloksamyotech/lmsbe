@@ -35,7 +35,9 @@ export const bookAllotmentCount = async (req, res) => {
   // console.log("studentId", studentId);
 
   try {
-    const student = await RegisterManagement.findById(studentId);
+    const student = await RegisterManagement.findById(studentId, {
+      active: false,
+    });
     // console.log("student", studentId);
 
     if (!studentId) {
@@ -110,22 +112,32 @@ export const bookAllotmentCount = async (req, res) => {
 // };
 
 export const bookAllotment = async (req, res) => {
-  const { bookId, studentId, bookIssueDate, submissionDate, paymentType } =
-    req.body;
+  const {
+    bookId,
+    studentId,
+    bookIssueDate,
+    submissionDate,
+    paymentType,
+    amount,
+  } = req.body;
+
   try {
-    const studentAllotments = await BookAllotment.find({
+    const studentAllotments = await BookAllotment.countDocuments({
       studentId,
-    }).countDocuments();
+    });
+
     if (studentAllotments >= 5) {
       return res
         .status(400)
-        .json({ message: "Student can't borrowed more than 5 books." });
+        .json({ message: "Student can't borrow more than 5 books." });
     }
 
     if (!Array.isArray(bookId)) {
       return res.status(400).json({ message: "bookId should be an array" });
     }
+
     const allotments = [];
+
     for (let id of bookId) {
       const newBookAllotment = new BookAllotment({
         bookId: id,
@@ -133,10 +145,21 @@ export const bookAllotment = async (req, res) => {
         bookIssueDate,
         submissionDate,
         paymentType,
+        amount,
       });
+
       const bookAllotmentData = await newBookAllotment.save();
 
-      await BookManagement.findByIdAndUpdate(id, { $inc: { quantity: -1 } });
+      const bookManagement = await BookManagement.findById(id);
+
+      if (bookManagement && bookManagement.quantity > 0) {
+        await BookManagement.findByIdAndUpdate(id, { $inc: { quantity: -1 } });
+      } else {
+        return res
+          .status(400)
+          .json({ message: `Book with ID ${id} is out of stock.` });
+      }
+
       allotments.push(bookAllotmentData);
     }
 
@@ -183,6 +206,9 @@ export const getBookAllotment = async (req, res) => {
 
     const bookAllotments = await BookAllotment.aggregate([
       {
+        $match: { active: true },
+      },
+      {
         $lookup: {
           from: "bookmanagements",
           localField: "bookId",
@@ -200,18 +226,18 @@ export const getBookAllotment = async (req, res) => {
       },
       { $unwind: "$bookDetails" },
       { $unwind: "$studentDetails" },
-      {
-        $project: {
-          _id: 1,
-          bookName: "$bookDetails.bookName",
-          // bookTitle: "$bookDetails.bookTitle",
-          student_Name: "$studentDetails.student_Name",
+      // {
+      //   $project: {
+      //     _id: 1,
+      //     bookName: "$bookDetails.bookName",
+      //     // bookTitle: "$bookDetails.bookTitle",
+      //     student_Name: "$studentDetails.student_Name",
 
-          bookIssueDate: 1,
-          submissionDate: 1,
-          paymentType: 1,
-        },
-      },
+      //     bookIssueDate: 1,
+      //     submissionDate: 1,
+      //     paymentType: 1,
+      //   },
+      // },
     ]);
     // console.log("bookAllotments ", bookAllotments);
 
@@ -225,6 +251,9 @@ export const getBookAllotment = async (req, res) => {
 export const reBookAllotment = async (req, res) => {
   try {
     const bookAllotments = await BookAllotment.aggregate([
+      {
+        $match: { active: true },
+      },
       {
         $lookup: {
           from: "bookmanagements",
@@ -292,6 +321,9 @@ export const getBookAllotmentById = async (req, res) => {
         },
       },
       {
+        $match: { active: true },
+      },
+      {
         $lookup: {
           from: "bookmanagements",
           localField: "bookId",
@@ -352,6 +384,7 @@ export const editBookAllotment = async (req, res) => {
   try {
     const updatedBookAllotment = await BookAllotment.findByIdAndUpdate(
       id,
+
       {
         bookName,
         student_Name,
@@ -381,7 +414,7 @@ export const viewBookAllotmentUser = async (req, res) => {
   // console.log("ID---------", id);
 
   try {
-    const user = await RegisterManagement.findById(id);
+    const user = await RegisterManagement.findById(id, { active: false });
     // console.log("user", user);
 
     if (!user) {
@@ -389,7 +422,6 @@ export const viewBookAllotmentUser = async (req, res) => {
     }
 
     const bookAllotments = await BookAllotment.find({ user_id: id });
-    // console.log("viewBookAllotmentUser", bookAllotments);
 
     res.status(200).json({
       user,
@@ -412,6 +444,9 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
         $match: { studentId: new ObjectId(id) },
       },
       {
+        $match: { active: true },
+      },
+      {
         $lookup: {
           from: "bookmanagements",
           localField: "bookId",
@@ -427,18 +462,28 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
           as: "studentDetails",
         },
       },
+      {
+        $lookup: {
+          from: "subscriptiontypes",
+          localField: "paymentType",
+          foreignField: "_id",
+          as: "paymentType",
+        },
+      },
 
       { $unwind: "$bookDetails" },
       { $unwind: "$studentDetails" },
+      { $unwind: "$paymentType" },
+
       {
         $project: {
           _id: 1,
           bookName: "$bookDetails.bookName",
           bookTitle: "$bookDetails.bookTitle",
           student_Name: "$studentDetails.student_Name",
+          paymentType: "$paymentType.title",
           bookIssueDate: 1,
           submissionDate: 1,
-          paymentType: 1,
         },
       },
     ]);
@@ -458,7 +503,9 @@ export const deleteAllotmentBook = async (req, res) => {
   // console.log(`id____________________>>>>>>>>>>>>>>>>>>>>>>>>>>`, id);
 
   try {
-    const deletedAllotmentBook = await BookAllotment.findByIdAndDelete(id);
+    const deletedAllotmentBook = await BookAllotment.findByIdAndDelete(id, {
+      active: false,
+    });
     if (!deletedAllotmentBook) {
       return res.status(404).json({ message: "Book Allotment not found" });
     }
@@ -484,6 +531,9 @@ export const getBookAllotedCount = async (req, res) => {
 export const getBookMonthVise = async (req, res) => {
   try {
     const data = await BookAllotment.aggregate([
+      {
+        $match: { active: true },
+      },
       {
         $project: {
           year: { $year: "$createdAt" },
@@ -538,6 +588,9 @@ export const bookAllotmentReport = async (req, res) => {
   try {
     const newBookAllotment = await BookAllotment.aggregate([
       {
+        $match: { active: true },
+      },
+      {
         $match: {
           createdAt: {
             $gte: parsedStartDate,
@@ -561,21 +614,29 @@ export const bookAllotmentReport = async (req, res) => {
           as: "studentDetails",
         },
       },
+      {
+        $lookup: {
+          from: "subscriptiontypes",
+          localField: "paymentType",
+          foreignField: "_id",
+          as: "paymentType",
+        },
+      },
       { $unwind: "$bookDetails" },
       { $unwind: "$studentDetails" },
+      { $unwind: "$paymentType" },
       {
         $project: {
           _id: 1,
           bookName: "$bookDetails.bookName",
           bookTitle: "$bookDetails.bookTitle",
           student_Name: "$studentDetails.student_Name",
-
+          paymentType: "$paymentType.title",
           bookIssueDate: 1,
           submissionDate: 1,
-          paymentType: 1,
         },
       },
-      { $sort: { updatedAt: -1 } },
+      { $sort: { _id: -1 } },
     ]);
 
     // console.log("newBookAllotment", newBookAllotment);
@@ -585,5 +646,194 @@ export const bookAllotmentReport = async (req, res) => {
     return res
       .status(500)
       .json({ error: `${error.message || "An error occurred"}` });
+  }
+};
+
+export const receiveBook = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const ReceiveBook = await BookAllotment.findById(id, { active: true });
+
+    if (!ReceiveBook) {
+      return res.status(404).json({ message: "find Book Allotment not found" });
+    }
+
+    res.status(200).json({
+      message: "find BookAllotment successfully",
+      ReceiveBook,
+    });
+  } catch (error) {
+    console.error("Error updating book Allotment:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const postReceiveBook = async (req, res) => {
+  const { bookId, studentId, email } = req.body;
+
+  try {
+    console.log("Loading................................");
+    console.log("Received data:", req.body);
+    if (!mongoose.Types.ObjectId.isValid(_Id)) {
+      return res.status(400).json({ message: "Invalid bookId" });
+    }
+
+    const BookAllotmentSchema = new BookAllotment({
+      bookId,
+      studentId,
+      email,
+    });
+
+    const receiveBookData = await BookAllotmentSchema.save();
+    console.log("Received Book Data:", receiveBookData);
+
+    return res.status(200).send(receiveBookData);
+  } catch (error) {
+    console.error("Error in Book Management:", error);
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
+export const newReceiveBook = async (req, res) => {
+  const { bookId, studentId, email } = req.body;
+
+  try {
+    console.log("Loading................................");
+    console.log("Received data:", req.body);
+
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return res.status(400).json({ message: "Invalid bookId" });
+    }
+
+    const existingBookAllotment = await BookAllotment.find({
+      email,
+      active: false,
+    });
+
+    if (existingBookAllotment.length > 0) {
+      console.log(
+        "Found Book Allotment with this email:",
+        existingBookAllotment
+      );
+    } else {
+      console.log("No Book Allotment found with this email.");
+    }
+
+    const BookAllotmentSchema = new BookAllotment({
+      bookId,
+      studentId,
+      email,
+    });
+
+    const receiveBookData = await BookAllotmentSchema.save();
+    console.log("Received Book Data:", receiveBookData);
+
+    return res.status(200).send(receiveBookData);
+  } catch (error) {
+    console.error("Error in Book Management:", error);
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
+export const getReceiveBook = async (req, res) => {
+  try {
+    console.log("Data.........");
+
+    const bookAllotments = await BookAllotment.aggregate([
+      {
+        $match: { active: true },
+      },
+
+      {
+        $lookup: {
+          from: "bookmanagements",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "registermanagements",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "subscriptiontypes",
+          localField: "paymentType",
+          foreignField: "_id",
+          as: "subscriptionDetails",
+        },
+      },
+      { $unwind: "$bookDetails" },
+      { $unwind: "$studentDetails" },
+      { $unwind: "$subscriptionDetails" },
+      // {
+      //   $project: {
+      //     _id: 1,
+      //     bookName: "$bookDetails.bookName",
+      //     // bookTitle: "$bookDetails.bookTitle",
+      //     student_Name: "$studentDetails.student_Name",
+
+      //     bookIssueDate: 1,
+      //     submissionDate: 1,
+      //     paymentType: 1,
+      //   },
+      // },
+    ]);
+    // console.log("bookAllotments ", bookAllotments);
+
+    return res.status(200).json(bookAllotments);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+// export const removeReceiveBook = async (req, res) => {
+//   const { id } = req.params;
+//   console.log(`Received ID for removal: ${id}`);
+
+//   try {
+//     const removedReceiveBook = await BookAllotment.findByIdAndUpdate(
+//       id,
+//       { active: false },
+//       { new: true }
+//     );
+
+//     if (!removedReceiveBook) {
+//       return res.status(404).json({ message: "Book not found" });
+//     }
+
+//     res.status(200).json({
+//       message: "Book received allotment removed successfully",
+//       removedReceiveBook
+//     });
+//   } catch (error) {
+//     console.error("Error removing the received book:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+export const removeReceiveBook = async (req, res) => {
+  const { id } = req.params;
+  // console.log(`id____________________>>>>>>>>>>>>>>>>>>>>>>>>>>`, id);
+
+  try {
+    const deletedAllotmentBook = await BookAllotment.findByIdAndDelete(id, {
+      active: false,
+    });
+    if (!deletedAllotmentBook) {
+      return res.status(404).json({ message: "Book Allotment not found" });
+    }
+    res.status(200).json({
+      message: "Book Allotment deleted successfully",
+      deletedAllotmentBook,
+    });
+  } catch (error) {
+    console.error("Error deleting book Allotment:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

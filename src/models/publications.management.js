@@ -18,6 +18,10 @@ const PublicationsManagementSchema = new Schema({
   //   type: String,
   //   required: true,
   // },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   address: {
     type: String,
     required: true,

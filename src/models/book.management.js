@@ -25,7 +25,11 @@ const BookManagementSchema = new Schema({
     type: String,
     // required: false,
   },
-  // totalPrice: {
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  // amount: {
   //   type: Number,
   //   required: true,
   // },

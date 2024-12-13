@@ -15,6 +15,10 @@ const WalletSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   updated_at: {
     type: Date,
     default: Date.now,
