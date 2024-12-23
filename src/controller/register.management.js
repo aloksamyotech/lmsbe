@@ -32,6 +32,41 @@ export const addRegister = async (req, res) => {
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Register Management", error);
+    return res.status(500).send({ message: "Internal  Server Error" });
+  }
+};
+
+export const registerMany = async (req, res) => {
+  const data = req?.body;
+
+  try {
+    const registerData = data.map((student) => {
+      const {
+        student_Name,
+        email,
+        mobile_Number,
+        select_identity,
+        register_Date,
+      } = student;
+      const upload_identity = student.file ? student.file.path : "";
+      return {
+        student_Name,
+        email,
+        mobile_Number,
+        select_identity,
+        upload_identity,
+        register_Date,
+      };
+    });
+
+    console.log("Register Management Data for Bulk Insert", registerData);
+
+    const savedData = await RegisterManagement.insertMany(registerData);
+    console.log("Register Management Data Saved", savedData);
+
+    return res.status(200).send(savedData);
+  } catch (error) {
+    console.error("Error in Register Management Bulk Insert", error);
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
@@ -405,13 +440,13 @@ export const getLogo = async (req, res) => {
   try {
     const logo = await RegisterManagement.find({
       role: "admin",
-      active: false,
+      active: true,
     });
 
     res.status(200).json({
       status: true,
       message: "admin data fetched successfully",
-      students: logo,
+      students: logo, 
     });
   } catch (error) {
     console.error("Error fetching admin data:", error);

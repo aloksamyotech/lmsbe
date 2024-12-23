@@ -292,6 +292,7 @@ export const reBookAllotment = async (req, res) => {
           _id: 1,
           studentName: "$studentDetails.student_Name",
           studentEmail: "$studentDetails.email",
+          mobile_Number:"$studentDetails.mobile_Number",
           books: {
             $slice: ["$books", 0, 5],
           },
@@ -482,6 +483,7 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
           bookTitle: "$bookDetails.bookTitle",
           student_Name: "$studentDetails.student_Name",
           paymentType: "$paymentType.title",
+          amount: "$paymentType.amount",
           bookIssueDate: 1,
           submissionDate: 1,
         },
@@ -819,21 +821,240 @@ export const getReceiveBook = async (req, res) => {
 
 export const removeReceiveBook = async (req, res) => {
   const { id } = req.params;
-  // console.log(`id____________________>>>>>>>>>>>>>>>>>>>>>>>>>>`, id);
 
   try {
-    const deletedAllotmentBook = await BookAllotment.findByIdAndDelete(id, {
-      active: false,
-    });
-    if (!deletedAllotmentBook) {
-      return res.status(404).json({ message: "Book Allotment not found" });
+    const receiveBook = await BookAllotment.findByIdAndUpdate(
+      id,
+      { active: false },
+      { new: true }
+    );
+
+    if (!receiveBook) {
+      return res.status(404).json({ message: "Receive Book not found" });
     }
+
     res.status(200).json({
-      message: "Book Allotment deleted successfully",
-      deletedAllotmentBook,
+      message: "Receive Book successfully removed and marked as submitted",
+      receiveBook,
     });
   } catch (error) {
-    console.error("Error deleting book Allotment:", error);
+    console.error("Error removing receive book:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const submitBook = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const submittedBook = await BookAllotment.findOneAndUpdate(
+      { bookId: id, submit: false },
+      { submit: true },
+      { new: true }
+    );
+
+    if (!submittedBook) {
+      return res.status(404).json({ message: "No book found to submit" });
+    }
+
+    console.log("Submitted book:", submittedBook);
+    return res.status(200).json({
+      message: "Book successfully submitted",
+      submittedBook,
+    });
+  } catch (error) {
+    console.error("Error submitting book:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+export const getSubmitBook = async (req, res) => {
+  const { selectedStudentId } = req.params;
+
+  try {
+    const submittedBooks = await BookAllotment.find({
+      studentId: selectedStudentId,
+      submit: true,
+    });
+
+    if (!submittedBooks || submittedBooks.length === 0) {
+      return res.status(404).json({ message: "No submitted books found" });
+    }
+
+    console.log("Fetched submitted books:", submittedBooks);
+    return res.status(200).json({
+      message: "Successfully fetched submitted books",
+      submittedBooks,
+    });
+  } catch (error) {
+    console.error("Error fetching submitted books:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getSubmitBookDetails = async (req, res) => {
+  const { selectedStudentId } = req?.params;
+  console.log(`selectedStudentId`, selectedStudentId);
+
+  try {
+    const submittedBooks = await BookAllotment.aggregate([
+      {
+        $match: {
+          studentId: new mongoose.Types.ObjectId(selectedStudentId),
+          submit: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "bookmanagements",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "subscriptiontypes",
+          localField: "paymentType",
+          foreignField: "_id",
+          as: "paymentDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "registermanagements",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentDetails",
+        },
+      },
+    ]);
+
+    if (!submittedBooks || submittedBooks.length === 0) {
+      return res.status(404).json({ message: "No submitted books found" });
+    }
+
+    console.log("Fetched submitted books:", submittedBooks);
+    return res.status(200).json({
+      message: "Successfully fetched submitted books",
+      submittedBooks,
+    });
+  } catch (error) {
+    console.error("Error fetching submitted books:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
+// export const getSubmitBook = async (req, res) => {
+//   const { selectedStudentId } = req.params;
+
+//   try {
+//     const submittedBooks = await BookAllotment.aggregate([
+//       {
+//         $match: {
+//           studentId: selectedStudentId,
+//           submit: true,
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "bookmanagements",
+//           localField: "bookId",
+//           foreignField: "_id",
+//           as: "bookDetails",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "subscriptiontypes",
+//           localField: "paymentType",
+//           foreignField: "_id",
+//           as: "paymentDetails",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "registermanagements",
+//           localField: "studentId",
+//           foreignField: "_id",
+//           as: "studentDetails",
+//         },
+//       },
+//       { $unwind: { path: "$bookDetails", preserveNullAndEmptyArrays: true } },
+//       {
+//         $unwind: { path: "$paymentDetails", preserveNullAndEmptyArrays: true },
+//       },
+//       {
+//         $unwind: { path: "$studentDetails", preserveNullAndEmptyArrays: true },
+//       },
+//     ]);
+
+//     if (!submittedBooks || submittedBooks.length === 0) {
+//       return res.status(404).json({ message: "No submitted books found" });
+//     }
+
+//     console.log("Fetched submitted books:", submittedBooks);
+//     return res.status(200).json({
+//       message: "Successfully fetched submitted books",
+//       submittedBooks,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching submitted books:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Server error", error: error.message });
+//   }
+// };
+
+export const getInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`id----->>>`, id);
+
+    const bookAllotments = await BookAllotment.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "bookmanagements",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "registermanagements",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "subscriptiontypes",
+          localField: "paymentType",
+          foreignField: "_id",
+          as: "subscriptionDetails",
+        },
+      },
+      { $unwind: "$bookDetails" },
+      { $unwind: "$studentDetails" },
+      { $unwind: "$subscriptionDetails" },
+    ]);
+    console.log("bookAllotments", bookAllotments);
+
+    return res.status(200).json(bookAllotments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error", error });
   }
 };

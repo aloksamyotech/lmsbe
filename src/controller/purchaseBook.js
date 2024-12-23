@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { PurchaseManagement } from "../models/purchase.js";
+import { BookAllotment } from "../models/bookAllotment.js";
 
 export const purchaseBook = async (req, res) => {
   const {
@@ -231,6 +232,7 @@ export const purchaseManagement = async (req, res) => {
           price: 1,
         },
       },
+      { $sort: { _id: -1 } },
     ]);
 
     console.log("Purchase  Management Table", purchaseManagementTable);
@@ -242,6 +244,77 @@ export const purchaseManagement = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+// export const getPurchaseInvoice = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     console.log(`id----->>>`, id);
+
+//     const bookAllotments = await BookAllotment.aggregate([
+//       {
+//         $match: {
+//           _id: new mongoose.Types.ObjectId(id),
+//         },
+//       },
+
+//     ]);
+//     console.log("bookAllotments", bookAllotments);
+
+//     return res.status(200).json(bookAllotments);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal server error", error });
+//   }
+// };
+
+export const getPurchaseInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`id----->>>`, id);
+    const bookAllotments = await PurchaseManagement.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "vendermanagements",
+          localField: "vendorId",
+          foreignField: "_id",
+          as: "vendorDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "bookmanagements",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$vendorDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$bookDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
+
+    console.log("bookAllotments", bookAllotments);
+
+    return res.status(200).json(bookAllotments);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Internal server error", error });
   }
 };

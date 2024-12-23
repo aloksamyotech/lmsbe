@@ -74,24 +74,109 @@ export const addBook = async (req, res) => {
   }
 };
 
+export const addManyBooks = async (req, res) => {
+  const data = req?.body;
+
+  try {
+    const addManyBooks = data.map((book) => {
+      const {
+        "Book Name": bookName,
+        "Book Title": title,
+        "Author Name": author,
+        "Publisher Name": publisherName,
+        "Upload Book Image": upload_Book,
+        "Book Description": bookDescription,
+      } = book;
+      let uploadBookPath = req.file ? req.file.path : upload_Book;
+
+      console.log(uploadBookPath);
+
+      return {
+        bookName,
+        title,
+        author,
+        publisherName,
+        upload_Book: uploadBookPath,
+        bookDescription,
+      };
+    });
+
+    console.log("Book Management Data for Bulk Insert", addManyBooks);
+
+    const savedData = await BookManagement.insertMany(addManyBooks);
+    console.log("Book Management Data Saved", savedData);
+
+    return res.status(200).send(savedData);
+  } catch (error) {
+    console.error("Error in Book Management Bulk Insert", error);
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
+// export const bookManagement = async (req, res) => {
+//   try {
+//     const bookManagementTable = await BookManagement.find().populate(
+//       "user_id",
+//       null,
+//       null,
+//       { strictPopulate: false },
+//       { active: false },
+//       { $sort: { _id: -1 } }
+//     );
+
+//     res.status(200).json({
+//       status: true,
+//       message: " Book Management Table successful",
+//       BookManagement: bookManagementTable,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: " Internal server error", error });
+//   }
+// };
+
 export const bookManagement = async (req, res) => {
   try {
-    const bookManagementTable = await BookManagement.find().populate(
-      "user_id",
-      null,
-      null,
-      { strictPopulate: false },
-      { active: false },
-      { $sort: { _id: -1 } },
-    );
+    const bookManagementTable = await BookManagement.aggregate([
+      {
+        $lookup: {
+          from: "purchasemanagements",
+          localField: "_id",
+          foreignField: "bookId",
+          as: "purchaseDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$purchaseDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          bookName: 1,
+          title: 1,
+          bookIssueDate: 1,
+          author: 1,
+          publisherName: 1,
+          upload_Book: 1,
+          active: 1,
+          bookDistribution: 1,
+
+          quantity: "$purchaseDetails.quantity",
+        },
+      },
+      {
+        $sort: { _id: -1 },
+      },
+    ]);
 
     res.status(200).json({
       status: true,
-      message: " Book Management Table successful",
+      message: "Book Management Table successful",
       BookManagement: bookManagementTable,
     });
   } catch (error) {
-    res.status(500).json({ message: " Internal server error", error });
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
@@ -99,11 +184,10 @@ export const deleteBook = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedBook = await BookManagement.findByIdAndDelete(
-      id,
-      { active: false },
-    );
-    
+    const deletedBook = await BookManagement.findByIdAndDelete(id, {
+      active: false,
+    });
+
     if (!deletedBook) {
       return res.status(404).json({ message: "Book not found" });
     }
@@ -130,7 +214,7 @@ export const updateBook = async (req, res) => {
 
   try {
     const updatedBook = await BookManagement.findByIdAndUpdate(
-      id, 
+      id,
       {
         bookName,
         title,
@@ -189,9 +273,7 @@ export const viewBookUser = async (req, res) => {
   console.log("ID---------", id);
 
   try {
-    const user = await RegisterManagement.findById(id
-      , { active: false },
-    );
+    const user = await RegisterManagement.findById(id, { active: false });
     console.log("user", user);
 
     if (!user) {

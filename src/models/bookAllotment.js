@@ -27,6 +27,15 @@ const BookAllotmentSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: true,
     },
+    quantity: { 
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    submit: {  
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

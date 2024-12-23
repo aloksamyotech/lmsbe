@@ -2,19 +2,9 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 
-// import { registerUser, loginUser, report, getAllUsers } from "../controller/User.js";
-// import { createPurchase, purchaseTable } from "../controller/purchase.js";
-// import { transaction } from "../controller/transaction.js";
-// import { referral } from "../controller/referral.js";
-// import { helpSupport, getHelpSupport, newHelpSupport } from "../controller/helpSupport.js";
-// import { findToken } from "../controller/token.js";
-// import {  getNotification, newNotification, notification,} from "../controller/notification.Admin.js";
-// import { getUserList } from "../controller/userList.js";
-// import { getNotificationUser, postNotificationUser } from "../controller/notification.user.js";
-// import {userHelpSupport } from "../controller/userHelpSupport.js";
-// import { getUserDetails } from "../controller/User.js";
 import {
   addBook,
+  addManyBooks,
   bookManagement,
   deleteBook,
   getBookCount,
@@ -35,7 +25,6 @@ import {
   getVenderManagement,
   updateVender,
 } from "../controller/vender.management.js";
-// import { BookManagement } from "../models/book.management.js";
 import {
   addPublications,
   deletePublications,
@@ -54,6 +43,7 @@ import {
   markSubscription,
   profilePage,
   registerManagement,
+  registerMany,
   updateProfilePage,
   updateRegister,
 } from "../controller/register.management.js";
@@ -68,16 +58,21 @@ import {
   getBookAllotment,
   getBookAllotmentById,
   getBookMonthVise,
+  getInvoice,
   getReceiveBook,
+  getSubmitBook,
+  getSubmitBookDetails,
   newReceiveBook,
   postReceiveBook,
   reBookAllotment,
   receiveBook,
   removeReceiveBook,
+  submitBook,
   viewBookAllotmentUser,
 } from "../controller/bookAllotment.js";
 import {
   deletePurchaseBook,
+  getPurchaseInvoice,
   purchaseBook,
   purchaseManagement,
   updatePurchaseBook,
@@ -117,6 +112,8 @@ router.put("/user/editSubscriptionType/:id", updateSubscriptionType);
 //------------------    BOOK MANAGEMENT ---------------------
 
 router.post("/user/addBook", upload.single("upload_Book"), addBook);
+router.post("/user/addManyBooks", upload.single("excelFile"), addManyBooks);
+
 router.get("/user/bookManagement", bookManagement);
 router.get("/user/viewBookUser", viewBookUser);
 router.delete("/user/deleteBook/:id", deleteBook);
@@ -149,6 +146,9 @@ router.get("/user/getPublicationsCount", getPublicationsCount);
 // -----------------  Register Student ---------------------------
 
 router.post("/user/addRegister", upload.single("upload_identity"), addRegister);
+router.post("/user/registerMany", registerMany);
+
+// router.post("/user/upload",uploadFiles);
 router.get("/user/registerManagement", registerManagement);
 router.put("/user/editRegister/:id", updateRegister);
 router.delete("/user/deleteRegister/:id", deleteRegister);
@@ -156,8 +156,12 @@ router.get("/user/getRegisterStudentCount", getRegisterStudentCount);
 router.post("/user/markFavorite/:id", markFavorite);
 router.get("/user/getMarkFavorite", getMarkFavorite);
 router.get("/user/profilePage", profilePage);
-router.put("/user/editProfilePage/:id",upload.single("logo"),updateProfilePage);
-router.get('/user/getLogo',getLogo);
+router.put(
+  "/user/editProfilePage/:id",
+  upload.single("logo"),
+  updateProfilePage
+);
+router.get("/user/getLogo", getLogo);
 
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
@@ -172,11 +176,19 @@ router.get(
 );
 router.post("/user/bookAllotment", bookAllotment);
 router.get("/user/allotmentManagement", getBookAllotment);
-router.get("/user/getReceiveBook",getReceiveBook) 
-router.delete('/user/removeReceiveBook/:id', removeReceiveBook);
-router.get('/user/receiveBook',receiveBook);
-router.post('/user/postReceiveBook',postReceiveBook);
-router.post('/user/newReceiveBook',newReceiveBook)
+router.get("/user/getReceiveBook", getReceiveBook);
+router.post("/user/removeReceiveBook/:id", removeReceiveBook);
+router.post("/user/submitBook/:id", submitBook);
+router.get("/user/getSubmitBook/:selectedStudentId", getSubmitBook);
+router.get(
+  "/user/getSubmitBookDetails/:selectedStudentId",
+  getSubmitBookDetails
+);
+router.get("/user/getInvoice/:id", getInvoice);
+
+router.get("/user/receiveBook", receiveBook);
+router.post("/user/postReceiveBook", postReceiveBook);
+router.post("/user/newReceiveBook", newReceiveBook);
 router.get("/user/reBookAllotment", reBookAllotment);
 router.put("/user/editBookAllotment/:id", editBookAllotment);
 router.get("/user/getBookAllotmentById/:id", getBookAllotmentById);
@@ -194,47 +206,9 @@ router.get(
 // purchaseBook
 router.post("/user/purchaseBook", purchaseBook);
 router.get("/user/purchaseManagement", purchaseManagement);
+router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
 router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
 router.put("/user/editPurchaseBook/:id", updatePurchaseBook);
 // router.get('/user/getBookCount',getBookCount);
-
-//  -----------------------  Dashboard-Menu  ---------------
-
-// router.get("/user/dashboardCount/",dashboardCount)
-
-//   ------------------    Fine    ----------------------
-
-// router.post("/user/abmin")
-
-//   ---------------------   View  --------------------------------
-
-// router.get("/user/viewUser",viewuser);
-
-//  ---------------------------------------------------------------------------
-
-// router.post("/purchase", createPurchase);
-// router.get("/purchase/table", purchaseTable);
-// router.post("/transaction",transaction);
-// router.post("/user/referral", referral);
-// router.post("/user/helpSupport",helpSupport);
-// router.post("/user/getHelpSupport",getHelpSupport);
-// router.get("/user/newHelpSupport",newHelpSupport);
-// router.post("/user/postNotificationUser",postNotificationUser);
-// router.get("/user/getNotificationUser",getNotificationUser);
-
-// router.get("/user/report", report);
-
-// Route to get user details by user ID
-// router.get("/user/getUserDetails", getUserDetails);
-
-//  Admin Router
-
-// router.post("/admin/notification",notification);
-// router.post("/admin/getNotification",getNotification);
-// router.get("/admin/newNotification",newNotification);
-// router.get("/admin/userHelpSupport",userHelpSupport)
-// router.get("/admin/getUserList",getUserList)
-
-// router.get("/token", findToken);
 
 export default router;
