@@ -54,6 +54,7 @@ import {
   deleteAllotmentBook,
   editBookAllotment,
   findHistoryBookAllotmentUser,
+  getAllSubmitBookDetails,
   getBookAllotedCount,
   getBookAllotment,
   getBookAllotmentById,
@@ -62,6 +63,7 @@ import {
   getReceiveBook,
   getSubmitBook,
   getSubmitBookDetails,
+  manyBookAllotment,
   newReceiveBook,
   postReceiveBook,
   reBookAllotment,
@@ -70,6 +72,19 @@ import {
   submitBook,
   viewBookAllotmentUser,
 } from "../controller/bookAllotment.js";
+
+import {
+  addSubscriptionType,
+  deleteSubscriptionType,
+  getSubscriptionTypeTable,
+  updateSubscriptionType,
+} from "../controller/subscriptionType.js";
+import {
+  addFineBook,
+  findByStudentId,
+  getAllFineBooks,
+  getFineBook,
+} from "../controller/fine.management.js";
 import {
   deletePurchaseBook,
   getPurchaseInvoice,
@@ -77,12 +92,6 @@ import {
   purchaseManagement,
   updatePurchaseBook,
 } from "../controller/purchaseBook.js";
-import {
-  addSubscriptionType,
-  deleteSubscriptionType,
-  getSubscriptionTypeTable,
-  updateSubscriptionType,
-} from "../controller/subscriptionType.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -175,15 +184,16 @@ router.get(
   findHistoryBookAllotmentUser
 );
 router.post("/user/bookAllotment", bookAllotment);
+router.post("/user/manyBookAllotment", manyBookAllotment);
 router.get("/user/allotmentManagement", getBookAllotment);
-router.get("/user/getReceiveBook", getReceiveBook);
-router.post("/user/removeReceiveBook/:id", removeReceiveBook);
+router.get("/user/getReceiveBook", getReceiveBook); //-------------------------------
+router.post("/user/removeReceiveBook/:id", removeReceiveBook); //----------------------
 router.post("/user/submitBook/:id", submitBook);
 router.get("/user/getSubmitBook/:selectedStudentId", getSubmitBook);
-router.get(
-  "/user/getSubmitBookDetails/:selectedStudentId",
-  getSubmitBookDetails
-);
+router.get("/user/getSubmitBookDetails/:selectedStudentId",getSubmitBookDetails);
+router.get("/user/getAllSubmitBookDetails",getAllSubmitBookDetails);
+// router.post("/user/payFine/:id",payFine)  //>>>>>>>>>>>>>>>>...........<<<<<<<<<<
+// router.get("/user/fineBook/:selectedStudentId",fineBook)  //>>>>>>>>>>>>>>>>...........<<<<<<<<<<
 router.get("/user/getInvoice/:id", getInvoice);
 
 router.get("/user/receiveBook", receiveBook);
@@ -202,13 +212,21 @@ router.get(
   bookAllotmentReport
 );
 
-//  ----------------------   Purchase    ----------------------
-// purchaseBook
+//  ----------------------   Fine    ----------------------
+// router.post("/user/payFine/:id",payFine)
+router.post("/user/addFineBook", addFineBook);
+router.get("/user/getFineBook/:studentId", getFineBook);
+router.get("/user/getAllFineBooks", getAllFineBooks);
+router.get("/user/findByStudentId", findByStudentId);
+
+// router.get("/user/fineBook/:selectedStudentId",fineBook)
+
+//  ---------------------- Purchase Book -----------------------
+
 router.post("/user/purchaseBook", purchaseBook);
+router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
+router.put("/user/updatePurchaseBook", updatePurchaseBook);
 router.get("/user/purchaseManagement", purchaseManagement);
 router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
-router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
-router.put("/user/editPurchaseBook/:id", updatePurchaseBook);
-// router.get('/user/getBookCount',getBookCount);
 
 export default router;

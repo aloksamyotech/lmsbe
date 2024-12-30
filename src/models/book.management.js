@@ -2,6 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const BookManagementSchema = new Schema(
   {
+    // bookId: {
+    //   type: Schema.Types.ObjectId,
+    //   // required: true,
+    // },
     bookName: {
       type: String,
       // required: true,

@@ -6,6 +6,7 @@ const BookAllotmentSchema = new Schema(
     bookId: {
       type: Schema.Types.ObjectId,
       required: true,
+      
     },
     studentId: {
       type: Schema.Types.ObjectId,
@@ -13,7 +14,7 @@ const BookAllotmentSchema = new Schema(
     },
     bookIssueDate: {
       type: Date,
-      default: Date.now,
+      default: Date.now(),
     },
     active: {
       type: Boolean,
@@ -33,6 +34,10 @@ const BookAllotmentSchema = new Schema(
       default: 0,
     },
     submit: {  
+      type: Boolean,
+      default: false,
+    },
+    fine: {  
       type: Boolean,
       default: false,
     },

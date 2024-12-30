@@ -46,22 +46,7 @@ export const purchaseBook = async (req, res) => {
   }
 };
 
-// export const deletePurchaseBook = async (req, res) => {
-//   const { id } = req.params;
-
-//   try {
-//     const deletedPurchaseBook = await PurchaseManagement.findByIdAndDelete(id);
-//     if (!deletedPurchaseBook) {
-//       return res.status(404).json({ message: "Book not found" });
-//     }
-//     res
-//       .status(200)
-//       .json({ message: "Book deleted successfully", deletedPurchaseBook });
-//   } catch (error) {
-//     console.error("Error deleting book:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
+ 
 export const deletePurchaseBook = async (req, res) => {
   const { id } = req.params;
   console.log(`id---------------->>>>>>>>>>.`, id);
@@ -80,87 +65,7 @@ export const deletePurchaseBook = async (req, res) => {
     console.error("Error deleting book:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-};
-
-// export const updateBook = async (req, res) => {
-//   const { id } = req.params;
-//   const { bookName, vendorId, price, quantity } = req.body;
-
-//   try {
-//     const updatedBook = await BookManagement.findByIdAndUpdate(
-//       id,
-//       {
-//         bookName,
-//         vendorId,
-//         // publisherId,
-//         // author,
-//         // discount,
-//         price,
-//         quantity,
-//         // totalPrice,
-//         // returnPrice,
-//       },
-//       { new: true }
-//     );
-
-//     if (!updatedBook) {
-//       return res.status(404).json({ message: "Book not found" });
-//     }
-
-//     res.status(200).json({ message: "Book updated successfully", updatedBook });
-//   } catch (error) {
-//     console.error("Error updating book:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
-// export const getBookCount = async (req, res) => {
-//   try {
-//     const bookCount = await BookManagement.countDocuments({});
-//     res.status(200).json({ count: bookCount });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching book count', error });
-//   }
-// };
-
-//  export const  getBookCount = async (req, res) => {
-//   try {
-//     const totalBooks = await Book.countDocuments();
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Total books count retrieved successfully",
-//       totalBooks,
-//     });
-//   } catch (error) {
-//     console.error("Error counting books:", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to count books",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// export const purchaseManagement = async (req, res) => {
-//   try {
-//     const purchaseManagementTable = await PurchaseManagement.find()
-//       .populate("bookId", "bookName")
-//       .populate("user_id", null, null, { strictPopulate: false });
-
-//     console.log("book Management Table", purchaseManagementTable);
-
-//     res.status(200).json({
-//       status: true,
-//       message: "Book Management Table successful",
-//       BookManagement: purchaseManagementTable,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
-
+}; 
 export const updatePurchaseBook = async (req, res) => {
   const { id } = req.params;
   console.log(
@@ -247,29 +152,7 @@ export const purchaseManagement = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
-// export const getPurchaseInvoice = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     console.log(`id----->>>`, id);
-
-//     const bookAllotments = await BookAllotment.aggregate([
-//       {
-//         $match: {
-//           _id: new mongoose.Types.ObjectId(id),
-//         },
-//       },
-
-//     ]);
-//     console.log("bookAllotments", bookAllotments);
-
-//     return res.status(200).json(bookAllotments);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
-
+ 
 export const getPurchaseInvoice = async (req, res) => {
   try {
     const { id } = req.params;
