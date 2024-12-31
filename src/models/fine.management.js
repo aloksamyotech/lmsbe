@@ -12,7 +12,7 @@ const FineSchema = new Schema(
     },
     paymentType: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
     // bookManagement:{
     //   type: Schema.Types.ObjectId,
