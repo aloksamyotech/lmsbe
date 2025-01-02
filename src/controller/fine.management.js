@@ -3,7 +3,7 @@ import { BookFine } from "../models/fine.management.js";
 import mongoose from "mongoose";
 
 export const addFineBook = async (req, res) => {
-  const { fine, amount, reason, bookId, studentId } = req.body;
+  const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
 
   try {
     console.log("Loading................................");
@@ -19,7 +19,7 @@ export const addFineBook = async (req, res) => {
       bookId,
       studentId,
       fine,
-      amount,
+      fineAmount: amount,
       reason,
     });
 

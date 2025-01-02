@@ -174,7 +174,7 @@ router.get("/user/getLogo", getLogo);
 
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
-
+  
 // router.get("/user/getAllUsers",getAllUsers)
 
 //  -------------------   Allotment Management  --------------------------

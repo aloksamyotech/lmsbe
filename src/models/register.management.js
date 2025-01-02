@@ -47,6 +47,11 @@ const RegisterManagementSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  count: { 
+    type: Number,
+    required: false,
+    default: 0,
+  },
 });
 export const RegisterManagement = mongoose.model(
   "RegisterManagement",
