@@ -92,6 +92,11 @@ import {
   purchaseManagement,
   updatePurchaseBook,
 } from "../controller/purchaseBook.js";
+import {
+  bookAllotmentHistory,
+  getBookAllotmentHistory,
+  getBookDetailHistoryStudentId,
+} from "../controller/bookallotmentHistory.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -174,7 +179,7 @@ router.get("/user/getLogo", getLogo);
 
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
-  
+
 // router.get("/user/getAllUsers",getAllUsers)
 
 //  -------------------   Allotment Management  --------------------------
@@ -190,8 +195,11 @@ router.get("/user/getReceiveBook", getReceiveBook); //--------------------------
 router.post("/user/removeReceiveBook/:id", removeReceiveBook); //----------------------
 router.post("/user/submitBook/:id", submitBook);
 router.get("/user/getSubmitBook/:selectedStudentId", getSubmitBook);
-router.get("/user/getSubmitBookDetails/:selectedStudentId",getSubmitBookDetails);
-router.get("/user/getAllSubmitBookDetails",getAllSubmitBookDetails);
+router.get(
+  "/user/getSubmitBookDetails/:selectedStudentId",
+  getSubmitBookDetails
+);
+router.get("/user/getAllSubmitBookDetails", getAllSubmitBookDetails);
 // router.post("/user/payFine/:id",payFine)  //>>>>>>>>>>>>>>>>...........<<<<<<<<<<
 // router.get("/user/fineBook/:selectedStudentId",fineBook)  //>>>>>>>>>>>>>>>>...........<<<<<<<<<<
 router.get("/user/getInvoice/:id", getInvoice);
@@ -228,5 +236,10 @@ router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
 router.put("/user/updatePurchaseBook", updatePurchaseBook);
 router.get("/user/purchaseManagement", purchaseManagement);
 router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
+
+//      -----------------   Book Allotment History  ---------------
+router.post("/user/bookAllotmentHistory", bookAllotmentHistory);
+router.get("/user/getBookAllotmentHistory", getBookAllotmentHistory);
+router.get("/user/getBookDetailHistoryStudentId/:id",getBookDetailHistoryStudentId);
 
 export default router;

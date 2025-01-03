@@ -520,17 +520,7 @@ export const getBookAllotmentById = async (req, res) => {
           as: "paymentType",
         },
       },
-
-      // {
-      //   $project: {
-      //     _id: 1,
-      //     bookName: "$bookDetails.bookName",
-      //     student_Name: "$studentDetails.student_Name",
-      //     bookIssueDate: 1,
-      //     submissionDate: 1,
-      //     paymentType: 1,
-      //   },
-      // },
+ 
     ]);
     console.log("bookAllotments", bookAllotments);
 
