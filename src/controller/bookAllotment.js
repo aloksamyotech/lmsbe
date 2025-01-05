@@ -1,10 +1,15 @@
+import { MongoServerClosedError } from "mongodb";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
+import { PurchaseManagement } from "../models/purchase.js";
+// import { ObjectId } from "mongodb";
+
 // import { User } from "../models/User.js";
 import { RegisterManagement } from "../models/register.management.js";
 // import { BookAllotment } from "../controller/book.management.js"
 const { ObjectId } = mongoose.Types;
 import mongoose from "mongoose";
+import Types from "mongoose";
 
 export const bookAllotmentCount = async (req, res) => {
   const { studentId } = req.params;
@@ -110,7 +115,7 @@ export const bookAllotment = async (req, res) => {
     if (!Array.isArray(bookId)) {
       return res.status(400).json({ message: "bookId should be an array" });
     }
-
+    
     const allotments = [];
 
     for (let id of bookId) {
@@ -328,9 +333,15 @@ export const manyBookAllotment = async (req, res) => {
         await BookAllotment.deleteMany({ studentId, bookId });
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       } else {
-        await BookManagement.findByIdAndUpdate(bookId, {
-          $inc: { quantity: -1 },
+        console.log(`bookId`, bookId);
+
+        const bookIdd = new Types.ObjectId(bookId);
+        console.log("bookIdbookId", bookIdd);
+        const purchaseData = await PurchaseManagement.findById({
+          bookId: bookIdd,
         });
+
+        console.log(`Updated purchase data: `, purchaseData);
       }
     });
 
@@ -520,7 +531,6 @@ export const getBookAllotmentById = async (req, res) => {
           as: "paymentType",
         },
       },
- 
     ]);
     console.log("bookAllotments", bookAllotments);
 
