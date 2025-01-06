@@ -21,7 +21,7 @@ const BookAllotmentHistorySchema = new Schema(
           type: Schema.Types.ObjectId,
           required: true,
         },
-        paymentId: {
+        paymentType: {
           type: Schema.Types.ObjectId,
           required: true,
         },

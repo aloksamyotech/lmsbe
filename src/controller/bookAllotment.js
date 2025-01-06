@@ -115,7 +115,7 @@ export const bookAllotment = async (req, res) => {
     if (!Array.isArray(bookId)) {
       return res.status(400).json({ message: "bookId should be an array" });
     }
-    
+
     const allotments = [];
 
     for (let id of bookId) {
@@ -278,29 +278,25 @@ export const bookAllotment = async (req, res) => {
 
 export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
-
+  console.log(" req.body", req.body);
   try {
     for (const allotment of allotmentsData) {
       const { studentId } = allotment;
-
       if (!mongoose.Types.ObjectId.isValid(studentId)) {
         return res
           .status(400)
           .json({ message: `Invalid student ID: ${studentId}` });
       }
-
       const studentAllotments = await BookAllotment.countDocuments({
         studentId,
       });
       console.log("Varma >>>>>>>>>", studentAllotments);
-
       if (studentAllotments >= 5) {
         return res
           .status(400)
           .json({ message: "Student can't borrow more than 5 books." });
       }
     }
-
     const allotmentsToInsert = allotmentsData.map((allotment) => ({
       bookId: allotment.bookId,
       studentId: allotment.studentId,
@@ -310,22 +306,20 @@ export const manyBookAllotment = async (req, res) => {
       amount: allotment.amount,
       count: 1,
     }));
-
+    // console.log('allotmentsToInsert',allotmentsToInsert);
+    
     const allotments = await BookAllotment.insertMany(allotmentsToInsert);
-
+    // console.log('allotmentsToInsert',allotments);
     for (const allotment of allotmentsData) {
       const { studentId } = allotment;
-
       const studentAllotmentCount = await BookAllotment.countDocuments({
         studentId,
       });
-
       await RegisterManagement.findOneAndUpdate(
         { user_id: studentId },
         { $set: { count: studentAllotmentCount } }
       );
     }
-
     const bookUpdatePromises = allotmentsData.map(async (allotment) => {
       const { bookId, studentId } = allotment;
       const bookManagement = await BookManagement.findById(bookId);
@@ -334,17 +328,21 @@ export const manyBookAllotment = async (req, res) => {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       } else {
         console.log(`bookId`, bookId);
-
-        const bookIdd = new Types.ObjectId(bookId);
-        console.log("bookIdbookId", bookIdd);
-        const purchaseData = await PurchaseManagement.findById({
-          bookId: bookIdd,
-        });
-
-        console.log(`Updated purchase data: `, purchaseData);
+        const newId = new ObjectId(bookId);
+        console.log(`newId`, newId);
+        const purchaseData = await PurchaseManagement.findOneAndUpdate(
+          {
+            bookId: new ObjectId(bookId),
+          },
+          {
+            $inc: { quantity: -1 },
+          },
+          {
+            new: true,
+          }
+        );
       }
     });
-
     await Promise.all(bookUpdatePromises);
     return res.status(200).json(allotments);
   } catch (error) {
@@ -553,7 +551,6 @@ export const editBookAllotment = async (req, res) => {
     req.body;
 
   // console.log("req body", req.body);
-
   try {
     const updatedBookAllotment = await BookAllotment.findByIdAndUpdate(
       id,

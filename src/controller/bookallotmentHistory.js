@@ -4,7 +4,6 @@ import { BookManagement } from "../models/book.management.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 import { RegisterManagement } from "../models/register.management.js";
 const ObjectId = mongoose.Types.ObjectId;
- 
 
 // export const bookAllotmentHistory = async (req, res) => {
 //   const { studentId, bookDetails } = req?.body;
@@ -35,31 +34,34 @@ const ObjectId = mongoose.Types.ObjectId;
 //     console.error("Error saving allotment history:", error);
 //     return res.status(500).json({ error: "Failed to save allotment history." });
 //   }
-// }; 
+// };
 
 export const bookAllotmentHistory = async (req, res) => {
   const { studentId, bookDetails } = req?.body;
+  console.log(`req?.body`, req?.body);
 
-  try { 
-    if (!ObjectId.isValid(studentId)) {
-      return res.status(400).json({ error: "Invalid studentId provided." });
-    }
- 
-    let history = await BookAllotmentHistory.findOne({ studentId });
+  console.log(`studentId`, studentId);
 
-    if (history) { 
-      history.count += bookDetails.length;
-      history.allotmentDetails.push(...bookDetails);
-    } else { 
-      history = new BookAllotmentHistory({
-        studentId,
-        count: bookDetails.length,
-        allotmentDetails: bookDetails,
-      });
-    }
- 
+  try {
+    // if (!ObjectId.isValid(studentId)) {
+    //   return res.status(400).json({ error: "Invalid studentId provided." });
+    // }
+
+    // let history = await BookAllotmentHistory.findOne({ studentId });
+
+    // if (history) {
+    //   history.count += bookDetails.length;
+    //   history.allotmentDetails.push(...bookDetails);
+    // } else {
+    let history = new BookAllotmentHistory({
+      studentId,
+      //   count: bookDetails.length,
+      allotmentDetails: bookDetails,
+    });
+    // }
+
     await history.save();
- 
+
     return res
       .status(200)
       .json({ message: "Allotment history saved successfully!" });
@@ -68,7 +70,6 @@ export const bookAllotmentHistory = async (req, res) => {
     return res.status(500).json({ error: "Failed to save allotment history." });
   }
 };
-
 
 export const getBookAllotmentHistory = async (req, res) => {
   try {
@@ -82,7 +83,7 @@ export const getBookAllotmentHistory = async (req, res) => {
         },
       },
     ]);
-    console.log("histories>>>>>>", histories);
+    // console.log("histories>>>>>>", histories);
 
     if (!histories || histories.length === 0) {
       return res
