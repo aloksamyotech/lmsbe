@@ -1,8 +1,7 @@
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 
 export const addSubscriptionType = async (req, res) => {
-  const { title, amount, discount, active, desc, numberOfDays } = req.body;
-  console.log(" req.body; >>>>>>>>>>>>>>>>..", req.body);
+  const { title, amount, discount, active, desc, numberOfDays } = req.body; 
 
   try {
     const newSubscription = new SubscriptionType({
@@ -33,8 +32,7 @@ export const getSubscriptionTypeTable = async (req, res) => {
       {
         strictPopulate: false,
       }
-    );
-    console.log("Subscription Table", SubscriptionTypeTable);
+    ); 
     res.status(200).json({
       status: true,
       message: " Subscription  Table successful",

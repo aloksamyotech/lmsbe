@@ -5,9 +5,7 @@ import mongoose from "mongoose";
 export const addFineBook = async (req, res) => {
   const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
 
-  try {
-    console.log("Loading................................");
-    console.log("Received data", req.body);
+  try { 
 
     if (!bookId || !studentId) {
       return res
@@ -23,8 +21,7 @@ export const addFineBook = async (req, res) => {
       reason,
     });
 
-    const FineManagementData = await FineManagementSchema.save();
-    console.log("Fine Book Management Data", FineManagementData);
+    const FineManagementData = await FineManagementSchema.save(); 
     return res.status(200).send(FineManagementData);
   } catch (error) {
     console.error("Error in Fine Book Management", error);

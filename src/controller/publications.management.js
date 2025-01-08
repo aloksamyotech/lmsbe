@@ -1,31 +1,22 @@
-import { async } from "rxjs";
+ 
 import { PublicationsManagement } from "../models/publications.management.js";
 
 export const addPublications = async (req, res) => {
-  const {
-    // startDate,
-    publisherName,
-    // bookName,
-    // title,
-    // author,
+  const { 
+    publisherName, 
     address,
     description,
   } = req.body;
 
   try {
     const PublicationsManagementSchema = new PublicationsManagement({
-      publisherName,
-      // bookName,
-      // title,
-      // author,
-      address,
-      // startDate,
+      publisherName, 
+      address, 
       description,
     });
 
     const PublicationsManagementData =
-      await PublicationsManagementSchema.save();
-    console.log("PublicationsManagementData", PublicationsManagementData);
+      await PublicationsManagementSchema.save(); 
     return res.status(200).send(PublicationsManagementData);
   } catch (error) {
     console.log(" PublicationsManagement Error", error);
@@ -39,8 +30,7 @@ export const getPublications = async (req, res) => {
       await PublicationsManagement.find().populate("user_id", null, null, {   active: false ,
          $sort: { _id: -1 } ,
         strictPopulate: false,
-      });
-    console.log("Publication Management Table", PublicationsManagementTable);
+      }); 
     res.status(200).json({
       status: true,
       message: " Publication Management Table successful",
@@ -83,8 +73,7 @@ export const editPublications = async (req, res) => {
     bookName,
     title,
     author,
-    address,
-    // startDate,
+    address, 
     description,
   } = req.body;
 
@@ -96,8 +85,7 @@ export const editPublications = async (req, res) => {
         bookName,
         title,
         author,
-        address,
-        // startDate, // Ensure startDate is correctly updated
+        address, 
         description,
       },
       { new: true }
@@ -126,34 +114,4 @@ export const getPublicationsCount = async (req, res) => {
   }
 };
 
-// export const editPublications = async (req, res) => {
-//   const { id } = req.params;
-//   const { name, title, author, address, startDate, description } = req.body;
-
-//   try {
-//     const updatedPublications = await PublicationsManagement.findByIdAndUpdate(
-//       id,
-//       {
-//         name,
-//         title,
-//         author,
-//         address,
-//         startDate,
-//         description,
-//       },
-//       { new: true }
-//     );
-
-//     if (!updatedPublications) {
-//       return res.status(404).json({ message: "Publications not found" });
-//     }
-
-//     res.status(200).json({
-//       message: "Publications updated successfully",
-//       updatedPublications,
-//     });
-//   } catch (error) {
-//     console.error("Error updating Publications:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
+ 

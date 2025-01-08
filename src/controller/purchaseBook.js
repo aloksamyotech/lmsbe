@@ -5,20 +5,15 @@ import { BookAllotment } from "../models/bookAllotment.js";
 export const purchaseBook = async (req, res) => {
   const {
     bookId,
-    vendorId,
-    // discount,
-    price,
-    // author,
-    // publisherId,
+    vendorId, 
+    price, 
     bookIssueDate,
     quantity,
     totalPrice,
     bookComment,
   } = req.body;
 
-  try {
-    console.log("Loading................................");
-    console.log("print data", req.body);
+  try { 
 
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
       return res.status(400).json({ message: "Invalid bookId" });
@@ -27,9 +22,6 @@ export const purchaseBook = async (req, res) => {
     const PurchaseManagementSchema = new PurchaseManagement({
       bookId,
       vendorId,
-      // publisherId,
-      // author,
-      // discount,
       price,
       bookIssueDate,
       quantity,
@@ -48,8 +40,7 @@ export const purchaseBook = async (req, res) => {
 
  
 export const deletePurchaseBook = async (req, res) => {
-  const { id } = req.params;
-  console.log(`id---------------->>>>>>>>>>.`, id);
+  const { id } = req.params; 
 
   try {
     const deletedPurchaseBook = await PurchaseManagement.findByIdAndDelete(id, {
@@ -68,12 +59,7 @@ export const deletePurchaseBook = async (req, res) => {
 }; 
 export const updatePurchaseBook = async (req, res) => {
   const { id } = req.params;
-  console.log(
-    `id------------------------------------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`,
-    id
-  );
-
-  const { price, quantity } = req.body;
+   const { price, quantity } = req.body;
 
   try {
     const updatedBook = await PurchaseManagement.findByIdAndUpdate(
@@ -129,18 +115,14 @@ export const purchaseManagement = async (req, res) => {
         $project: {
           _id: 1,
           bookName: "$bookDetails.bookName",
-          vendorId: "$vendorDetails.vendorName",
-          // publisherId: "$publisherDetails.publisherName",
-          // author: 1,
+          vendorId: "$vendorDetails.vendorName", 
           quantity: 1,
           bookComment: 1,
           price: 1,
         },
       },
       { $sort: { _id: -1 } },
-    ]);
-
-    console.log("Purchase  Management Table", purchaseManagementTable);
+    ]); 
 
     res.status(200).json({
       status: true,
@@ -155,8 +137,7 @@ export const purchaseManagement = async (req, res) => {
  
 export const getPurchaseInvoice = async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`id----->>>`, id);
+    const { id } = req.params; 
     const bookAllotments = await PurchaseManagement.aggregate([
       {
         $match: {

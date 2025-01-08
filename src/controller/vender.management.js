@@ -1,12 +1,11 @@
-// import { VenderManagement } from "../models/book.management.js";
+ 
 import { VenderManagement } from "../models/vendor.management.js";
 
 export const addVenderBook = async (req, res) => {
   const {
     vendorName,
     companyName,
-    address,
-    // cityName,
+    address, 
     date,
     phoneNumber,
     email,
@@ -18,8 +17,7 @@ export const addVenderBook = async (req, res) => {
 
     const VenderManagementSchema = new VenderManagement({
       vendorName,
-      companyName,
-      // cityName,
+      companyName, 
       date,
       phoneNumber,
       email,
@@ -56,22 +54,7 @@ export const getVenderManagement = async (req, res) => {
     res.status(500).json({ message: " Internal server error", error });
   }
 };
-
-// export const deleteVender = async (req, res) => {
-//   const { id } = req.params;
-
-//   try {
-//     const deletedVender = await VenderManagement.findByIdAndDelete(id);
-//     if (!deletedVender) {
-//       return res.status(404).json({ message: "Vender not found" });
-//     }
-//     res.status(200).json({ message: "Vender deleted successfully" });
-//   } catch (error) {
-//     console.error("Error deleting Vender:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
+ 
 export const deleteVender = async (req, res) => {
   const { id } = req.params;
 
@@ -100,8 +83,7 @@ export const updateVender = async (req, res) => {
   const {
     vendorName,
     companyName,
-    address,
-    // cityName,
+    address, 
     date,
     phoneNumber,
     email,
@@ -114,8 +96,7 @@ export const updateVender = async (req, res) => {
       {
         vendorName,
         companyName,
-        address,
-        // cityName,
+        address, 
         date,
         phoneNumber,
         email,

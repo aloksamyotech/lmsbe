@@ -2,10 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const BookManagementSchema = new Schema(
   {
-    // bookId: {
-    //   type: Schema.Types.ObjectId,
-    //   // required: true,
-    // },
+     
     bookName: {
       type: String,
       // required: true,
@@ -34,18 +31,6 @@ const BookManagementSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    // amount: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // returnPrice: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // quantity: {
-    //   type: Number,
-    //   required: true,
-    // },
     bookDistribution: {
       type: String,
       // required: true,
