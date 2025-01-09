@@ -1,99 +1,86 @@
-// import { Purchase } from "../models/purchase.js";
-// import { Token } from "../models/token.js";
-// // import { User } from "../models/user.js";
-// import jwt from "jsonwebtoken";
-// import { User } from "../models/User.js";
+import { RegisterManagement } from "../models/register.management.js";
+import { User } from "../models/User.js";
+import bcrypt from "bcryptjs";
 
-// export const registerUser = async (req, res) => {
-//   try {
-//     const { first_name, last_name, email, password, role} = req?.body;
-//     console.log("Request body", req.body);
-
-//     const UserSchema = new User({
-//       first_name,
-//       last_name,
+// export const updateProfilePage = async (req, res) => {
+//     console.log(`body data----------------------->>>>>>>>>> `, req.body);
+//     console.log(`file data----------------------->>>>>>>>>>  `, req.file);
+//     const { id } = req.params;
+//     const { email, mobile_Number, student_Name, register_Date } = req.body;
+//     const logo = req.file ? req.file.path : "";
+//     console.log(`logo`, logo);
+//     const updatedData = {
+//       student_Name,
 //       email,
-//       password,
-//       role, 
+//       mobile_Number,
+//       register_Date,
+//       logo,
+//     };
+//     try {
+//       const updatedRegister = await RegisterManagement.findByIdAndUpdate(
+//         id,
+//         updatedData,
+//         { new: true }
+//       );
+//       if (!updatedRegister) {
+//         return res.status(404).json({ message: "Register not found" });
+//       }
+//       res
+//         .status(200)
+//         .json({ message: "Register updated successfully", updateRegister });
+//     } catch (error) {
+//       console.error("Error updating  Register:", error);
+//       res.status(500).json({ message: "Internal Server Error" });
+//     }
+//   };
+
+// export const updateProfilePage = async (req, res) => {
+//   console.log(`body data----------------------->>>>>>>>>> `, req.body);
+//   console.log(`file data----------------------->>>>>>>>>>  `, req.file);
+//   const { id } = req.params;
+//   const { email, mobile_Number, student_Name, register_Date } = req.body;
+//   const logo = req.file ? req.file.path : "";
+//   console.log(`logo`, logo);
+//   const updatedData = {
+//     student_Name,
+//     email,
+//     mobile_Number,
+//     register_Date,
+//     logo,
+//   };
+//   try {
+//     const updatedRegister = await RegisterManagement.findByIdAndUpdate(
+//       id,
+//       updatedData,
+//       { new: true }
+//     );
+//     if (!updatedRegister) {
+//       return res.status(404).json({ message: "Register not found" });
+//     }
+//     res
+//       .status(200)
+//       .json({ message: "Register updated successfully", updatedRegister });
+//   } catch (error) {
+//     console.error("Error updating Register:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+// export const getLogo = async (req, res) => {
+//   try {
+//     const logo = await RegisterManagement.find({
+//       role: "admin",
+//       active: true,
 //     });
-
-//     const UserData = await UserSchema.save();
-//     console.log(UserData);
-//     res.status(201).send(UserData);
+//     res.status(200).json({
+//       status: true,
+//       message: "admin data fetched successfully",
+//       students: logo,
+//     });
 //   } catch (error) {
-//     console.error("Error in registerUser:", error);
-//     return res.status(500).send({ message: "Internal Server Error in admin" });
-//   }
-// };
-
-// export const loginUser = async (req, res) => {
-//   try {
-//     const { email, password } = req?.body;
-//     console.log("Request body", req.body);
-//     const UserData = await User.findOne({
-//       email: email,
-//     }).lean();
-
-//     if (!UserData) {
-//       return res.status(404).send({ message: "User not found" });
-//     }
-
-//     if (password === UserData.password) {
-//       var token = jwt.sign(UserData, "secret_key");
-//       UserData.token = token;
-//       res.status(200).send(UserData);
-//     } else {
-//       res.status(401).send({ message: "Invalid credentials" });
-//     }
-//   } catch (error) {
-//     console.error("Error in registerUser:", error);
-//     return res.status(500).send({ message: "Internal Server Error" });
-//   }
-// };
-
-// export const report = async (req, res) => {
-//   try {
-//     const tokenInfo = await Token.findOne().lean();
-//     const userInfo = await User.find().lean();
-//     const purchaseInfo = await Purchase.find().lean();
-//     const response = { userInfo, ...tokenInfo, purchaseInfo };
-//     console.log("response", response);
-//     res.status(200).send(response);
-//   } catch (error) {}
-// };
-
-// export const getUserDetails = async (req, res) => {
-//   try {
-//     console.log("Data............");
-
-//     const { userId } = req.query;
-//     console.log("user id", userId);
-
-//     const user = await User.findById(userId).select("-password");
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     res.status(200).json({ user });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// };
-
-// export const getAllUsers = async (req, res) => {
-//   try {
-//     // Fetch all users from the database, excluding passwords
-//     const users = await User.find().select("-password");
-    
-//     // Check if any users were found
-//     if (!users.length) {
-//       return res.status(404).json({ message: "No users found" });
-//     }
-    
-//     // Send the users data in the response
-//     res.status(200).json({ users });
-//   } catch (error) {
-//     console.error("Error in getAllUsers:", error);
-//     res.status(500).json({ message: "Internal Server Error", error });
+//     console.error("Error fetching admin data:", error);
+//     res
+//       .status(500)
+//       .json({ status: false, message: "Internal server error", error });
 //   }
 // };

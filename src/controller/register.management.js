@@ -2,27 +2,21 @@ import { RegisterManagement } from "../models/register.management.js";
 import multer from "multer";
 import path from "path";
 
-export const addRegister = async (req, res) => { 
-
-  const { 
-    student_Name,
-    email,
-    mobile_Number,
-    select_identity,
-    register_Date,
-  } = req.body;
+export const addRegister = async (req, res) => {
+  const { student_Name, email, mobile_Number, select_identity, register_Date } =
+    req.body;
   const upload_identity = req.file ? req.file.path : "";
 
   try {
-    const registerData = new RegisterManagement({ 
+    const registerData = new RegisterManagement({
       student_Name,
       email,
       mobile_Number,
       select_identity,
       upload_identity,
       register_Date,
-    }); 
-    const savedData = await registerData.save(); 
+    });
+    const savedData = await registerData.save();
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Register Management", error);
@@ -52,7 +46,7 @@ export const registerMany = async (req, res) => {
         register_Date,
       };
     });
-     const savedData = await RegisterManagement.insertMany(registerData); 
+    const savedData = await RegisterManagement.insertMany(registerData);
 
     return res.status(200).send(savedData);
   } catch (error) {
@@ -122,7 +116,7 @@ export const deleteRegister = async (req, res) => {
 
 export const updateRegister = async (req, res) => {
   const { id } = req.params;
-  const { 
+  const {
     student_Name,
     email,
     mobile_Number,
@@ -134,7 +128,7 @@ export const updateRegister = async (req, res) => {
   try {
     const updatedRegister = await RegisterManagement.findByIdAndUpdate(
       id,
-      { 
+      {
         student_Name,
         email,
         mobile_Number,
@@ -159,7 +153,7 @@ export const updateRegister = async (req, res) => {
 };
 
 export const getUserDetails = async (req, res) => {
-  try { 
+  try {
     const { userId } = req.query;
     console.log("user id", userId);
 
@@ -233,7 +227,7 @@ export const getMarkFavorite = async (req, res) => {
       .json({ status: false, message: "Internal server error", error });
   }
 };
- 
+
 export const profilePage = async (req, res) => {
   try {
     const admin = await RegisterManagement.find(
@@ -258,7 +252,7 @@ export const profilePage = async (req, res) => {
       .json({ status: false, message: "Internal server error", error });
   }
 };
- 
+
 export const markSubscription = async (req, res) => {
   const { id } = req.params;
 
@@ -313,11 +307,13 @@ export const getSubscription = async (req, res) => {
   }
 };
 
-export const updateProfilePage = async (req, res) => { 
+export const updateProfilePage = async (req, res) => {
+  console.log(`body data----------------------->>>>>>>>>> `, req.body);
+  console.log(`file data----------------------->>>>>>>>>>  `, req.file);
   const { id } = req.params;
   const { email, mobile_Number, student_Name, register_Date } = req.body;
-  const logo = req.file ? req.file.path : ""; 
-
+  const logo = req.file ? req.file.path : "";
+  console.log(`logo`, logo);
   const updatedData = {
     student_Name,
     email,
@@ -326,19 +322,15 @@ export const updateProfilePage = async (req, res) => {
     email,
     logo,
   };
-
   try {
     const updatedRegister = await RegisterManagement.findByIdAndUpdate(
       id,
-
       updatedData,
       { new: true }
     );
-
     if (!updatedRegister) {
       return res.status(404).json({ message: "Register not found" });
     }
-
     res
       .status(200)
       .json({ message: "Register updated successfully", updateRegister });
@@ -347,14 +339,12 @@ export const updateProfilePage = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const getLogo = async (req, res) => {
   try {
     const logo = await RegisterManagement.find({
       role: "admin",
       active: true,
     });
-
     res.status(200).json({
       status: true,
       message: "admin data fetched successfully",

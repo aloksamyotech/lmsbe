@@ -40,8 +40,8 @@ import {
   getRegisterStudentCount,
   getSubscription,
   markFavorite,
-  markSubscription,
-  profilePage,
+  markSubscription, 
+  profilePage, 
   registerManagement,
   registerMany,
   updateProfilePage,
@@ -97,6 +97,7 @@ import {
   getBookAllotmentHistory,
   getBookDetailHistoryStudentId,
 } from "../controller/bookallotmentHistory.js";
+ 
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -110,6 +111,27 @@ const upload = multer({ storage: storage });
 
 const router = express.Router();
 
+// -------------------------------------------  Admin  ---------------------
+
+// router.get("/user/profilePage", getLogo);
+
+// router.get("/user/profilePage", updateProfilePage);
+// router.put("/user/editProfilePage/:id",upload.single("logo"),updateProfilePage);
+
+// router.post("/updateLogo/:id", upload.single("logo"), updateLogo);
+// router.get("/getAdmin", getAdmin);
+// router.post("/admin", createUser);
+// router.put(
+//   "/user/editProfilePage/:id",
+//   upload.single("logo"),
+//   updateProfilePage
+// );
+
+// router.get("/admin", getAllUsers);
+// router.get("/admin/:email", getUserByEmail);
+// router.put("/admin/:email", updateUser);
+// router.delete("/admin/:email", deleteUser);
+
 //               -----------------------------  LMS -----------------------------
 
 // router.post("/user/register",registerUser);
@@ -119,6 +141,7 @@ const router = express.Router();
 // -----------------    SubscriptionManagement       ---------------------------
 
 router.post("/user/subscriptionType", addSubscriptionType);
+
 router.get("/user/getSubscriptionType", getSubscriptionTypeTable);
 router.delete("/user/deleteSubscriptionType/:id", deleteSubscriptionType);
 router.put("/user/editSubscriptionType/:id", updateSubscriptionType);
@@ -169,13 +192,11 @@ router.delete("/user/deleteRegister/:id", deleteRegister);
 router.get("/user/getRegisterStudentCount", getRegisterStudentCount);
 router.post("/user/markFavorite/:id", markFavorite);
 router.get("/user/getMarkFavorite", getMarkFavorite);
-router.get("/user/profilePage", profilePage);
-router.put(
-  "/user/editProfilePage/:id",
-  upload.single("logo"),
-  updateProfilePage
-);
+router.get("/user/profilePage",profilePage);
+router.put("/user/editProfilePage/:id",upload.single("logo"),updateProfilePage);
 router.get("/user/getLogo", getLogo);
+
+
 
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
@@ -240,6 +261,9 @@ router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
 //      -----------------   Book Allotment History  ---------------
 router.post("/user/bookAllotmentHistory", bookAllotmentHistory);
 router.get("/user/getBookAllotmentHistory", getBookAllotmentHistory);
-router.get("/user/getBookDetailHistoryStudentId/:id",getBookDetailHistoryStudentId);
+router.get(
+  "/user/getBookDetailHistoryStudentId/:id",
+  getBookDetailHistoryStudentId
+);
 
 export default router;
