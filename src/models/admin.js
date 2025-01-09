@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const UserSchema = new Schema({
+const AdminSchema = new Schema({
   student_Name: {
     type: String,
     required: true,
@@ -37,4 +37,4 @@ const UserSchema = new Schema({
   },
 });
 
-export const User = mongoose.model("User", UserSchema);
+export const Admin = mongoose.model("Admin", AdminSchema);
