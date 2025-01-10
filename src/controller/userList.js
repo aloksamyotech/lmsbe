@@ -1,11 +1,8 @@
- import { User } from "../models/User.js";
+import { User } from "../models/admin.js";
 
 export const getUserList = async (req, res) => {
   try {
-    const newUserListTable = await User.find(
-      { active: false },
-      
-    );
+    const newUserListTable = await User.find({ active: false });
 
     console.log("new User List Table", newUserListTable);
     res.status(200).json({

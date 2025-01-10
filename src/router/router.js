@@ -34,17 +34,14 @@ import {
 } from "../controller/publications.management.js";
 import {
   addRegister,
-  deleteRegister,
-  getLogo,
+  deleteRegister, 
   getMarkFavorite,
   getRegisterStudentCount,
   getSubscription,
   markFavorite,
-  markSubscription, 
-  profilePage, 
+  markSubscription,  
   registerManagement,
-  registerMany,
-  updateProfilePage,
+  registerMany, 
   updateRegister,
 } from "../controller/register.management.js";
 import {
@@ -97,6 +94,9 @@ import {
   getBookAllotmentHistory,
   getBookDetailHistoryStudentId,
 } from "../controller/bookallotmentHistory.js";
+import  { adminGetLogo, adminProfilePage, adminUpdateProfilePage, loginAdmin } from "../controller/admin.js";
+ 
+  
  
 
 const storage = multer.diskStorage({
@@ -113,26 +113,13 @@ const router = express.Router();
 
 // -------------------------------------------  Admin  ---------------------
 
-// router.get("/user/profilePage", getLogo);
+router.get("/user/adminProfilePage",adminProfilePage);
+router.put("/user/adminEditProfilePage/:id",upload.single("logo"),adminUpdateProfilePage);
+router.get("/user/adminGetLogo",adminGetLogo); 
+router.post("/user/login",loginAdmin); 
 
-// router.get("/user/profilePage", updateProfilePage);
-// router.put("/user/editProfilePage/:id",upload.single("logo"),updateProfilePage);
 
-// router.post("/updateLogo/:id", upload.single("logo"), updateLogo);
-// router.get("/getAdmin", getAdmin);
-// router.post("/admin", createUser);
-// router.put(
-//   "/user/editProfilePage/:id",
-//   upload.single("logo"),
-//   updateProfilePage
-// );
-
-// router.get("/admin", getAllUsers);
-// router.get("/admin/:email", getUserByEmail);
-// router.put("/admin/:email", updateUser);
-// router.delete("/admin/:email", deleteUser);
-
-//               -----------------------------  LMS -----------------------------
+//   -----------------------------  LMS -----------------------------
 
 // router.post("/user/register",registerUser);
 // router.post("/user/login",loginUser);
@@ -191,12 +178,7 @@ router.put("/user/editRegister/:id", updateRegister);
 router.delete("/user/deleteRegister/:id", deleteRegister);
 router.get("/user/getRegisterStudentCount", getRegisterStudentCount);
 router.post("/user/markFavorite/:id", markFavorite);
-router.get("/user/getMarkFavorite", getMarkFavorite);
-router.get("/user/profilePage",profilePage);
-router.put("/user/editProfilePage/:id",upload.single("logo"),updateProfilePage);
-router.get("/user/getLogo", getLogo);
-
-
+router.get("/user/getMarkFavorite", getMarkFavorite); 
 
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
