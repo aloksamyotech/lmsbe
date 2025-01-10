@@ -3,12 +3,17 @@ import { Admin } from "../models/admin.js";
 
 export const connectDb = async () => {
   try {
+<<<<<<< Updated upstream
     // await mongoose.connect("mongodb://127.0.0.1:27017/LMS");
 
     await mongoose.connect(
       "mongodb+srv://amanasati:amanasati@cluster0.p2zjm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     );
     const adminExist = await Admin.findOne({ email: "admin@gmail.com" });
+=======
+    await mongoose.connect("mongodb+srv://amanasati:amanasati@cluster0.p2zjm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
+    const adminExist = await User.findOne({ email: "admin@gmail.com" });
+>>>>>>> Stashed changes
     if (!adminExist) {
       const newAdmin = new Admin({
         student_Name: "admin",
