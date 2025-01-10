@@ -94,7 +94,9 @@ import {
   getBookAllotmentHistory,
   getBookDetailHistoryStudentId,
 } from "../controller/bookallotmentHistory.js";
-import { adminGetLogo, adminProfilePage, adminUpdateProfilePage } from "../controller/admin.js";
+import  { adminGetLogo, adminProfilePage, adminUpdateProfilePage, loginAdmin } from "../controller/admin.js";
+ 
+  
  
 
 const storage = multer.diskStorage({
@@ -113,7 +115,9 @@ const router = express.Router();
 
 router.get("/user/adminProfilePage",adminProfilePage);
 router.put("/user/adminEditProfilePage/:id",upload.single("logo"),adminUpdateProfilePage);
-router.get("/user/adminGetLogo",adminGetLogo);
+router.get("/user/adminGetLogo",adminGetLogo); 
+router.post("/user/login",loginAdmin); 
+
 
 //   -----------------------------  LMS -----------------------------
 
