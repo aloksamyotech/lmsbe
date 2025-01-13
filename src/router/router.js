@@ -152,7 +152,7 @@ router.delete("/user/deleteVender/:id", deleteVender);
 router.put("/user/editVender/:id", updateVender);
 router.get("/user/getVenderCount", getVenderCount);
 
-//-----------------  Contact ----------------------
+//-----------------  Favorite Students ----------------------
 
 router.post("/user/addContact", addContact);
 router.get("/user/contactManagement", getContactManagement);
