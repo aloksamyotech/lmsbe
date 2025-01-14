@@ -14,10 +14,7 @@ const FineSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: false,
     },
-    // bookManagement:{
-    //   type: Schema.Types.ObjectId,
-    //   required: true,
-    // },
+    
     reason: {
       type: String,
       require: true,

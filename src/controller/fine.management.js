@@ -2,26 +2,62 @@ import { BookFine } from "../models/fine.management.js";
 
 import mongoose from "mongoose";
 
+// export const addFineBook = async (req, res) => {
+//   const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
+
+//   try {
+//     if (!bookId || !studentId) {
+//       return res
+//         .status(400)
+//         .send({ message: "bookId and studentId are required" });
+//     }
+
+//     const FineManagementSchema = new BookFine({
+//       bookId,
+//       studentId,
+//       fine,
+//       fineAmount: amount,
+//       reason,
+//     });
+
+//     const FineManagementData = await FineManagementSchema.save();
+//     console.log("Fine Book Management Data", FineManagementData);
+//     return res.status(200).send(FineManagementData);
+//   } catch (error) {
+//     console.error("Error in Fine Book Management", error);
+//     return res.status(500).send({ message: "Internal Server Error" });
+//   }
+// };
+
 export const addFineBook = async (req, res) => {
   const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
+  console.log("req.body>>>>>>>>>>>", req.body);
 
-  try { 
-
+  try {
     if (!bookId || !studentId) {
       return res
         .status(400)
         .send({ message: "bookId and studentId are required" });
     }
 
+    if (
+      !mongoose.Types.ObjectId.isValid(bookId) ||
+      !mongoose.Types.ObjectId.isValid(studentId)
+    ) {
+      return res
+        .status(400)
+        .send({ message: "Invalid bookId or studentId format" });
+    }
+
     const FineManagementSchema = new BookFine({
-      bookId,
-      studentId,
+      bookId: new mongoose.Types.ObjectId(bookId),
+      studentId: new mongoose.Types.ObjectId(studentId),
       fine,
       fineAmount: amount,
       reason,
     });
 
-    const FineManagementData = await FineManagementSchema.save(); 
+    const FineManagementData = await FineManagementSchema.save();
     return res.status(200).send(FineManagementData);
   } catch (error) {
     console.error("Error in Fine Book Management", error);

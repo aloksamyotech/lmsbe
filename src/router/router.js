@@ -55,6 +55,7 @@ import {
   getBookAllotedCount,
   getBookAllotment,
   getBookAllotmentById,
+  getBookAllotmentInvoice,
   getBookMonthVise,
   getInvoice,
   getReceiveBook,
@@ -247,5 +248,6 @@ router.get(
   "/user/getBookDetailHistoryStudentId/:id",
   getBookDetailHistoryStudentId
 );
+router.get("/user/getBookAllotmentInvoice/:id",getBookAllotmentInvoice)
 
 export default router;

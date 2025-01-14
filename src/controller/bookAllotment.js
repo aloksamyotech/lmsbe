@@ -1,34 +1,36 @@
 import { MongoServerClosedError } from "mongodb";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
-import { PurchaseManagement } from "../models/purchase.js"; 
- 
-import { RegisterManagement } from "../models/register.management.js"; 
+import { PurchaseManagement } from "../models/purchase.js";
+
+import { RegisterManagement } from "../models/register.management.js";
 const { ObjectId } = mongoose.Types;
 import mongoose from "mongoose";
 import Types from "mongoose";
+import { BookAllotmentHistory } from "../models/bookallotmentHistory.js";
+import { SubscriptionType } from "../models/subscriptionType.model.js";
 
 export const bookAllotmentCount = async (req, res) => {
-  const { studentId } = req.params; 
+  const { studentId } = req.params;
 
   try {
     const student = await RegisterManagement.findById(studentId, {
       active: false,
-    }); 
+    });
 
     if (!studentId) {
       return res.status(404).json({ message: "Student not found" });
     }
     const allotmentsCount = await BookAllotment.countDocuments({
       studentId: studentId,
-    }); 
+    });
     return res.status(200).json({ allotmentsCount });
   } catch (error) {
     console.error("Error fetching book allotment count:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
 };
- 
+
 export const bookAllotment = async (req, res) => {
   const {
     bookId,
@@ -88,9 +90,8 @@ export const bookAllotment = async (req, res) => {
   }
 };
 
- 
 export const manyBookAllotment = async (req, res) => {
-  const allotmentsData = req.body; 
+  const allotmentsData = req.body;
   try {
     for (const allotment of allotmentsData) {
       const { studentId } = allotment;
@@ -101,7 +102,7 @@ export const manyBookAllotment = async (req, res) => {
       }
       const studentAllotments = await BookAllotment.countDocuments({
         studentId,
-      }); 
+      });
       if (studentAllotments >= 5) {
         return res
           .status(400)
@@ -116,9 +117,9 @@ export const manyBookAllotment = async (req, res) => {
       paymentType: allotment.paymentType,
       amount: allotment.amount,
       count: 1,
-    })); 
-    
-    const allotments = await BookAllotment.insertMany(allotmentsToInsert); 
+    }));
+
+    const allotments = await BookAllotment.insertMany(allotmentsToInsert);
     for (const allotment of allotmentsData) {
       const { studentId } = allotment;
       const studentAllotmentCount = await BookAllotment.countDocuments({
@@ -157,7 +158,7 @@ export const manyBookAllotment = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
- 
+
 export const getBookAllotment = async (req, res) => {
   try {
     console.log("Data.........");
@@ -267,7 +268,6 @@ export const reBookAllotment = async (req, res) => {
 export const getBookAllotmentById = async (req, res) => {
   try {
     const { id } = req?.params;
-    console.log("id..", id);
 
     if (!id) {
       return res.status(400).json({ message: "ID parameter is required" });
@@ -736,7 +736,6 @@ export const getReceiveBook = async (req, res) => {
   }
 };
 
- 
 export const removeReceiveBook = async (req, res) => {
   const { id } = req.params;
   console.log(`Received ID for removal: ${id}`);
@@ -767,7 +766,7 @@ export const removeReceiveBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
- 
+
 export const submitBook = async (req, res) => {
   const { id } = req.params;
   console.log("ID>>>", id);
@@ -877,7 +876,7 @@ export const getSubmitBookDetails = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
- 
+
 export const getInvoice = async (req, res) => {
   try {
     const { id } = req.params;
@@ -972,4 +971,116 @@ export const getAllSubmitBookDetails = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
- 
+
+// export const getBookAllotmentInvoice = async (req, res) => {
+//   try {
+//     const allotmentId = req.params.id;
+//     console.log("ID>>>>>>>>>>>", allotmentId);
+
+//     if (!allotmentId) {
+//       return res.status(400).json({ error: "Allotment ID is required." });
+//     }
+
+//     const histories = await BookAllotmentHistory.aggregate([
+//       {
+//         $match: { _id: new ObjectId(allotmentId) },
+//       },
+//       {
+//         $lookup: {
+//           from: "registermanagements",
+//           localField: "studentId",
+//           foreignField: "_id",
+//           as: "studentDetails",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "subscriptiontypes",
+//           localField: "paymentType",
+//           foreignField: "_id",
+//           as: "subscriptionDetails",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "bookmanagements",
+//           localField: "bookId",
+//           foreignField: "_id",
+//           as: "bookDetails",
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$bookAllotmentDetails",
+//           preserveNullAndEmptyArrays: true,
+//         },
+//       },
+//     ]);
+
+//     console.log("histories==========", histories);
+
+//     if (!histories || histories.length === 0) {
+//       return res.status(404).json({
+//         error: "No allotment history found for the given student ID.",
+//       });
+//     }
+
+//     return res.status(200).json({
+//       message: "Allotment history retrieved successfully!",
+//       histories,
+//     });
+//   } catch (error) {
+//     console.error("Error retrieving allotment history:", error);
+//     return res
+//       .status(500)
+//       .json({ error: "Failed to retrieve allotment history." });
+//   }
+// };
+
+export const getBookAllotmentInvoice = async (req, res) => {
+  const { id } = req?.params;
+
+  try {
+    const data = await BookAllotmentHistory.findById(id);
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: "No history found for this student." });
+    }
+    const studentDetails = await RegisterManagement.findById(data.studentId);
+    if (!studentDetails) {
+      return res.status(404).json({ message: "Student not found." });
+    }
+    const allotmentDetails = await Promise.all(
+      data.allotmentDetails.map(async (item) => {
+        const bookDetails = await BookManagement.findById(item.bookId);
+
+        if (!bookDetails) {
+        }
+
+        const paymentDetails = await SubscriptionType.findById(
+          item.paymentType
+        );
+
+        if (!paymentDetails) {
+        }
+
+        return {
+          ...item.toObject(),
+          bookDetails: bookDetails || null,
+          paymentDetails: paymentDetails || null,
+        };
+      })
+    );
+    return res.status(200).json({
+      studentDetails,
+      allotmentDetails,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Error fetching student history.", error });
+  }
+};
