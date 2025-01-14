@@ -1,5 +1,7 @@
 import { BookManagement } from "../models/book.management.js";
 export const addBook = async (req, res) => {
+  console.log("Data>>>>>", req.body);
+
   const {
     bookName,
     title,
@@ -9,7 +11,7 @@ export const addBook = async (req, res) => {
     bookDistribution,
   } = req.body;
 
-  let upload_Book = req.file ? req.file.path : ""; 
+  let upload_Book = req.file ? req.file.path : "";
 
   try {
     const newBook = new BookManagement({
@@ -21,6 +23,7 @@ export const addBook = async (req, res) => {
       upload_Book,
       bookDistribution,
     });
+    console.log("newBook>>>>>>>", newBook);
 
     const savedBook = await newBook.save();
     return res.status(200).send(savedBook);
@@ -44,7 +47,6 @@ export const addManyBooks = async (req, res) => {
         "Book Description": bookDescription,
       } = book;
       let uploadBookPath = req.file ? req.file.path : upload_Book;
- 
       return {
         bookName,
         title,
@@ -53,15 +55,15 @@ export const addManyBooks = async (req, res) => {
         upload_Book: uploadBookPath,
         bookDescription,
       };
-    }); 
-    const savedData = await BookManagement.insertMany(addManyBooks); 
+    });
+    const savedData = await BookManagement.insertMany(addManyBooks);
 
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Book Management Bulk Insert", error);
     return res.status(500).send({ message: "Internal Server Error" });
   }
-}; 
+};
 export const bookManagement = async (req, res) => {
   try {
     const bookManagementTable = await BookManagement.aggregate([
@@ -175,7 +177,7 @@ export const getBookCount = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error fetching book count", error });
   }
-}; 
+};
 export const viewBookUser = async (req, res) => {
   const { id } = req.params;
   console.log("ID---------", id);

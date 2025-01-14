@@ -21,7 +21,8 @@ export const addFineBook = async (req, res) => {
       reason,
     });
 
-    const FineManagementData = await FineManagementSchema.save(); 
+    const FineManagementData = await FineManagementSchema.save();
+    console.log("Fine Book Management Data", FineManagementData);
     return res.status(200).send(FineManagementData);
   } catch (error) {
     console.error("Error in Fine Book Management", error);

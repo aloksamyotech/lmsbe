@@ -92,6 +92,7 @@ import {
 import {
   bookAllotmentHistory,
   getBookAllotmentHistory,
+  getBookAllotmentInvoice,
   getBookDetailHistoryStudentId,
 } from "../controller/bookallotmentHistory.js";
 import  { adminGetLogo, adminProfilePage, adminUpdateProfilePage, loginAdmin } from "../controller/admin.js";
@@ -243,9 +244,8 @@ router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
 //      -----------------   Book Allotment History  ---------------
 router.post("/user/bookAllotmentHistory", bookAllotmentHistory);
 router.get("/user/getBookAllotmentHistory", getBookAllotmentHistory);
-router.get(
-  "/user/getBookDetailHistoryStudentId/:id",
-  getBookDetailHistoryStudentId
-);
+router.get("/user/getBookDetailHistoryStudentId/:id",getBookDetailHistoryStudentId);
+
+router.get("/user/getBookAllotmentInvoice/:id",getBookAllotmentInvoice)
 
 export default router;
