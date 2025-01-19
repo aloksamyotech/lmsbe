@@ -84,9 +84,9 @@ export const updateVender = async (req, res) => {
     vendorName,
     companyName,
     address, 
-    date,
+    // date,
     phoneNumber,
-    email,
+    // email,
   } = req.body;
 
   try {
@@ -97,9 +97,9 @@ export const updateVender = async (req, res) => {
         vendorName,
         companyName,
         address, 
-        date,
+        // date,
         phoneNumber,
-        email,
+        // email,
       },
       { new: true }
     );

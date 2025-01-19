@@ -2,7 +2,6 @@ import { MongoServerClosedError } from "mongodb";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
-
 import { RegisterManagement } from "../models/register.management.js";
 const { ObjectId } = mongoose.Types;
 import mongoose from "mongoose";
@@ -355,14 +354,13 @@ export const editBookAllotment = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const viewBookAllotmentUser = async (req, res) => {
   const { id } = req.params;
-  // console.log("ID---------", id);
+  console.log("ID---------", id);
 
   try {
     const user = await RegisterManagement.findById(id, { active: false });
-    // console.log("user", user);
+    console.log("user", user);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -379,6 +377,30 @@ export const viewBookAllotmentUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// export const viewBookAllotmentUser = async (req, res) => {
+//   const { id } = req.params;
+//   console.log("ID---------", id);
+
+//   try {
+//     const user = await RegisterManagement.findById(id, { active: false });
+//     console.log("user", user);
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const bookAllotments = await BookAllotment.find({ user_id: id });
+
+//     res.status(200).json({
+//       user,
+//       bookAllotments,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 export const findHistoryBookAllotmentUser = async (req, res) => {
   const { id } = req.params;
 

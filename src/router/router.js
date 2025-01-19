@@ -80,6 +80,8 @@ import {
 import {
   addFineBook,
   findByStudentId,
+  findFineByStudentIdAndBookId,
+  findFineByStudentIdAndBookIdInvoice,
   getAllFineBooks,
   getFineBook,
 } from "../controller/fine.management.js";
@@ -188,10 +190,7 @@ router.get("/user/getSubscription", getSubscription);
 
 //  -------------------   Allotment Management  --------------------------
 
-router.get(
-  "/user/findHistoryBookAllotmentUser/:id",
-  findHistoryBookAllotmentUser
-);
+router.get("/user/findHistoryBookAllotmentUser/:id",findHistoryBookAllotmentUser);
 router.post("/user/bookAllotment", bookAllotment);
 router.post("/user/manyBookAllotment", manyBookAllotment);
 router.get("/user/allotmentManagement", getBookAllotment);
@@ -222,16 +221,20 @@ router.get("/user/getBookAllotedCount", getBookAllotedCount);
 router.get(
   "/user/bookAllotmentReport/:startDate/:endDate",
   bookAllotmentReport
-);
-
+); 
 //  ----------------------   Fine    ----------------------
-// router.post("/user/payFine/:id",payFine)
+// router.post("/user/payFine/:id",payFine)   
 router.post("/user/addFineBook", addFineBook);
+// router.post("/user/addFineBook/:bookId/:studentId", addFineBook);
 router.get("/user/getFineBook/:studentId", getFineBook);
 router.get("/user/getAllFineBooks", getAllFineBooks);
 router.get("/user/findByStudentId", findByStudentId);
+router.get('/user/findFine/:bookId/:studentId', findFineByStudentIdAndBookId);
+
+router.get('/user/findFineInvoice/:studentId/:bookId', findFineByStudentIdAndBookIdInvoice);
 
 // router.get("/user/fineBook/:selectedStudentId",fineBook)
+
 
 //  ---------------------- Purchase Book -----------------------
 
