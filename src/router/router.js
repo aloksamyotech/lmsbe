@@ -34,14 +34,14 @@ import {
 } from "../controller/publications.management.js";
 import {
   addRegister,
-  deleteRegister, 
+  deleteRegister,
   getMarkFavorite,
   getRegisterStudentCount,
   getSubscription,
   markFavorite,
-  markSubscription,  
+  markSubscription,
   registerManagement,
-  registerMany, 
+  registerMany,
   updateRegister,
 } from "../controller/register.management.js";
 import {
@@ -50,6 +50,7 @@ import {
   bookAllotmentReport,
   deleteAllotmentBook,
   editBookAllotment,
+  fetchBooks,
   findHistoryBookAllotmentUser,
   getAllSubmitBookDetails,
   getBookAllotedCount,
@@ -94,10 +95,12 @@ import {
   getBookAllotmentHistory,
   getBookDetailHistoryStudentId,
 } from "../controller/bookallotmentHistory.js";
-import  { adminGetLogo, adminProfilePage, adminUpdateProfilePage, loginAdmin } from "../controller/admin.js";
- 
-  
- 
+import {
+  adminGetLogo,
+  adminProfilePage,
+  adminUpdateProfilePage,
+  loginAdmin,
+} from "../controller/admin.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -113,11 +116,14 @@ const router = express.Router();
 
 // -------------------------------------------  Admin  ---------------------
 
-router.get("/user/adminProfilePage",adminProfilePage);
-router.put("/user/adminEditProfilePage/:id",upload.single("logo"),adminUpdateProfilePage);
-router.get("/user/adminGetLogo",adminGetLogo); 
-router.post("/user/login",loginAdmin); 
-
+router.get("/user/adminProfilePage", adminProfilePage);
+router.put(
+  "/user/adminEditProfilePage/:id",
+  upload.single("logo"),
+  adminUpdateProfilePage
+);
+router.get("/user/adminGetLogo", adminGetLogo);
+router.post("/user/login", loginAdmin);
 
 //   -----------------------------  LMS -----------------------------
 
@@ -178,7 +184,7 @@ router.put("/user/editRegister/:id", updateRegister);
 router.delete("/user/deleteRegister/:id", deleteRegister);
 router.get("/user/getRegisterStudentCount", getRegisterStudentCount);
 router.post("/user/markFavorite/:id", markFavorite);
-router.get("/user/getMarkFavorite", getMarkFavorite); 
+router.get("/user/getMarkFavorite", getMarkFavorite);
 
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
@@ -247,5 +253,5 @@ router.get(
   "/user/getBookDetailHistoryStudentId/:id",
   getBookDetailHistoryStudentId
 );
-
+router.get("/user/getdataalocated", fetchBooks);
 export default router;

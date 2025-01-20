@@ -4,10 +4,9 @@ import { Admin } from "../models/admin.js";
 export const connectDb = async () => {
   try {
     // await mongoose.connect("mongodb://127.0.0.1:27017/LMS");
+    // console.log("connect");
 
-    await mongoose.connect(
-      "mongodb+srv://amanasati:amanasati@cluster0.p2zjm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-    );
+    await mongoose.connect("mongodb://127.0.0.1:27017/newproject");
     const adminExist = await Admin.findOne({ email: "admin@gmail.com" });
     if (!adminExist) {
       const newAdmin = new Admin({
