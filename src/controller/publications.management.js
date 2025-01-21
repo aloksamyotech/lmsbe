@@ -1,6 +1,5 @@
  
 import { PublicationsManagement } from "../models/publications.management.js";
-
 export const addPublications = async (req, res) => {
   const { 
     publisherName, 
@@ -65,7 +64,6 @@ export const deletePublications = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const editPublications = async (req, res) => {
   const { id } = req.params;
   const {
@@ -90,11 +88,9 @@ export const editPublications = async (req, res) => {
       },
       { new: true }
     );
-
     if (!updatedPublications) {
       return res.status(404).json({ message: "Publication not found" });
     }
-
     res.status(200).json({
       message: "Publication updated successfully",
       updatedPublications,

@@ -1,3 +1,4 @@
+import { response } from "express";
 import { BookFine } from "../models/fine.management.js";
 
 import mongoose from "mongoose";
@@ -30,10 +31,12 @@ import mongoose from "mongoose";
 // };
 
 export const addFineBook = async (req, res) => {
-  const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
+  const {  reason, bookId, studentId, amount } = req.body;
   console.log("req.body>>>>>>>>>>>", req.body);
+  console.log('response',response.data);
+  
   try {
-    if (!bookId || !studentId) {
+    if (!studentId) {
       return res
         .status(400)
         .send({ message: "bookId and studentId are required" });
@@ -49,7 +52,7 @@ export const addFineBook = async (req, res) => {
     const FineManagementSchema = new BookFine({
       bookId: new mongoose.Types.ObjectId(bookId),
       studentId: new mongoose.Types.ObjectId(studentId),
-      fine,
+       
       fineAmount: amount,
       reason,
     });
@@ -447,7 +450,7 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
     const bookObjectId = new mongoose.Types.ObjectId(bookId);
     const studentObjectId = new mongoose.Types.ObjectId(studentId);
     const findData = await BookFine.find({
-      bookId: bookObjectId,
+      // bookId: bookObjectId,
       studentId: studentObjectId,
     });
     if (!findData || findData.length === 0) {

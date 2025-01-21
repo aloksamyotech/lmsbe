@@ -615,21 +615,42 @@ export const bookAllotmentReport = async (req, res) => {
   }
 };
 
-export const receiveBook = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const ReceiveBook = await BookAllotment.findById(id, { active: true });
+// export const receiveBook = async (req, res) => {
+//   const { id } = req.params;
+//   try {
+//     const ReceiveBook = await BookAllotment.findById(id, { active: true });
 
-    if (!ReceiveBook) {
-      return res.status(404).json({ message: "find Book Allotment not found" });
+//     if (!ReceiveBook) {
+//       return res.status(404).json({ message: "find Book Allotment not found" });
+//     }
+
+//     res.status(200).json({
+//       message: "find BookAllotment successfully",
+//       ReceiveBook,
+//     });
+//   } catch (error) {
+//     console.error("Error updating book Allotment:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+export const receiveBook = async (req, res) => {
+  try {
+    // Fetch all BookAllotment records where active is true
+    const ReceiveBooks = await BookAllotment.find({ active: true });
+
+    if (ReceiveBooks.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No active Book Allotments found" });
     }
 
     res.status(200).json({
-      message: "find BookAllotment successfully",
-      ReceiveBook,
+      message: "All BookAllotments fetched successfully",
+      ReceiveBooks,
     });
   } catch (error) {
-    console.error("Error updating book Allotment:", error);
+    console.error("Error fetching book Allotments:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

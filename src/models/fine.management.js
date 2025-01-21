@@ -14,7 +14,6 @@ const FineSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: false,
     },
-    
     reason: {
       type: String,
       require: true,

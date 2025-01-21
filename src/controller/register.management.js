@@ -119,10 +119,7 @@ export const updateRegister = async (req, res) => {
   const {
     student_Name,
     email,
-    mobile_Number,
-    select_identity,
-    upload_identity,
-    register_Date,
+    mobile_Number, 
   } = req.body;
 
   try {
@@ -131,18 +128,13 @@ export const updateRegister = async (req, res) => {
       {
         student_Name,
         email,
-        mobile_Number,
-        select_identity,
-        upload_identity,
-        register_Date,
+        mobile_Number, 
       },
       { new: true }
     );
-
     if (!updatedRegister) {
       return res.status(404).json({ message: "Register not found" });
     }
-
     res
       .status(200)
       .json({ message: "Register updated successfully", updateRegister });
