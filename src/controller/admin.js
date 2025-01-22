@@ -18,6 +18,7 @@ export const adminProfilePage = async (req, res) => {
       message: " Admin fetched successfully",
       students: admin,
     });
+    console.log("admin>>>>>>>", admin);
   } catch (error) {
     console.error("Error fetching  Admin:", error);
     res
@@ -72,22 +73,66 @@ export const adminGetLogo = async (req, res) => {
   }
 };
 
+// export const loginAdmin = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     if (!email || !password) {
+//       return res
+//         .status(400)
+//         .json({ message: "Email and password are required" });
+//     }
+//     const admin = await Admin.findOne({ email });
+//     if (!admin) {
+//       return res
+//         .status(200)
+//         .json({ statusCode: 404, message: "Admin not found" });
+//     }
+
+//     const matchPassword = admin.password == password;
+//     if (!matchPassword) {
+//       return res
+//         .status(200)
+//         .json({ statusCode: 404, message: "Password Not Match" });
+//     }
+
+//     const payload = {
+//       _id: admin?._id,
+//       name: admin?.name,
+//       logo: admin?.logo,
+//     };
+
+//     const userToken = jwt.sign(password, JWT_SECRET);
+//     return res.status(200).json({
+//       statusCode: 200,
+//       message: `found Successfully`,
+//       payload,
+//       userToken,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Email and password are required" });
     }
     const admin = await Admin.findOne({ email });
+
     if (!admin) {
       return res
         .status(200)
         .json({ statusCode: 404, message: "Admin not found" });
     }
 
-    const matchPassword = admin.password == password;
+    const matchPassword = admin.password === password;
+
     if (!matchPassword) {
       return res
         .status(200)
@@ -100,15 +145,14 @@ export const loginAdmin = async (req, res) => {
       logo: admin?.logo,
     };
 
-    const userToken = jwt.sign(password, JWT_SECRET);
     return res.status(200).json({
       statusCode: 200,
-      message: `found Successfully`,
+      message: "Logged in successfully",
       payload,
-      userToken,
+      // userToken,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
