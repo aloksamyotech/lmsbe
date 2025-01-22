@@ -93,29 +93,19 @@ export const manyBookAllotment = async (req, res) => {
   console.log("Request body========================>", req.body);
 
   try {
-    // Assuming studentId is the same for all books, we just get it from the first book in the list
     const studentId = allotmentsData[0]?.studentId;
-
-    // Validate the student ID
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
       return res
         .status(400)
         .json({ message: `Invalid student ID: ${studentId}` });
     }
 
-    // Find the student's existing allotment record
-    let studentAllotment = await BookAllotment.findOne({ studentId });
+    const newAllotment = new BookAllotment({
+      studentId,
+      books: [],
+      count: 0,
+    });
 
-    if (!studentAllotment) {
-      // If no allotment exists for this student, create a new one
-      studentAllotment = new BookAllotment({
-        studentId,
-        books: [],
-        count: 0,
-      });
-    }
-
-    // Add the new books to the student's existing allotment
     for (const allotment of allotmentsData) {
       const {
         bookId,
@@ -126,46 +116,37 @@ export const manyBookAllotment = async (req, res) => {
         amount,
       } = allotment;
 
-      // Check if the book already exists in the books array
-      const existingBookIndex = studentAllotment.books.findIndex(
-        (book) => book.bookId.toString() === bookId
-      );
-
-      if (existingBookIndex >= 0) {
-        // If the book already exists, update the quantity
-        studentAllotment.books[existingBookIndex].quantity += quantity;
-      } else {
-        // If the book does not exist, add it to the array
-        studentAllotment.books.push({
-          bookId,
-          bookIssueDate,
-          submissionDate,
-          paymentType,
-          quantity,
-          amount,
-        });
+      if (!mongoose.Types.ObjectId.isValid(bookId)) {
+        throw new Error(`Invalid book ID: ${bookId}`);
       }
 
-      // Update stock in BookManagement
       const bookManagement = await BookManagement.findById(bookId);
       if (!bookManagement || bookManagement.quantity < quantity) {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       }
 
-      await PurchaseManagement.findOneAndUpdate(
-        { bookId: new mongoose.Types.ObjectId(bookId) },
-        { $inc: { quantity: -quantity } },
-        { new: true }
-      );
+      await BookManagement.findByIdAndUpdate(bookId, {
+        $inc: { quantity: -quantity },
+      });
+
+      newAllotment.books.push({
+        bookId,
+        bookIssueDate,
+        submissionDate,
+        paymentType,
+        quantity,
+        amount,
+      });
     }
 
-    // Update the total book count in the student's allotment
-    studentAllotment.count = studentAllotment.books.length;
+    newAllotment.count = newAllotment.books.length;
 
-    // Save the updated student allotment record
-    await studentAllotment.save();
+    await newAllotment.save();
 
-    return res.status(200).json({ message: "Books allotted successfully" });
+    return res.status(201).json({
+      message: "Books allotted successfully",
+      allotment: newAllotment,
+    });
   } catch (error) {
     console.error("Error allotting books:", error);
     return res.status(400).json({ message: error.message });
@@ -729,20 +710,7 @@ export const getReceiveBook = async (req, res) => {
       { $unwind: "$bookDetails" },
       { $unwind: "$studentDetails" },
       { $unwind: "$subscriptionDetails" },
-      // {
-      //   $project: {
-      //     _id: 1,
-      //     bookName: "$bookDetails.bookName",
-      //     // bookTitle: "$bookDetails.bookTitle",
-      //     student_Name: "$studentDetails.student_Name",
-
-      //     bookIssueDate: 1,
-      //     submissionDate: 1,
-      //     paymentType: 1,
-      //   },
-      // },
     ]);
-    // console.log("bookAllotments ", bookAllotments);
 
     return res.status(200).json(bookAllotments);
   } catch (error) {
@@ -985,28 +953,25 @@ export const getAllSubmitBookDetails = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
-// Adjust the path if necessary
 
 export const fetchBooks = async (req, res) => {
   try {
-    // Fetch all BookAllotments and populate nested fields
     const response = await BookAllotment.find()
       .populate("studentId", "student_Name email mobile_Number")
       .populate("books.bookId", "title author")
       .populate("books.paymentType", "title");
 
-    // Format the response to include total amount for each allotment
     const formattedResponse = response.map((item) => {
       const totalAmount = item.books.reduce(
         (sum, book) => sum + (book.amount || 0),
         0
-      ); // Calculate total amount for this specific allotment
+      );
 
       return {
         studentName: item.studentId?.student_Name || "N/A",
         studentEmail: item.studentId?.email || "N/A",
         studentMobile: item.studentId?.mobile_Number || "N/A",
-        totalAmount: `₹${totalAmount.toFixed(2)}`, // Include total amount
+        totalAmount: `₹${totalAmount.toFixed(2)}`,
         books: item.books.map((book) => ({
           bookName: book.bookId?.title || "N/A",
           bookAuthor: book.bookId?.author || "N/A",
