@@ -1,7 +1,7 @@
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 
 export const addSubscriptionType = async (req, res) => {
-  const { title, amount, discount, active, desc, numberOfDays } = req.body; 
+  const { title, amount, discount, active, desc, numberOfDays } = req.body;
 
   try {
     const newSubscription = new SubscriptionType({
@@ -24,15 +24,16 @@ export const addSubscriptionType = async (req, res) => {
 export const getSubscriptionTypeTable = async (req, res) => {
   try {
     const SubscriptionTypeTable = await SubscriptionType.find().populate(
-      "user_id",  { active: false },
+      "user_id",
+      { active: false },
       { $sort: { _id: -1 } },
-       
+
       null,
       null,
       {
         strictPopulate: false,
       }
-    ); 
+    );
     res.status(200).json({
       status: true,
       message: " Subscription  Table successful",
@@ -54,8 +55,9 @@ export const deleteSubscriptionType = async (req, res) => {
   }
 
   try {
-    const deletedSubscription = await SubscriptionType.findByIdAndDelete(id,  { active: false },
-      );
+    const deletedSubscription = await SubscriptionType.findByIdAndDelete(id, {
+      active: false,
+    });
     if (!deletedSubscription) {
       return res.status(404).json({ message: " Vender not found" });
     }
@@ -71,17 +73,12 @@ export const deleteSubscriptionType = async (req, res) => {
 
 export const updateSubscriptionType = async (req, res) => {
   const { id } = req.params;
-  const {
-    title,
-    amount,
-    discount,
-    numberOfDays,
-  } = req.body;
+  const { title, amount, discount, numberOfDays } = req.body;
 
   try {
     const updateSubscription = await SubscriptionType.findByIdAndUpdate(
-      id,   
-       
+      id,
+
       {
         title,
         amount,

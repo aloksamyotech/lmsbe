@@ -4,7 +4,7 @@ const BookAllotmentSchema = new Schema(
   {
     studentId: {
       type: Schema.Types.ObjectId,
-      ref: "RegisterManagement", // Ensure this matches the Admin model name
+      ref: "RegisterManagement",
       required: true,
     },
     books: [

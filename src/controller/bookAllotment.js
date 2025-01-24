@@ -89,10 +89,8 @@ export const bookAllotment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
-  console.log("Request body========================>", req.body);
 
   try {
     const studentId = allotmentsData[0]?.studentId;
@@ -107,6 +105,8 @@ export const manyBookAllotment = async (req, res) => {
       books: [],
       count: 0,
     });
+
+    [9, 0, 9, 0];
 
     for (const allotment of allotmentsData) {
       const {
@@ -157,16 +157,22 @@ export const manyBookAllotment = async (req, res) => {
 
 export const getBookAllotment = async (req, res) => {
   try {
-    console.log("Data.........");
+    //   const response = await BookAllotment.find()
+    //     .populate("studentId", "student_Name email mobile_Number")
+    //     .populate("books.bookId", "title author")
+    //     .populate("books.paymentType", "title");
+    //   if (response) {
+    //     res.status(200).json({ msg: "data ", response });
+    //   }
+    console.log("Fetching book allotments...");
 
     const bookAllotments = await BookAllotment.aggregate([
-      {
-        $match: { active: true },
-      },
+      { $unwind: "$books" },
+      { $match: { "books.active": true } },
       {
         $lookup: {
           from: "bookmanagements",
-          localField: "bookId",
+          localField: "books.bookId",
           foreignField: "_id",
           as: "bookDetails",
         },
@@ -181,24 +187,31 @@ export const getBookAllotment = async (req, res) => {
       },
       { $unwind: "$bookDetails" },
       { $unwind: "$studentDetails" },
-      // {
-      //   $project: {
-      //     _id: 1,
-      //     bookName: "$bookDetails.bookName",
-      //     // bookTitle: "$bookDetails.bookTitle",
-      //     student_Name: "$studentDetails.student_Name",
-
-      //     bookIssueDate: 1,
-      //     submissionDate: 1,
-      //     paymentType: 1,
-      //   },
-      // },
+      {
+        $project: {
+          _id: 1,
+          studentId: 1,
+          "bookDetails.bookName": 1,
+          "studentDetails.student_Name": 1,
+          "studentDetails.studentId": 1,
+          "books.bookIssueDate": 1,
+          "books.submissionDate": 1,
+          "books.paymentType": 1,
+          "books.quantity": 1,
+          "books.amount": 1,
+          "books.submit": 1,
+          "books.fine": 1,
+        },
+      },
     ]);
-    // console.log("bookAllotments ", bookAllotments);
+
+    if (!bookAllotments.length) {
+      return res.status(404).json({ message: "No book allotments found" });
+    }
 
     return res.status(200).json(bookAllotments);
   } catch (error) {
-    // console.log(error);
+    console.error("Error fetching book allotments:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
 };
@@ -246,6 +259,7 @@ export const reBookAllotment = async (req, res) => {
         $project: {
           _id: 1,
           studentName: "$studentDetails.student_Name",
+
           studentEmail: "$studentDetails.email",
           mobile_Number: "$studentDetails.mobile_Number",
           books: {
@@ -633,18 +647,53 @@ export const bookAllotmentReport = async (req, res) => {
 
 export const receiveBook = async (req, res) => {
   try {
-    // Fetch all BookAllotment records where active is true
-    const ReceiveBooks = await BookAllotment.find({ active: true });
+    // Fetching the book allotments and populating the necessary fields (student, book, and payment type)
+    const ReceiveBooks = await BookAllotment.find()
+      .populate("studentId", "student_Name email mobile_Number") // Populating student details
+      .populate("books.bookId", "title author") // Populating book details
+      .populate("books.paymentType", "title"); // Populating payment type details
 
-    if (ReceiveBooks.length === 0) {
+    // Filter only the books that are active
+    const activeBookAllotments = ReceiveBooks.filter((bookAllotment) =>
+      bookAllotment.books.some((book) => book.active === true)
+    );
+
+    if (activeBookAllotments.length === 0) {
       return res
         .status(404)
         .json({ message: "No active Book Allotments found" });
     }
 
+    // Flattening all active books into a single array
+    const allBooks = activeBookAllotments.flatMap((bookAllotment) => {
+      return bookAllotment.books.map((book) => ({
+        student: {
+          studentId: bookAllotment.studentId._id, // Student ID
+          studentName: bookAllotment.studentId.student_Name, // Student Name
+          email: bookAllotment.studentId.email, // Student Email
+          mobileNumber: bookAllotment.studentId.mobile_Number, // Student Mobile Number
+        },
+        bookId: book.bookId._id,
+        bookTitle: book.bookId.title,
+        bookAuthor: book.bookId.author,
+        paymentType: book.paymentType ? book.paymentType.title : null, // Payment type title
+        amount: book.amount,
+        bookIssueDate: book.bookIssueDate,
+        submissionDate: book.submissionDate,
+        quantity: book.quantity,
+        fine: book.fine,
+        active: book.active,
+        submit: book.submit,
+        _id: book._id,
+      }));
+    });
+
+    console.log("All Active Books with Students:", allBooks);
+
+    // Returning the books along with student details in the response
     res.status(200).json({
-      message: "All BookAllotments fetched successfully",
-      ReceiveBooks,
+      message: "All active books fetched successfully",
+      books: allBooks,
     });
   } catch (error) {
     console.error("Error fetching book Allotments:", error);
@@ -767,16 +816,16 @@ export const removeReceiveBook = async (req, res) => {
   const { id } = req.params;
   console.log(`Received ID for removal: ${id}`);
 
-  const updateData = {
-    active: false,
-    submit: true,
-    $inc: { count: -1 },
-  };
-
   try {
-    const removedReceiveBook = await BookAllotment.findByIdAndUpdate(
-      id,
-      updateData,
+    const removedReceiveBook = await BookAllotment.findOneAndUpdate(
+      { "books._id": new mongoose.Types.ObjectId(id) },
+      {
+        $set: {
+          "books.$.active": false,
+          "books.$.submit": true,
+        },
+        $inc: { count: -1 },
+      },
       { new: true }
     );
 
@@ -799,14 +848,19 @@ export const submitBook = async (req, res) => {
   console.log("ID>>>", id);
 
   try {
-    const bookExists = await BookAllotment.findOne({ bookId: id });
+    const bookExists = await BookAllotment.findOne({
+      books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } },
+    });
     if (!bookExists) {
       return res.status(404).json({ message: "Book not found" });
     }
-
+    if (bookExists) {
+      console.log("kdjflskdjfkdjflkdsjfldsfks", bookExists);
+    }
     const submittedBook = await BookAllotment.findOneAndUpdate(
-      { bookId: id },
-      { submit: true },
+      { books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } } },
+      { $set: { "books.$.submit": true } },
+
       { new: true }
     );
 
@@ -956,14 +1010,17 @@ export const getAllSubmitBookDetails = async (req, res) => {
   try {
     const submittedBooks = await BookAllotment.aggregate([
       {
+        $unwind: "$books",
+      },
+      {
         $match: {
-          submit: true,
+          "books.submit": true,
         },
       },
       {
         $lookup: {
           from: "bookmanagements",
-          localField: "bookId",
+          localField: "books.bookId", // Correctly reference bookId from the books array
           foreignField: "_id",
           as: "bookDetails",
         },
@@ -971,7 +1028,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
       {
         $lookup: {
           from: "subscriptiontypes",
-          localField: "paymentType",
+          localField: "books.paymentType", // Correctly reference paymentType from the books array
           foreignField: "_id",
           as: "paymentDetails",
         },
@@ -984,6 +1041,23 @@ export const getAllSubmitBookDetails = async (req, res) => {
           as: "studentDetails",
         },
       },
+      {
+        $project: {
+          _id: 0,
+          studentId: 1,
+          "books.bookId": 1,
+          "books.bookIssueDate": 1,
+          "books.submissionDate": 1,
+          "books.quantity": 1,
+          "books.amount": 1,
+          "books.active": 1,
+          "books.submit": 1,
+          "books.fine": 1,
+          bookDetails: { $arrayElemAt: ["$bookDetails", 0] }, // Extract single book detail
+          paymentDetails: { $arrayElemAt: ["$paymentDetails", 0] }, // Extract single payment detail
+          studentDetails: { $arrayElemAt: ["$studentDetails", 0] }, // Extract single student detail
+        },
+      },
     ]);
 
     console.log("Fetched submitted books:", submittedBooks);
@@ -993,9 +1067,10 @@ export const getAllSubmitBookDetails = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching submitted books:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 

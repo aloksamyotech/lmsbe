@@ -238,7 +238,10 @@ router.post("/user/addFineBook", addFineBook);
 router.get("/user/getFineBook/:studentId", getFineBook);
 router.get("/user/getAllFineBooks", getAllFineBooks);
 router.get("/user/findByStudentId", findByStudentId);
-router.get("/user/findFine/:bookId/:studentId", findFineByStudentIdAndBookId);
+router.get(
+  "/user/findFine/:bookId/:studentId/:_id",
+  findFineByStudentIdAndBookId
+);
 
 router.get(
   "/user/findFineInvoice/:studentId/:bookId",

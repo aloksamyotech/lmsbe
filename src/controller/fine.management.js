@@ -31,32 +31,36 @@ import mongoose from "mongoose";
 // };
 
 export const addFineBook = async (req, res) => {
-  const {  reason, bookId, studentId, amount } = req.body;
+  const { reason, bookId, studentId, amount, _id } = req.body;
   console.log("req.body>>>>>>>>>>>", req.body);
-  console.log('response',response.data);
-  
+
   try {
-    if (!studentId) {
+    if (!studentId || !bookId) {
       return res
         .status(400)
         .send({ message: "bookId and studentId are required" });
     }
+
     if (
       !mongoose.Types.ObjectId.isValid(bookId) ||
-      !mongoose.Types.ObjectId.isValid(studentId)
+      !mongoose.Types.ObjectId.isValid(studentId) ||
+      !mongoose.Types.ObjectId.isValid(_id)
     ) {
       return res
         .status(400)
         .send({ message: "Invalid bookId or studentId format" });
     }
+
     const FineManagementSchema = new BookFine({
+      _id: new mongoose.Types.ObjectId(_id),
       bookId: new mongoose.Types.ObjectId(bookId),
       studentId: new mongoose.Types.ObjectId(studentId),
-       
       fineAmount: amount,
       reason,
     });
+
     const FineManagementData = await FineManagementSchema.save();
+
     return res.status(200).send(FineManagementData);
   } catch (error) {
     console.error("Error in Fine Book Management", error);
@@ -439,7 +443,7 @@ export const findFineByStudentIdAndBookId = async (req, res) => {
 //       message: "An error occurred while fetching fine data",
 //       error: error.message,
 //     });
-//   } 
+//   }
 // };
 
 export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
