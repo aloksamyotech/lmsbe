@@ -50,6 +50,7 @@ import {
   bookAllotmentReport,
   deleteAllotmentBook,
   editBookAllotment,
+  fetchBooks,
   findHistoryBookAllotmentUser,
   getAllSubmitBookDetails,
   getBookAllotedCount,
@@ -252,5 +253,6 @@ router.get(
   getBookDetailHistoryStudentId
 );
 router.get("/user/getBookAllotmentInvoice/:id",getBookAllotmentInvoice)
+router.get("/user/getdataalocated", fetchBooks);
 
 export default router;

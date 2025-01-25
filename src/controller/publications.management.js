@@ -100,7 +100,6 @@ export const editPublications = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const getPublicationsCount = async (req, res) => {
   try {
     const bookCount = await PublicationsManagement.countDocuments({});

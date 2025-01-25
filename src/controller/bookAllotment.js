@@ -89,74 +89,132 @@ export const bookAllotment = async (req, res) => {
   }
 };
 
+// export const manyBookAllotment = async (req, res) => {
+//   const allotmentsData = req.body;
+//   try {
+//     for (const allotment of allotmentsData) {
+//       const { studentId } = allotment;
+//       if (!mongoose.Types.ObjectId.isValid(studentId)) {
+//         return res
+//           .status(400)
+//           .json({ message: `Invalid student ID: ${studentId}` });
+//       }
+//       const studentAllotments = await BookAllotment.countDocuments({
+//         studentId,
+//       });
+//       if (studentAllotments >= 5) {
+//         return res
+//           .status(400)
+//           .json({ message: "Student can't borrow more than 5 books." });
+//       }
+//     }
+//     const allotmentsToInsert = allotmentsData.map((allotment) => ({
+//       bookId: allotment.bookId,
+//       studentId: allotment.studentId,
+//       bookIssueDate: allotment.bookIssueDate,
+//       submissionDate: allotment.submissionDate,
+//       paymentType: allotment.paymentType,
+//       amount: allotment.amount,
+//       count: 1,
+//     }));
+
+//     const allotments = await BookAllotment.insertMany(allotmentsToInsert);
+//     for (const allotment of allotmentsData) {
+//       const { studentId } = allotment;
+//       const studentAllotmentCount = await BookAllotment.countDocuments({
+//         studentId,
+//       });
+//       await RegisterManagement.findOneAndUpdate(
+//         { user_id: studentId },
+//         { $set: { count: studentAllotmentCount } }
+//       );
+//     }
+//     const bookUpdatePromises = allotmentsData.map(async (allotment) => {
+//       const { bookId, studentId } = allotment;
+//       const bookManagement = await BookManagement.findById(bookId);
+//       if (!bookManagement || bookManagement.quantity <= 0) {
+//         await BookAllotment.deleteMany({ studentId, bookId });
+//         throw new Error(`Book with ID ${bookId} is out of stock.`);
+//       } else {
+//         const newId = new ObjectId(bookId);
+//         const purchaseData = await PurchaseManagement.findOneAndUpdate(
+//           {
+//             bookId: new ObjectId(bookId),
+//           },
+//           {
+//             $inc: { quantity: -1 },
+//           },
+//           {
+//             new: true,
+//           }
+//         );
+//       }
+//     });
+//     await Promise.all(bookUpdatePromises);
+//     return res.status(200).json(allotments);
+//   } catch (error) {
+//     console.error("Error allotting books:", error);
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
+
 export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
+  console.log("Request body========================>", req.body);
   try {
-    for (const allotment of allotmentsData) {
-      const { studentId } = allotment;
-      if (!mongoose.Types.ObjectId.isValid(studentId)) {
-        return res
-          .status(400)
-          .json({ message: `Invalid student ID: ${studentId}` });
-      }
-      const studentAllotments = await BookAllotment.countDocuments({
-        studentId,
-      });
-      if (studentAllotments >= 5) {
-        return res
-          .status(400)
-          .json({ message: "Student can't borrow more than 5 books." });
-      }
+    const studentId = allotmentsData[0]?.studentId;
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res
+        .status(400)
+        .json({ message: `Invalid student ID: ${studentId}` });
     }
-    const allotmentsToInsert = allotmentsData.map((allotment) => ({
-      bookId: allotment.bookId,
-      studentId: allotment.studentId,
-      bookIssueDate: allotment.bookIssueDate,
-      submissionDate: allotment.submissionDate,
-      paymentType: allotment.paymentType,
-      amount: allotment.amount,
-      count: 1,
-    }));
-
-    const allotments = await BookAllotment.insertMany(allotmentsToInsert);
-    for (const allotment of allotmentsData) {
-      const { studentId } = allotment;
-      const studentAllotmentCount = await BookAllotment.countDocuments({
-        studentId,
-      });
-      await RegisterManagement.findOneAndUpdate(
-        { user_id: studentId },
-        { $set: { count: studentAllotmentCount } }
-      );
-    }
-    const bookUpdatePromises = allotmentsData.map(async (allotment) => {
-      const { bookId, studentId } = allotment;
-      const bookManagement = await BookManagement.findById(bookId);
-      if (!bookManagement || bookManagement.quantity <= 0) {
-        await BookAllotment.deleteMany({ studentId, bookId });
-        throw new Error(`Book with ID ${bookId} is out of stock.`);
-      } else {
-        const newId = new ObjectId(bookId);
-        const purchaseData = await PurchaseManagement.findOneAndUpdate(
-          {
-            bookId: new ObjectId(bookId),
-          },
-          {
-            $inc: { quantity: -1 },
-          },
-          {
-            new: true,
-          }
-        );
-      }
+    const newAllotment = new BookAllotment({
+      studentId,
+      books: [],
+      count: 0,
     });
-    await Promise.all(bookUpdatePromises);
-    return res.status(200).json(allotments);
+    for (const allotment of allotmentsData) {
+      const {
+        bookId,
+        quantity,
+        bookIssueDate,
+        submissionDate,
+        paymentType,
+        amount,
+      } = allotment;
+      if (!mongoose.Types.ObjectId.isValid(bookId)) {
+        throw new Error(`Invalid book ID: ${bookId}`);
+      }
+      const bookManagement = await BookManagement.findById(bookId);
+      if (!bookManagement || bookManagement.quantity < quantity) {
+        throw new Error(`Book with ID ${bookId} is out of stock.`);
+      }
+      await BookManagement.findByIdAndUpdate(bookId, {
+        $inc: { quantity: -quantity },
+      });
+      newAllotment.books.push({
+        bookId,
+        bookIssueDate,
+        submissionDate,
+        paymentType,
+        quantity,
+        amount,
+      });
+    }
+    newAllotment.count = newAllotment.books.length;
+    await newAllotment.save();
+    return res.status(201).json({
+      message: "Books allotted successfully",
+      allotment: newAllotment,
+    });
   } catch (error) {
     console.error("Error allotting books:", error);
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 export const getBookAllotment = async (req, res) => {
   try {
@@ -288,6 +346,7 @@ export const getBookAllotmentById = async (req, res) => {
           foreignField: "_id",
           as: "bookDetails",
         },
+
       },
       {
         $lookup: {
@@ -1125,5 +1184,44 @@ export const getBookAllotmentInvoice = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error fetching student history.", error });
+  }
+};
+
+
+
+export const fetchBooks = async (req, res) => {
+  try {
+    const response = await BookAllotment.find()
+      .populate("studentId", "student_Name email mobile_Number")
+      .populate("books.bookId", "title author")
+      .populate("books.paymentType", "title");
+    const formattedResponse = response.map((item) => {
+      const totalAmount = item.books.reduce(
+        (sum, book) => sum + (book.amount || 0),
+        0
+      );
+      return {
+        studentName: item.studentId?.student_Name || "N/A",
+        studentEmail: item.studentId?.email || "N/A",
+        studentMobile: item.studentId?.mobile_Number || "N/A",
+        totalAmount: `₹${totalAmount.toFixed(2)}`,
+        books: item.books.map((book) => ({
+          bookName: book.bookId?.title || "N/A",
+          bookAuthor: book.bookId?.author || "N/A",
+          quantity: book.quantity,
+          amount: `₹${(book.amount || 0).toFixed(2)}`,
+          submissionType: book.paymentType?.title || "N/A",
+          submissionDate: book.submissionDate
+            ? new Date(book.submissionDate).toLocaleDateString()
+            : "N/A",
+        })),
+      };
+    });
+    res
+      .status(200)
+      .json({ message: "Data is available", response: formattedResponse });
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

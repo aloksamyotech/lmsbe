@@ -1,46 +1,56 @@
 import mongoose, { Schema } from "mongoose";
-// import { RegisterManagement } from "./register.management";
-
 const BookAllotmentSchema = new Schema(
   {
-    bookId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
     studentId: {
       type: Schema.Types.ObjectId,
+      ref: "RegisterManagement",
       required: true,
     },
-    bookIssueDate: {
-      type: Date,
-      default: Date.now(),
-    },
-    active: {
-      type: Boolean,
-      default: true,
-    },
-    submissionDate: {
-      type: Date,
-      required: true,
-    },
-    paymentType: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
-    quantity: { 
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    submit: {  
-      type: Boolean,
-      default: false,
-    },
-    fine: {  
-      type: Boolean,
-      default: false,
-    },
-    count: { 
+    books: [
+      {
+        bookId: {
+          type: Schema.Types.ObjectId,
+          ref: "BookManagement",
+          required: true,
+        },
+        bookIssueDate: {
+          type: Date,
+          default: Date.now(),
+        },
+        submissionDate: {
+          type: Date,
+          required: true,
+        },
+        paymentType: {
+          type: Schema.Types.ObjectId,
+          ref: "SubscriptionType",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: false,
+          default: 0,
+        },
+        amount: {
+          type: Number,
+          required: false,
+          default: 0,
+        },
+        active: {
+          type: Boolean,
+          default: true,
+        },
+        submit: {
+          type: Boolean,
+          default: false,
+        },
+        fine: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+    count: {
       type: Number,
       required: false,
       default: 0,
@@ -48,7 +58,6 @@ const BookAllotmentSchema = new Schema(
   },
   { timestamps: true }
 );
-
 export const BookAllotment = mongoose.model(
   "BookAllotment",
   BookAllotmentSchema
