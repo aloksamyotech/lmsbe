@@ -33,6 +33,10 @@ const BookAllotmentHistorySchema = new Schema(
           type: Date,
           required: true,
         },
+        quantity: {
+          type: Number,
+          required: true,
+        },
       },
     ],
   },

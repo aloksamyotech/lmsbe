@@ -52,7 +52,6 @@ const AdminSchema = new Schema({
   logo: { type: String, required: false, default: "" },
   role: { type: String, default: "admin" },
 });
-
 // AdminSchema.pre("save", async function (next) {
 //   if (this.isModified("password")) {
 //     const salt = await bcrypt.genSalt(10);
