@@ -52,7 +52,7 @@ export const addFineBook = async (req, res) => {
     }
 
     const FineManagementSchema = new BookFine({
-      _id: new mongoose.Types.ObjectId(_id),
+      alocationId: new mongoose.Types.ObjectId(_id),
       bookId: new mongoose.Types.ObjectId(bookId),
       studentId: new mongoose.Types.ObjectId(studentId),
       fineAmount: amount,

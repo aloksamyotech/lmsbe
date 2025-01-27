@@ -91,6 +91,7 @@ export const bookAllotment = async (req, res) => {
 };
 export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
+  console.log("req.body=======================>", req.body);
 
   try {
     const studentId = allotmentsData[0]?.studentId;
@@ -105,8 +106,6 @@ export const manyBookAllotment = async (req, res) => {
       books: [],
       count: 0,
     });
-
-    [9, 0, 9, 0];
 
     for (const allotment of allotmentsData) {
       const {
@@ -127,9 +126,15 @@ export const manyBookAllotment = async (req, res) => {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       }
 
-      await BookManagement.findByIdAndUpdate(bookId, {
-        $inc: { quantity: -quantity },
-      });
+      // await BookManagement.findByIdAndUpdate(bookId, {
+      //   $inc: { quantity: -quantity },
+      // });
+
+      await PurchaseManagement.findOneAndUpdate(
+        { bookId },
+        { $inc: { quantity: -quantity } },
+        { new: true }
+      );
 
       newAllotment.books.push({
         bookId,

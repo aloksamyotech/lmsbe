@@ -6,6 +6,11 @@ const FineSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: true,
     },
+
+    alocationId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     studentId: {
       type: Schema.Types.ObjectId,
       required: true,
