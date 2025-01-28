@@ -10,6 +10,7 @@ import {
   getBookCount,
   updateBook,
   viewBookUser,
+  bookAllotments,
 } from "../controller/book.management.js";
 import {
   addContact,
@@ -146,7 +147,7 @@ router.put("/user/editSubscriptionType/:id", updateSubscriptionType);
 
 router.post("/user/addBook", upload.single("upload_Book"), addBook);
 router.post("/user/addManyBooks", upload.single("excelFile"), addManyBooks);
-
+router.get("/user/alotmentsbooks", bookAllotments);
 router.get("/user/bookManagement", bookManagement);
 router.get("/user/viewBookUser", viewBookUser);
 router.delete("/user/deleteBook/:id", deleteBook);

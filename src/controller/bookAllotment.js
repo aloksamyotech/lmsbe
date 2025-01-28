@@ -126,9 +126,9 @@ export const manyBookAllotment = async (req, res) => {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       }
 
-      // await BookManagement.findByIdAndUpdate(bookId, {
-      //   $inc: { quantity: -quantity },
-      // });
+      await BookManagement.findByIdAndUpdate(bookId, {
+        $inc: { quantity: -quantity },
+      });
 
       await PurchaseManagement.findOneAndUpdate(
         { bookId },

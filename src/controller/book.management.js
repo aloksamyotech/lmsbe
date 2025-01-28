@@ -109,6 +109,53 @@ export const bookManagement = async (req, res) => {
   }
 };
 
+export const bookAllotments = async (req, res) => {
+  try {
+    const bookManagementTable = await BookManagement.aggregate([
+      {
+        $lookup: {
+          from: "purchasemanagements",
+          localField: "_id",
+          foreignField: "bookId",
+          as: "purchaseDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$purchaseDetails",
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $project: {
+          bookName: 1,
+          title: 1,
+          bookIssueDate: 1,
+          author: 1,
+          publisherName: 1,
+          upload_Book: 1,
+          active: 1,
+          bookDistribution: 1,
+
+          quantity: "$purchaseDetails.quantity",
+        },
+      },
+      {
+        $sort: { _id: -1 },
+      },
+    ]);
+    console.log("bookmangment", bookManagementTable);
+
+    res.status(200).json({
+      status: true,
+      message: "Book Management Table successful",
+      BookManagement: bookManagementTable,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
 export const deleteBook = async (req, res) => {
   const { id } = req.params;
 
