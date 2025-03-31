@@ -1,20 +1,57 @@
 import mongoose from "mongoose";
 import { PurchaseManagement } from "../models/purchase.js";
 import { BookAllotment } from "../models/bookAllotment.js";
+import { BookManagement } from "../models/book.management.js";
 
+// export const purchaseBook = async (req, res) => {
+//   const {
+//     bookId,
+//     vendorId, 
+//     price, 
+//     bookIssueDate,
+//     quantity,
+//     totalPrice,
+//     bookComment,
+//   } = req.body;
+
+//   try { 
+
+//     if (!mongoose.Types.ObjectId.isValid(bookId)) {
+//       return res.status(400).json({ message: "Invalid bookId" });
+//     }
+
+//     const PurchaseManagementSchema = new PurchaseManagement({
+//       bookId,
+//       vendorId,
+//       price,
+//       bookIssueDate,
+//       quantity,
+//       totalPrice,
+//       bookComment,
+//     });
+
+//     const PurchaseBookData = await PurchaseManagementSchema.save();
+//     // console.log("BookManagement Data", PurchaseBookData);
+//     return res.status(200).send(PurchaseBookData);
+//   } catch (error) {
+//     console.error("Error in BookManagement", error);
+//     return res.status(500).send({ message: "Internal Server Error" });
+//   }
+// };
 export const purchaseBook = async (req, res) => {
+  console.log("purchesing book ----------------------------------")
   const {
     bookId,
-    vendorId, 
-    price, 
+    vendorId,
+    price,
     bookIssueDate,
     quantity,
     totalPrice,
     bookComment,
   } = req.body;
 
-  try { 
-
+  try {
+   
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
       return res.status(400).json({ message: "Invalid bookId" });
     }
@@ -30,8 +67,27 @@ export const purchaseBook = async (req, res) => {
     });
 
     const PurchaseBookData = await PurchaseManagementSchema.save();
-    console.log("BookManagement Data", PurchaseBookData);
-    return res.status(200).send(PurchaseBookData);
+   
+    const book = await BookManagement.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    const newQuantity = Number(book.bookQuantity) + Number(quantity);
+    const updatedBook = await BookManagement.findByIdAndUpdate(
+      bookId,
+      { bookQuantity: newQuantity },
+      { new: true }  
+    );
+
+    if (!updatedBook) {
+      return res.status(400).json({ message: "Error updating book quantity" });
+    }
+
+    return res.status(200).json({
+      purchase: PurchaseBookData,
+      updatedBook: updatedBook,
+    });
   } catch (error) {
     console.error("Error in BookManagement", error);
     return res.status(500).send({ message: "Internal Server Error" });

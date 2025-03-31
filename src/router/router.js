@@ -11,6 +11,7 @@ import {
   updateBook,
   viewBookUser,
   bookAllotments,
+  bookmangmentTable,
 } from "../controller/book.management.js";
 import {
   addContact,
@@ -71,6 +72,7 @@ import {
   removeReceiveBook,
   submitBook,
   viewBookAllotmentUser,
+  trendingBooks
 } from "../controller/bookAllotment.js";
 
 import {
@@ -86,6 +88,7 @@ import {
   findFineByStudentIdAndBookIdInvoice,
   getAllFineBooks,
   getFineBook,
+  findFinebyAllotmentId,
 } from "../controller/fine.management.js";
 import {
   deletePurchaseBook,
@@ -153,7 +156,7 @@ router.get("/user/viewBookUser", viewBookUser);
 router.delete("/user/deleteBook/:id", deleteBook);
 router.put("/user/editBook/:id", updateBook);
 router.get("/user/getBookCount", getBookCount);
-
+router.get("/user/bookmangmentTable", bookmangmentTable);
 //--------------   Vendor Management ------------------------
 
 router.post("/user/addVenderBook", addVenderBook);
@@ -232,6 +235,7 @@ router.get(
   "/user/bookAllotmentReport/:startDate/:endDate",
   bookAllotmentReport
 );
+router.get("/user/trendingBooks",trendingBooks);
 //  ----------------------   Fine    ----------------------
 // router.post("/user/payFine/:id",payFine)
 router.post("/user/addFineBook", addFineBook);
@@ -245,7 +249,10 @@ router.get(
   "/user/findFineInvoice/:studentId/:bookId",
   findFineByStudentIdAndBookIdInvoice
 );
-
+router.get(
+  "/user/findFinebyAllotmentId/:allotmentId",
+  findFinebyAllotmentId
+);
 // router.get("/user/fineBook/:selectedStudentId",fineBook)
 
 //  ---------------------- Purchase Book -----------------------

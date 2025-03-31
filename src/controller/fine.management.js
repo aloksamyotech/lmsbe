@@ -52,11 +52,11 @@ export const addFineBook = async (req, res) => {
     }
 
     const FineManagementSchema = new BookFine({
-      alocationId: new mongoose.Types.ObjectId(_id),
       bookId: new mongoose.Types.ObjectId(bookId),
       studentId: new mongoose.Types.ObjectId(studentId),
       fineAmount: amount,
       reason,
+      allotmentId: new mongoose.Types.ObjectId(allotmentId), 
     });
 
     const FineManagementData = await FineManagementSchema.save();
@@ -467,6 +467,33 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
     console.error(error);
     return res.status(500).json({
       message: "An error occurred while fetching fine data",
+      error: error.message,
+    });
+  }
+};
+export const findFinebyAllotmentId = async (req, res) => {
+  console.log("finding fine by allotemnt id -----------")
+  const { allotmentId } = req.params; // Receiving allotmentId from request params
+
+  try {
+    // Finding fines by allotmentId
+    const fines = await BookFine.find({ allotmentId: allotmentId });
+
+    if (fines.length === 0) {
+      return res.status(404).json({
+        message: "No fines found for this allotment ID",
+      });
+    }
+
+    // Return the found fines
+    return res.status(200).json({
+      message: "Fines found successfully",
+      fines: fines,
+    });
+  } catch (error) {
+    console.error("Error fetching fines by allotmentId:", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
       error: error.message,
     });
   }
