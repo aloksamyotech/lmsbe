@@ -108,6 +108,34 @@ export const bookManagement = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
+export const bookmangmentTable = async (req, res) => {
+  try {
+    // console.log("bookmanagementTable  calling ----------------------------")
+    
+    const books = await BookManagement.find(); 
+   
+    if (!books || books.length === 0) {
+      // console.log("book not found ")
+      return res.status(404).json({
+        status: false,
+        message: "No books found",
+      });
+    }
+    // console.log("books----------------" , books)
+    res.status(200).json({
+      status: true,
+      message: "Books retrieved successfully",
+      data: books,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
 export const bookAllotments = async (req, res) => {
   try {

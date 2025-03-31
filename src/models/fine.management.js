@@ -7,7 +7,7 @@ const FineSchema = new Schema(
       required: true,
     },
 
-    alocationId: {
+    allotmentId: {  
       type: Schema.Types.ObjectId,
       required: true,
     },
