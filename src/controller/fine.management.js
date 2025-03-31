@@ -31,7 +31,7 @@ import mongoose from "mongoose";
 // };
 
 export const addFineBook = async (req, res) => {
-  const { reason, bookId, studentId, amount, _id } = req.body;
+  const { reason, bookId, studentId, amount, _id,allotmentId } = req.body;
   console.log("req.body>>>>>>>>>>>", req.body);
 
   try {
