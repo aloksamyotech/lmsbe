@@ -103,6 +103,7 @@ import {
   getBookDetailHistoryStudentId,
 } from "../controller/bookallotmentHistory.js";
 import {
+  createUser,
   adminGetLogo,
   adminProfilePage,
   adminUpdateProfilePage,
@@ -122,7 +123,7 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 
 // -------------------------------------------  Admin  ---------------------
-
+router.post("/user/createUser", createUser);
 router.get("/user/adminProfilePage", adminProfilePage);
 router.put(
   "/user/adminEditProfilePage/:id",
