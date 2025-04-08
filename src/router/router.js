@@ -72,7 +72,8 @@ import {
   removeReceiveBook,
   submitBook,
   viewBookAllotmentUser,
-  trendingBooks
+  trendingBooks,
+  submissionReport
 } from "../controller/bookAllotment.js";
 
 import {
@@ -96,6 +97,7 @@ import {
   purchaseBook,
   purchaseManagement,
   updatePurchaseBook,
+  purchaseReport,
 } from "../controller/purchaseBook.js";
 import {
   bookAllotmentHistory,
@@ -245,6 +247,7 @@ router.get("/user/getFineBook/:studentId", getFineBook);
 router.get("/user/getAllFineBooks", getAllFineBooks);
 router.get("/user/findByStudentId", findByStudentId);
 router.get("/user/findFine/:bookId/:studentId", findFineByStudentIdAndBookId);
+router.get("/user/submissionReport/:startDate/:endDate",submissionReport)
 
 router.get(
   "/user/findFineInvoice/:studentId/:bookId",
@@ -263,6 +266,10 @@ router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
 router.put("/user/updatePurchaseBook", updatePurchaseBook);
 router.get("/user/purchaseManagement", purchaseManagement);
 router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
+router.get(
+  "/user/purchaseReport/:startDate/:endDate",
+  purchaseReport
+);
 
 //      -----------------   Book Allotment History  ---------------
 router.post("/user/bookAllotmentHistory", bookAllotmentHistory);

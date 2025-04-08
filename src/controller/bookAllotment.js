@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import Types from "mongoose";
 import { BookAllotmentHistory } from "../models/bookallotmentHistory.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
-import moment from 'moment-timezone';
+import moment from "moment-timezone";
 export const bookAllotmentCount = async (req, res) => {
   const { studentId } = req.params;
 
@@ -504,16 +504,16 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
 
     const bookAllotments = await BookAllotment.find({ studentId: id })
       .populate({
-        path: 'books.bookId', 
-        model: 'BookManagement',  
+        path: "books.bookId",
+        model: "BookManagement",
       })
       .populate({
-        path: 'studentId', 
-        model: 'RegisterManagement',  
+        path: "studentId",
+        model: "RegisterManagement",
       })
       .populate({
-        path: 'paymentType',  
-        model: 'SubscriptionType', 
+        path: "paymentType",
+        model: "SubscriptionType",
         strictPopulate: false,
       })
       // Sort by createdAt field in descending order to get the latest allotments first
@@ -521,13 +521,13 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
 
     console.log("bookAllotments", bookAllotments);
 
-   
     if (!bookAllotments || bookAllotments.length === 0) {
-      return res.status(404).json({ message: "No book allotments found for this user" });
+      return res
+        .status(404)
+        .json({ message: "No book allotments found for this user" });
     }
 
     res.status(200).json(bookAllotments);
-
   } catch (error) {
     console.error("Error finding book allotments for user:", error);
     res.status(500).json({ message: "Failed to retrieve book allotments" });
@@ -682,8 +682,8 @@ export const getBookMonthVise = async (req, res) => {
 //     return res.status(400).json({ error: "Both startDate and endDate are required" });
 //   }
 
-//   const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day'); 
-//   const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day'); 
+//   const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day');
+//   const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day');
 
 //   console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
 //   console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
@@ -749,42 +749,99 @@ export const getBookMonthVise = async (req, res) => {
 //   }
 // };
 
-
 export const bookAllotmentReport = async (req, res) => {
   console.log("API calling from backend");
 
   const { startDate, endDate } = req.params;
 
   if (!startDate || !endDate) {
-    return res.status(400).json({ error: "Both startDate and endDate are required" });
+    return res
+      .status(400)
+      .json({ error: "Both startDate and endDate are required" });
   }
 
-  const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day'); 
-  const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day'); 
+  const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
+  const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
 
   console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
   console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
 
   try {
-    const bookAllotments = await BookAllotment.find({
-      createdAt: {
-        $gte: parsedStartDate.toDate(), 
-        $lte: parsedEndDate.toDate(),   
+    const bookAllotments = await BookAllotment.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: parsedStartDate.toDate(),
+            $lte: parsedEndDate.toDate(),
+          },
+        },
       },
-
-    });
+      {
+        $lookup: {
+          from: "bookmanagements",  // Join with the bookmanagements collection
+          localField: "books.bookId",      // Field in BookAllotment collection
+          foreignField: "_id",      // Field in bookmanagements collection
+          as: "bookDetails",        // Alias for the joined result
+        },
+      },
+      {
+        $lookup: {
+          from: "registermanagements", // Join with registermanagements collection
+          localField: "studentId",     // Field in BookAllotment collection
+          foreignField: "_id",         // Field in registermanagements collection
+          as: "studentDetails",        // Alias for the joined result
+        },
+      },
+      {
+        $lookup: {
+          from: "subscriptiontypes",  // Join with subscriptiontypes collection
+          localField: "books.paymentType",   // Field in BookAllotment collection
+          foreignField: "_id",         // Field in subscriptiontypes collection
+          as: "paymentType",           // Alias for the joined result
+        },
+      },
+      {
+        $unwind: {
+          path: "$studentDetails",  // Unwind the studentDetails array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$paymentType",  // Unwind the paymentType array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$bookDetails",  // Unwind the bookDetails array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $sort: { "createdAt": -1 }  // Sort by 'createdAt' in descending order to get latest data first
+      },
+    ]);
 
     console.log("Book Allotments found:", bookAllotments);
-    if (bookAllotments.length === 0) {
-      return res.status(200).json({ message: "No records found for the given date range" });
-    }
-    return res.status(200).json(bookAllotments);
 
+    if (bookAllotments.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "No records found for the given date range" });
+    }
+
+    return res.status(200).json(bookAllotments);
   } catch (error) {
     console.error("Error:", error);
-    return res.status(500).json({ error: error.message || "An error occurred while fetching data" });
+    return res
+      .status(500)
+      .json({
+        error: error.message || "An error occurred while fetching data",
+      });
   }
 };
+
 
 
 export const receiveBook = async (req, res) => {
@@ -809,7 +866,7 @@ export const receiveBook = async (req, res) => {
     // Flattening all active books into a single array
     const allBooks = activeBookAllotments.flatMap((bookAllotment) => {
       return bookAllotment.books.map((book) => ({
-        allotmentId: bookAllotment._id, 
+        allotmentId: bookAllotment._id,
         student: {
           studentId: bookAllotment.studentId._id, // Student ID
           studentName: bookAllotment.studentId.student_Name, // Student Name
@@ -1163,7 +1220,7 @@ export const getSubmitBookDetails = async (req, res) => {
 export const getInvoice = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     console.log(`Received ID:`, id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -1173,24 +1230,22 @@ export const getInvoice = async (req, res) => {
 
     console.log("Valid ObjectId format, proceeding with population...");
 
-    
     const bookAllotment = await BookAllotment.findById(id)
       .populate({
-        path: 'books.bookId', 
-        model: 'BookManagement',  
+        path: "books.bookId",
+        model: "BookManagement",
       })
       .populate({
-        path: 'studentId',  
-        model: 'RegisterManagement',  
+        path: "studentId",
+        model: "RegisterManagement",
       })
       .populate({
-        path: 'books.paymentType',
-        model: 'SubscriptionType',
-        select: 'title',  
-        strictPopulate: false, 
+        path: "books.paymentType",
+        model: "SubscriptionType",
+        select: "title",
+        strictPopulate: false,
       });
 
-    
     if (!bookAllotment) {
       console.log("No data found for this ID.");
       return res.status(404).json({ message: "No data found for this ID." });
@@ -1198,9 +1253,7 @@ export const getInvoice = async (req, res) => {
 
     console.log("BookAllotment with populated data:", bookAllotment);
 
-    
     return res.status(200).json(bookAllotment);
-
   } catch (error) {
     console.error("Error during find operation:", error);
     res.status(500).json({ message: "Internal server error", error });
@@ -1208,7 +1261,7 @@ export const getInvoice = async (req, res) => {
 };
 
 export const getAllSubmitBookDetails = async (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
   try {
     const submittedBooks = await BookAllotment.aggregate([
       {
@@ -1312,7 +1365,9 @@ export const fetchBooks = async (req, res) => {
     });
 
     // Send the response back
-    res.status(200).json({ message: "Data is available", response: formattedResponse });
+    res
+      .status(200)
+      .json({ message: "Data is available", response: formattedResponse });
   } catch (error) {
     console.error("Error fetching books:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -1370,45 +1425,42 @@ export const trendingBooks = async (req, res) => {
   console.log("Finding trending books-----");
 
   try {
-    
     const allottedBooks = await BookAllotment.aggregate([
       {
-        $unwind: "$books", 
+        $unwind: "$books",
       },
       {
         $project: {
           _id: 0,
-          bookId: '$books.bookId', 
+          bookId: "$books.bookId",
         },
       },
       {
         $lookup: {
-          from: "bookmanagements", 
-          localField: "bookId", 
-          foreignField: "_id", 
+          from: "bookmanagements",
+          localField: "bookId",
+          foreignField: "_id",
           as: "bookDetails",
         },
       },
       {
-        $unwind: "$bookDetails", 
+        $unwind: "$bookDetails",
       },
       {
         $group: {
-          _id: "$bookId", 
-          title: { $first: "$bookDetails.title" }, 
-          author: { $first: "$bookDetails.author" }, 
-          img: { $first: "$bookDetails.upload_Book" }, 
-       
+          _id: "$bookId",
+          title: { $first: "$bookDetails.title" },
+          author: { $first: "$bookDetails.author" },
+          img: { $first: "$bookDetails.upload_Book" },
         },
       },
       {
         $project: {
-          _id: 0, 
-          bookId: "$_id", 
+          _id: 0,
+          bookId: "$_id",
           title: 1,
           author: 1,
           img: 1,
-       
         },
       },
     ]);
@@ -1419,18 +1471,118 @@ export const trendingBooks = async (req, res) => {
       console.log("No books found in the allottedBooks");
     }
 
-
     res.status(200).json({
       success: true,
-      message: 'Trending books fetched successfully',
+      message: "Trending books fetched successfully",
       data: allottedBooks,
     });
   } catch (error) {
-    console.error('Error fetching trending books:', error);
+    console.error("Error fetching trending books:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch trending books',
+      message: "Failed to fetch trending books",
       error: error.message,
     });
+  }
+};
+
+export const submissionReport = async (req, res) => {
+  console.log("API calling from backend for submissionReport");
+
+  const { startDate, endDate } = req.params;
+
+  if (!startDate || !endDate) {
+    return res
+      .status(400)
+      .json({ error: "Both startDate and endDate are required" });
+  }
+
+  const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
+  const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
+
+  console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
+  console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
+
+  try {
+    const bookAllotments = await BookAllotment.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: parsedStartDate.toDate(),
+            $lte: parsedEndDate.toDate(),
+          },
+          books: {
+            $elemMatch: {
+              submit: true,  // Ensure the book is marked as submitted
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "bookmanagements",  // Join with the bookmanagements collection
+          localField: "books.bookId",      // Field in BookAllotment collection
+          foreignField: "_id",      // Field in bookmanagements collection
+          as: "bookDetails",        // Alias for the joined result
+        },
+      },
+      {
+        $lookup: {
+          from: "registermanagements", // Join with registermanagements collection
+          localField: "studentId",     // Field in BookAllotment collection
+          foreignField: "_id",         // Field in registermanagements collection
+          as: "studentDetails",        // Alias for the joined result
+        },
+      },
+      {
+        $lookup: {
+          from: "subscriptiontypes",  // Join with subscriptiontypes collection
+          localField: "books.paymentType",   // Field in BookAllotment collection
+          foreignField: "_id",         // Field in subscriptiontypes collection
+          as: "paymentType",           // Alias for the joined result
+        },
+      },
+      {
+        $unwind: {
+          path: "$studentDetails",  // Unwind the studentDetails array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$paymentType",  // Unwind the paymentType array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$bookDetails",  // Unwind the bookDetails array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $sort: { "createdAt": -1 }  // Sort by 'createdAt' in descending order to get latest data first
+      },
+    ]);
+
+    console.log("Book Allotments found:", bookAllotments);
+
+    if (bookAllotments.length === 0) {
+      return res
+        .status(200)
+        .json({
+          message:
+            "No records found for the given date range with submit = true",
+        });
+    }
+
+    return res.status(200).json(bookAllotments);
+  } catch (error) {
+    console.error("Error:", error);
+    return res
+      .status(500)
+      .json({
+        error: error.message || "An error occurred while fetching data",
+      });
   }
 };

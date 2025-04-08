@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 import { PurchaseManagement } from "../models/purchase.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { BookManagement } from "../models/book.management.js";
-
+import {VenderManagement } from "../models/vendor.management.js"; 
+import moment from 'moment-timezone';
 // export const purchaseBook = async (req, res) => {
 //   const {
 //     bookId,
@@ -93,8 +94,6 @@ export const purchaseBook = async (req, res) => {
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
-
- 
 export const deletePurchaseBook = async (req, res) => {
   const { id } = req.params; 
 
@@ -236,5 +235,77 @@ export const getPurchaseInvoice = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+export const purchaseReport = async (req, res) => {
+  console.log("API calling from backend");
+
+  const { startDate, endDate } = req.params;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: "Both startDate and endDate are required" });
+  }
+
+  // Parse the startDate and endDate using Moment.js and convert them to UTC
+  const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day'); // Start of the day in UTC
+  const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day'); // End of the day in UTC
+
+  console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
+  console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
+
+  try {
+    // Aggregation query to get purchase records along with bookName and vendorName
+    const purchases = await PurchaseManagement.aggregate([
+      // Match for records within the date range based on bookIssueDate
+      {
+        $match: {
+          bookIssueDate: {
+            $gte: parsedStartDate.toDate(), // Greater than or equal to start date (converted to Date)
+            $lte: parsedEndDate.toDate(),   // Less than or equal to end date (converted to Date)
+          },
+        },
+      },
+
+      // Lookup for book details (bookName)
+      {
+        $lookup: {
+          from: 'bookmanagements', // Book details collection
+          localField: 'bookId',     // Field in PurchaseManagement collection
+          foreignField: '_id',      // Field in bookmanagements collection
+          as: 'bookDetails',        // Store result in bookDetails field
+        },
+      },
+
+      // Lookup for vendor details (vendorName)
+      {
+        $lookup: {
+          from: 'vendermanagements', 
+          localField: 'vendorId',    // Field in PurchaseManagement collection
+          foreignField: '_id',       // Field in vendormanagements collection
+          as: 'vendorDetails',       // Store result in vendorDetails field
+        },
+      },
+
+      // Unwind the arrays from the lookup results
+      { $unwind: { path: '$bookDetails', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: '$vendorDetails', preserveNullAndEmptyArrays: true } },
+      { $sort: { _id: -1 } },
+    ]);
+
+    console.log("Purchases found:", purchases);
+
+    // If no records are found, return a message
+    if (purchases.length === 0) {
+      return res.status(200).json({ message: "No purchase records found for the given date range" });
+    }
+
+    // Return the results
+    return res.status(200).json(purchases);
+
+  } catch (error) {
+    // Handle any errors during the query
+    console.error("Error:", error);
+    return res.status(500).json({ error: error.message || "An error occurred while fetching data" });
   }
 };
