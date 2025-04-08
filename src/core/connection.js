@@ -4,7 +4,7 @@ import { Admin } from "../models/admin.js";
 export const connectDb = async () => {
   try {
     // await mongoose.connect("mongodb://127.0.0.1:27017/LMS1");
-    await mongoose.connect("mongodb://127.0.0.1:27017/LMS2");
+    await mongoose.connect("mongodb://127.0.0.1:27017/LMS");
 
     // await mongoose.connect(
     //   "mongodb+srv://amanasati:amanasati@cluster0.p2zjm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"

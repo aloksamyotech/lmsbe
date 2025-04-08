@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import Types from "mongoose";
 import { BookAllotmentHistory } from "../models/bookallotmentHistory.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
-
+import moment from 'moment-timezone';
 export const bookAllotmentCount = async (req, res) => {
   const { studentId } = req.params;
 
@@ -229,6 +229,7 @@ export const manyBookAllotment = async (req, res) => {
 
     return res.status(201).json({
       message: "Books allotted successfully",
+      allotmentId: newAllotment._id,
       allotment: newAllotment,
     });
   } catch (error) {
@@ -501,7 +502,6 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
   try {
     console.log("id", id);
 
-    
     const bookAllotments = await BookAllotment.find({ studentId: id })
       .populate({
         path: 'books.bookId', 
@@ -515,7 +515,9 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
         path: 'paymentType',  
         model: 'SubscriptionType', 
         strictPopulate: false,
-      });
+      })
+      // Sort by createdAt field in descending order to get the latest allotments first
+      .sort({ createdAt: -1 }); // Change 'createdAt' to your actual timestamp field if necessary
 
     console.log("bookAllotments", bookAllotments);
 
@@ -673,96 +675,117 @@ export const getBookMonthVise = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// export const bookAllotmentReport = async (req, res) => {
+//   const { startDate, endDate } = req.params;
+
+//   if (!startDate || !endDate) {
+//     return res.status(400).json({ error: "Both startDate and endDate are required" });
+//   }
+
+//   const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day'); 
+//   const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day'); 
+
+//   console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
+//   console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
+
+//   try {
+//     const newBookAllotment = await BookAllotment.aggregate([
+//       {
+//         $match: {
+//           createdAt: {
+//             $gte: parsedStartDate,
+//             $lte: parsedEndDate,
+//           },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "bookmanagements",
+//           localField: "bookId",
+//           foreignField: "_id",
+//           as: "bookDetails",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "registermanagements",
+//           localField: "studentId",
+//           foreignField: "_id",
+//           as: "studentDetails",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "subscriptiontypes",
+//           localField: "paymentType",
+//           foreignField: "_id",
+//           as: "paymentType",
+//         },
+//       },
+//       { $unwind: "$bookDetails" },
+//       { $unwind: "$studentDetails" },
+//       { $unwind: "$paymentType" },
+//       {
+//         $project: {
+//           _id: 1,
+//           bookName: "$bookDetails.bookName",
+//           bookTitle: "$bookDetails.bookTitle",
+//           student_Name: "$studentDetails.student_Name",
+//           paymentType: "$paymentType.title",
+//           bookIssueDate: 1,
+//           submissionDate: 1,
+//         },
+//       },
+//       { $sort: { _id: -1 } },
+//     ]);
+
+//     console.log("newBookAllotment", newBookAllotment);
+
+//     return res.status(200).json(newBookAllotment);
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ error: `${error.message || "An error occurred"}` });
+//   }
+// };
+
+
 export const bookAllotmentReport = async (req, res) => {
+  console.log("API calling from backend");
+
   const { startDate, endDate } = req.params;
-  const parsedStartDate = new Date(startDate);
-  const parsedEndDate = new Date(endDate);
-  parsedEndDate.setHours(23, 59, 59, 999);
-  // console.log("Date", parsedStartDate);
-  // console.log("Date-2", parsedEndDate);
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: "Both startDate and endDate are required" });
+  }
+
+  const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day'); 
+  const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day'); 
+
+  console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
+  console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
 
   try {
-    const newBookAllotment = await BookAllotment.aggregate([
-      {
-        $match: { active: true },
+    const bookAllotments = await BookAllotment.find({
+      createdAt: {
+        $gte: parsedStartDate.toDate(), 
+        $lte: parsedEndDate.toDate(),   
       },
-      {
-        $match: {
-          createdAt: {
-            $gte: parsedStartDate,
-            $lte: parsedEndDate,
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "bookmanagements",
-          localField: "bookId",
-          foreignField: "_id",
-          as: "bookDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "registermanagements",
-          localField: "studentId",
-          foreignField: "_id",
-          as: "studentDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "subscriptiontypes",
-          localField: "paymentType",
-          foreignField: "_id",
-          as: "paymentType",
-        },
-      },
-      { $unwind: "$bookDetails" },
-      { $unwind: "$studentDetails" },
-      { $unwind: "$paymentType" },
-      {
-        $project: {
-          _id: 1,
-          bookName: "$bookDetails.bookName",
-          bookTitle: "$bookDetails.bookTitle",
-          student_Name: "$studentDetails.student_Name",
-          paymentType: "$paymentType.title",
-          bookIssueDate: 1,
-          submissionDate: 1,
-        },
-      },
-      { $sort: { _id: -1 } },
-    ]);
 
-    // console.log("newBookAllotment", newBookAllotment);
+    });
 
-    return res.status(200).json(newBookAllotment);
+    console.log("Book Allotments found:", bookAllotments);
+    if (bookAllotments.length === 0) {
+      return res.status(200).json({ message: "No records found for the given date range" });
+    }
+    return res.status(200).json(bookAllotments);
+
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: `${error.message || "An error occurred"}` });
+    console.error("Error:", error);
+    return res.status(500).json({ error: error.message || "An error occurred while fetching data" });
   }
 };
 
-// export const receiveBook = async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const ReceiveBook = await BookAllotment.findById(id, { active: true });
-
-//     if (!ReceiveBook) {
-//       return res.status(404).json({ message: "find Book Allotment not found" });
-//     }
-
-//     res.status(200).json({
-//       message: "find BookAllotment successfully",
-//       ReceiveBook,
-//     });
-//   } catch (error) {
-//     console.error("Error updating book Allotment:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
 
 export const receiveBook = async (req, res) => {
   try {
@@ -1255,11 +1278,14 @@ export const getAllSubmitBookDetails = async (req, res) => {
 
 export const fetchBooks = async (req, res) => {
   try {
+    // Fetch the data and sort by createdAt in descending order (latest first)
     const response = await BookAllotment.find()
       .populate("studentId", "student_Name email mobile_Number")
       .populate("books.bookId", "title author")
-      .populate("books.paymentType", "title");
+      .populate("books.paymentType", "title")
+      .sort({ createdAt: -1 }); // Sorting by createdAt in descending order (latest first)
 
+    // Format the response
     const formattedResponse = response.map((item) => {
       const totalAmount = item.books.reduce(
         (sum, book) => sum + (book.amount || 0) * (book.quantity || 1), // multiply by quantity
@@ -1267,7 +1293,7 @@ export const fetchBooks = async (req, res) => {
       );
 
       return {
-        allotmentId:item.id,
+        allotmentId: item.id,
         studentName: item.studentId?.student_Name || "N/A",
         studentEmail: item.studentId?.email || "N/A",
         studentMobile: item.studentId?.mobile_Number || "N/A",
@@ -1285,9 +1311,8 @@ export const fetchBooks = async (req, res) => {
       };
     });
 
-    res
-      .status(200)
-      .json({ message: "Data is available", response: formattedResponse });
+    // Send the response back
+    res.status(200).json({ message: "Data is available", response: formattedResponse });
   } catch (error) {
     console.error("Error fetching books:", error);
     res.status(500).json({ message: "Server error", error: error.message });
