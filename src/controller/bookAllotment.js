@@ -2,7 +2,7 @@ import { MongoServerClosedError } from "mongodb";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
-
+import{BookFine} from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
 const { ObjectId } = mongoose.Types;
 import mongoose from "mongoose";
@@ -1543,6 +1543,14 @@ export const submissionReport = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "bookfines",  // Join with subscriptiontypes collection
+          localField: "_id",   // Field in BookAllotment collection
+          foreignField: "allotmentId",         // Field in subscriptiontypes collection
+          as: "finedetalis",           // Alias for the joined result
+        },
+      },
+      {
         $unwind: {
           path: "$studentDetails",  // Unwind the studentDetails array
           preserveNullAndEmptyArrays: true,
@@ -1557,6 +1565,12 @@ export const submissionReport = async (req, res) => {
       {
         $unwind: {
           path: "$bookDetails",  // Unwind the bookDetails array
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$finedetalis",  // Unwind the bookDetails array
           preserveNullAndEmptyArrays: true,
         },
       },

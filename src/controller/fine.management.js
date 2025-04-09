@@ -1,28 +1,40 @@
 import { response } from "express";
 import { BookFine } from "../models/fine.management.js";
+import { BookAllotment } from "../models/bookAllotment.js";
 
 import mongoose from "mongoose";
 
 // export const addFineBook = async (req, res) => {
-//   const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
+//   const { reason, bookId, studentId, amount, _id,allotmentId } = req.body;
+//   console.log("req.body>>>>>>>>>>>", req.body);
 
 //   try {
-//     if (!bookId || !studentId) {
+//     if (!studentId || !bookId) {
 //       return res
 //         .status(400)
 //         .send({ message: "bookId and studentId are required" });
 //     }
 
+//     if (
+//       !mongoose.Types.ObjectId.isValid(bookId) ||
+//       !mongoose.Types.ObjectId.isValid(studentId) ||
+//       !mongoose.Types.ObjectId.isValid(_id)
+//     ) {
+//       return res
+//         .status(400)
+//         .send({ message: "Invalid bookId or studentId format" });
+//     }
+
 //     const FineManagementSchema = new BookFine({
-//       bookId,
-//       studentId,
-//       fine,
+//       bookId: new mongoose.Types.ObjectId(bookId),
+//       studentId: new mongoose.Types.ObjectId(studentId),
 //       fineAmount: amount,
 //       reason,
+//       allotmentId: new mongoose.Types.ObjectId(allotmentId),
 //     });
 
 //     const FineManagementData = await FineManagementSchema.save();
-//     console.log("Fine Book Management Data", FineManagementData);
+
 //     return res.status(200).send(FineManagementData);
 //   } catch (error) {
 //     console.error("Error in Fine Book Management", error);
@@ -31,7 +43,7 @@ import mongoose from "mongoose";
 // };
 
 export const addFineBook = async (req, res) => {
-  const { reason, bookId, studentId, amount, _id,allotmentId } = req.body;
+  const { reason, bookId, studentId, amount, _id, allotmentId } = req.body;
   console.log("req.body>>>>>>>>>>>", req.body);
 
   try {
@@ -44,22 +56,37 @@ export const addFineBook = async (req, res) => {
     if (
       !mongoose.Types.ObjectId.isValid(bookId) ||
       !mongoose.Types.ObjectId.isValid(studentId) ||
-      !mongoose.Types.ObjectId.isValid(_id)
+      !mongoose.Types.ObjectId.isValid(_id) ||
+      !mongoose.Types.ObjectId.isValid(allotmentId)
     ) {
       return res
         .status(400)
-        .send({ message: "Invalid bookId or studentId format" });
+        .send({ message: "Invalid bookId, studentId, or allotmentId format" });
     }
 
+    // Create a new FineManagement document
     const FineManagementSchema = new BookFine({
       bookId: new mongoose.Types.ObjectId(bookId),
       studentId: new mongoose.Types.ObjectId(studentId),
       fineAmount: amount,
       reason,
-      allotmentId: new mongoose.Types.ObjectId(allotmentId), 
+      allotmentId: new mongoose.Types.ObjectId(allotmentId),
     });
-
     const FineManagementData = await FineManagementSchema.save();
+    const updatedAllotment = await BookAllotment.updateOne(
+      {
+        _id: allotmentId, // Match the allotment by its allotmentId
+        "books.bookId": bookId, // Match the specific book in the books array by its bookId
+      },
+      {
+        $set: {
+          "books.$.fine": true, // Update the 'fine' field of the matched book
+        },
+      }
+    );
+    if (updatedAllotment.nModified === 0) {
+      return res.status(400).send({ message: "Allotment update failed" });
+    }
 
     return res.status(200).send(FineManagementData);
   } catch (error) {
@@ -67,54 +94,6 @@ export const addFineBook = async (req, res) => {
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
-
-// export const addFineBook = async (req, res) => {
-//   const { fine, fineAmount, reason, bookId, studentId, amount } = req.body;
-//   console.log("req.body>>>>>>>>>>>", req.body);
-
-//   try {
-//     if (!bookId || !studentId) {
-//       return res
-//         .status(400)
-//         .send({ message: "bookId and studentId are required" });
-//     }
-//     if (
-//       !mongoose.Types.ObjectId.isValid(bookId) ||
-//       !mongoose.Types.ObjectId.isValid(studentId)
-//     ) {
-//       return res
-//         .status(400)
-//         .send({ message: "Invalid bookId or studentId format" });
-//     }
-//     const bookObjectId = new mongoose.Types.ObjectId(bookId);
-//     const studentObjectId = new mongoose.Types.ObjectId(studentId);
-//     const existingFine = await BookFine.findOne({
-//       bookId: bookObjectId,
-//       studentId: studentObjectId,
-//     });
-//     if (existingFine) {
-//       existingFine.fine = fine || existingFine.fine;
-//       existingFine.fineAmount = amount || existingFine.fineAmount;
-//       existingFine.reason = reason || existingFine.reason;
-//       const updatedFine = await existingFine.save();
-//       return res.status(200).send(updatedFine);
-//     } else {
-//       const FineManagementSchema = new BookFine({
-//         bookId: bookObjectId,
-//         studentId: studentObjectId,
-//         fine,
-//         fineAmount: amount,
-//         reason,
-//       });
-
-//       const FineManagementData = await FineManagementSchema.save();
-//       return res.status(200).send(FineManagementData);
-//     }
-//   } catch (error) {
-//     console.error("Error in Fine Book Management", error);
-//     return res.status(500).send({ message: "Internal Server Error" });
-//   }
-// };
 
 export const getFineBook = async (req, res) => {
   try {
@@ -472,7 +451,7 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
   }
 };
 export const findFinebyAllotmentId = async (req, res) => {
-  console.log("finding fine by allotemnt id -----------")
+  console.log("finding fine by allotemnt id -----------");
   const { allotmentId } = req.params; // Receiving allotmentId from request params
 
   try {

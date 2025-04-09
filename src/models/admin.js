@@ -51,6 +51,14 @@ const AdminSchema = new Schema({
   password: { type: String, required: true },
   logo: { type: String, required: false, default: "" },
   role: { type: String, default: "admin" },
+  currencyCode: {
+    type: String,
+    default: "INR",
+  },
+  currencySymbol: {
+    type: String,
+    default: "₹",
+  },
 });
 
 // AdminSchema.pre("save", async function (next) {
