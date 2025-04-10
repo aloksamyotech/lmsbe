@@ -4,44 +4,6 @@ import { BookAllotment } from "../models/bookAllotment.js";
 
 import mongoose from "mongoose";
 
-// export const addFineBook = async (req, res) => {
-//   const { reason, bookId, studentId, amount, _id,allotmentId } = req.body;
-//   console.log("req.body>>>>>>>>>>>", req.body);
-
-//   try {
-//     if (!studentId || !bookId) {
-//       return res
-//         .status(400)
-//         .send({ message: "bookId and studentId are required" });
-//     }
-
-//     if (
-//       !mongoose.Types.ObjectId.isValid(bookId) ||
-//       !mongoose.Types.ObjectId.isValid(studentId) ||
-//       !mongoose.Types.ObjectId.isValid(_id)
-//     ) {
-//       return res
-//         .status(400)
-//         .send({ message: "Invalid bookId or studentId format" });
-//     }
-
-//     const FineManagementSchema = new BookFine({
-//       bookId: new mongoose.Types.ObjectId(bookId),
-//       studentId: new mongoose.Types.ObjectId(studentId),
-//       fineAmount: amount,
-//       reason,
-//       allotmentId: new mongoose.Types.ObjectId(allotmentId),
-//     });
-
-//     const FineManagementData = await FineManagementSchema.save();
-
-//     return res.status(200).send(FineManagementData);
-//   } catch (error) {
-//     console.error("Error in Fine Book Management", error);
-//     return res.status(500).send({ message: "Internal Server Error" });
-//   }
-// };
-
 export const addFineBook = async (req, res) => {
   const { reason, bookId, studentId, amount, _id, allotmentId } = req.body;
   console.log("req.body>>>>>>>>>>>", req.body);
@@ -64,7 +26,6 @@ export const addFineBook = async (req, res) => {
         .send({ message: "Invalid bookId, studentId, or allotmentId format" });
     }
 
-    // Create a new FineManagement document
     const FineManagementSchema = new BookFine({
       bookId: new mongoose.Types.ObjectId(bookId),
       studentId: new mongoose.Types.ObjectId(studentId),
@@ -75,12 +36,12 @@ export const addFineBook = async (req, res) => {
     const FineManagementData = await FineManagementSchema.save();
     const updatedAllotment = await BookAllotment.updateOne(
       {
-        _id: allotmentId, // Match the allotment by its allotmentId
-        "books.bookId": bookId, // Match the specific book in the books array by its bookId
+        _id: allotmentId, 
+        "books.bookId": bookId,
       },
       {
         $set: {
-          "books.$.fine": true, // Update the 'fine' field of the matched book
+          "books.$.fine": true, 
         },
       }
     );
@@ -395,36 +356,6 @@ export const findFineByStudentIdAndBookId = async (req, res) => {
   }
 };
 
-// export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
-//     try {
-//     const { bookId, studentId } = req?.params;
-//     console.log(`bookId`, bookId);
-//     console.log(`studentId`, studentId);
-//     const bookObjectId = new mongoose.Types.ObjectId(bookId);
-//     const studentObjectId = new mongoose.Types.ObjectId(studentId);
-//     const findData = await BookFine.aggregate([
-//       {
-//         $match: {
-//           bookId: bookObjectId,
-//           studentId: studentObjectId,
-//         },
-//       },
-//     ]);
-//     if (!findData || findData.length === 0) {
-//       return res.status(404).json({
-//         message: "Fine record not found for the provided studentId and bookId",
-//       });
-//     }
-//     return res.status(200).json(findData);
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({
-//       message: "An error occurred while fetching fine data",
-//       error: error.message,
-//     });
-//   }
-// };
-
 export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
   try {
     const { bookId, studentId } = req?.params;
@@ -433,7 +364,6 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
     const bookObjectId = new mongoose.Types.ObjectId(bookId);
     const studentObjectId = new mongoose.Types.ObjectId(studentId);
     const findData = await BookFine.find({
-      // bookId: bookObjectId,
       studentId: studentObjectId,
     });
     if (!findData || findData.length === 0) {
@@ -452,10 +382,9 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
 };
 export const findFinebyAllotmentId = async (req, res) => {
   console.log("finding fine by allotemnt id -----------");
-  const { allotmentId } = req.params; // Receiving allotmentId from request params
+  const { allotmentId } = req.params; 
 
   try {
-    // Finding fines by allotmentId
     const fines = await BookFine.find({ allotmentId: allotmentId });
 
     if (fines.length === 0) {
@@ -464,7 +393,6 @@ export const findFinebyAllotmentId = async (req, res) => {
       });
     }
 
-    // Return the found fines
     return res.status(200).json({
       message: "Fines found successfully",
       fines: fines,

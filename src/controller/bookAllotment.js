@@ -30,7 +30,6 @@ export const bookAllotmentCount = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const bookAllotment = async (req, res) => {
   const {
     bookId,
@@ -89,80 +88,8 @@ export const bookAllotment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
-// export const manyBookAllotment = async (req, res) => {
-//   const allotmentsData = req.body;
-//   console.log("req.body=======================>", req.body);
-
-//   try {
-//     const studentId = allotmentsData[0]?.studentId;
-//     if (!mongoose.Types.ObjectId.isValid(studentId)) {
-//       return res
-//         .status(400)
-//         .json({ message: `Invalid student ID: ${studentId}` });
-//     }
-
-//     const newAllotment = new BookAllotment({
-//       studentId,
-//       books: [],
-//       count: 0,
-//     });
-
-//     for (const allotment of allotmentsData) {
-//       const {
-//         bookId,
-//         quantity,
-//         bookIssueDate,
-//         submissionDate,
-//         paymentType,
-//         amount,
-//       } = allotment;
-
-//       if (!mongoose.Types.ObjectId.isValid(bookId)) {
-//         throw new Error(`Invalid book ID: ${bookId}`);
-//       }
-
-//       const bookManagement = await BookManagement.findById(bookId);
-//       if (!bookManagement || bookManagement.quantity < quantity) {
-//         throw new Error(`Book with ID ${bookId} is out of stock.`);
-//       }
-
-//       await BookManagement.findByIdAndUpdate(bookId, {
-//         $inc: { quantity: -quantity },
-//       });
-
-//       await PurchaseManagement.findOneAndUpdate(
-//         { bookId },
-//         { $inc: { quantity: -quantity } },
-//         { new: true }
-//       );
-
-//       newAllotment.books.push({
-//         bookId,
-//         bookIssueDate,
-//         submissionDate,
-//         paymentType,
-//         quantity,
-//         amount,
-//       });
-//     }
-
-//     newAllotment.count = newAllotment.books.length;
-
-//     await newAllotment.save();
-
-//     return res.status(201).json({
-//       message: "Books allotted successfully",
-//       allotment: newAllotment,
-//     });
-//   } catch (error) {
-//     console.error("Error allotting books:", error);
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
 export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
-  console.log("req.body=======================>", req.body);
-
   try {
     const studentId = allotmentsData[0]?.studentId;
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
@@ -197,9 +124,7 @@ export const manyBookAllotment = async (req, res) => {
       }
       console.log("bookmanagment ------------",bookManagement )
 
-      // await BookManagement.findByIdAndUpdate(bookId, {
-      //   $inc: { quantity: -quantity },
-      // });
+     
       await BookManagement.findOneAndUpdate(
         { _id: bookId }, 
         { $inc: { bookQuantity: -quantity } },
@@ -207,11 +132,6 @@ export const manyBookAllotment = async (req, res) => {
       );
       
 
-      // await PurchaseManagement.findOneAndUpdate(
-      //   { bookId },
-      //   { $inc: { quantity: -quantity } },
-      //   { new: true }
-      // );
 
       newAllotment.books.push({
         bookId,
@@ -237,16 +157,9 @@ export const manyBookAllotment = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 export const getBookAllotment = async (req, res) => {
   try {
-    //   const response = await BookAllotment.find()
-    //     .populate("studentId", "student_Name email mobile_Number")
-    //     .populate("books.bookId", "title author")
-    //     .populate("books.paymentType", "title");
-    //   if (response) {
-    //     res.status(200).json({ msg: "data ", response });
-    //   }
+    
     console.log("Fetching book allotments...");
 
     const bookAllotments = await BookAllotment.aggregate([
@@ -298,7 +211,6 @@ export const getBookAllotment = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const reBookAllotment = async (req, res) => {
   try {
     const bookAllotments = await BookAllotment.aggregate([
@@ -357,7 +269,6 @@ export const reBookAllotment = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const getBookAllotmentById = async (req, res) => {
   try {
     const { id } = req?.params;
@@ -410,17 +321,15 @@ export const getBookAllotmentById = async (req, res) => {
 
     return res.status(200).json(bookAllotments);
   } catch (error) {
-    // console.log(error);
+  
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const editBookAllotment = async (req, res) => {
   const { id } = req.params;
   const { bookName, student_Name, paymentType, bookIssueDate, submissionDate } =
     req.body;
 
-  // console.log("req body", req.body);
   try {
     const updatedBookAllotment = await BookAllotment.findByIdAndUpdate(
       id,
@@ -429,8 +338,6 @@ export const editBookAllotment = async (req, res) => {
         bookName,
         student_Name,
         paymentType,
-        // bookIssueDate,
-        // submissionDate,
       },
       { new: true }
     );
@@ -449,20 +356,16 @@ export const editBookAllotment = async (req, res) => {
   }
 };
 export const viewBookAllotmentUser = async (req, res) => {
-  // console.log("api calling -----------------");
   const { id } = req.params;
-  // console.log("ID--------- api", id);
 
   try {
     const user = await RegisterManagement.findById(id, { active: false });
-    // console.log("user -------------api", user);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const bookAllotments = await BookAllotment.find({ studentId: id });
-    //  console.log("bookallotment ", bookAllotments);
     res.status(200).json({
       user,
       bookAllotments,
@@ -472,30 +375,6 @@ export const viewBookAllotmentUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-// export const viewBookAllotmentUser = async (req, res) => {
-//   const { id } = req.params;
-//   console.log("ID---------", id);
-
-//   try {
-//     const user = await RegisterManagement.findById(id, { active: false });
-//     console.log("user", user);
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     const bookAllotments = await BookAllotment.find({ user_id: id });
-
-//     res.status(200).json({
-//       user,
-//       bookAllotments,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 export const findHistoryBookAllotmentUser = async (req, res) => {
   const { id } = req.params;
 
@@ -516,8 +395,7 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
         model: "SubscriptionType",
         strictPopulate: false,
       })
-      // Sort by createdAt field in descending order to get the latest allotments first
-      .sort({ createdAt: -1 }); // Change 'createdAt' to your actual timestamp field if necessary
+      .sort({ createdAt: -1 }); 
 
     console.log("bookAllotments", bookAllotments);
 
@@ -533,73 +411,8 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
     res.status(500).json({ message: "Failed to retrieve book allotments" });
   }
 };
-// export const findHistoryBookAllotmentUser = async (req, res) => {
-//    console.log("findHistoryBookAllotmentUser calling --------" )
-//    const { id } = req.params;
-//   try {
-//     console.log("id", id);
-//     const bookAllotments = await BookAllotment.aggregate([
-//       {
-//         // $match: {  studentId: id },
-//         $match: { studentId: new ObjectId(id) },
-//       },
-//       {
-//         $match: { active: true },
-//       },
-//       {
-//         $lookup: {
-//           from: "bookmanagements",
-//           localField: "bookId",
-//           foreignField: "_id",
-//           as: "bookDetails",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "registermanagements",
-//           localField: "studentId",
-//           foreignField: "_id",
-//           as: "studentDetails",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "subscriptiontypes",
-//           localField: "paymentType",
-//           foreignField: "_id",
-//           as: "paymentType",
-//         },
-//       },
-
-//       { $unwind: "$bookDetails" },
-//       { $unwind: "$studentDetails" },
-//       { $unwind: "$paymentType" },
-//       {
-//         $project: {
-//           _id: 1,
-//           bookName: "$bookDetails.bookName",
-//           bookTitle: "$bookDetails.bookTitle",
-//           student_Name: "$studentDetails.student_Name",
-//           paymentType: "$paymentType.title",
-//           amount: "$paymentType.amount",
-//           bookIssueDate: 1,
-//           submissionDate: 1,
-//         },
-//       },
-//     ]);
-//     // console.log("Student name");
-
-//     console.log("bookAllotments", bookAllotments);
-
-//     res.status(200).json(bookAllotments);
-//   } catch (error) {
-//     console.error("Error finding book allotments for user:", error);
-//     res.status(500).json({ message: "Failed to retrieve book allotments" });
-//   }
-// };
 export const deleteAllotmentBook = async (req, res) => {
   const { id } = req.params;
-  // console.log(`id____________________>>>>>>>>>>>>>>>>>>>>>>>>>>`, id);
 
   try {
     const deletedAllotmentBook = await BookAllotment.findByIdAndDelete(id, {
@@ -625,7 +438,6 @@ export const getBookAllotedCount = async (req, res) => {
     res.status(500).json({ message: "Error fetching book count", error });
   }
 };
-
 export const getBookMonthVise = async (req, res) => {
   try {
     const data = await BookAllotment.aggregate([
@@ -655,7 +467,7 @@ export const getBookMonthVise = async (req, res) => {
         },
       },
     ]);
-    // console.log(`data`, data);
+   
 
     const dataMap = data.reduce((acc, { month, count }) => {
       acc[month] = count;
@@ -668,87 +480,13 @@ export const getBookMonthVise = async (req, res) => {
         count: dataMap[month] || 0,
       });
     }
-    // console.log("result", result);
+  
 
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-// export const bookAllotmentReport = async (req, res) => {
-//   const { startDate, endDate } = req.params;
-
-//   if (!startDate || !endDate) {
-//     return res.status(400).json({ error: "Both startDate and endDate are required" });
-//   }
-
-//   const parsedStartDate = moment.utc(startDate, 'YYYY-MM-DD').startOf('day');
-//   const parsedEndDate = moment.utc(endDate, 'YYYY-MM-DD').endOf('day');
-
-//   console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
-//   console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
-
-//   try {
-//     const newBookAllotment = await BookAllotment.aggregate([
-//       {
-//         $match: {
-//           createdAt: {
-//             $gte: parsedStartDate,
-//             $lte: parsedEndDate,
-//           },
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "bookmanagements",
-//           localField: "bookId",
-//           foreignField: "_id",
-//           as: "bookDetails",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "registermanagements",
-//           localField: "studentId",
-//           foreignField: "_id",
-//           as: "studentDetails",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "subscriptiontypes",
-//           localField: "paymentType",
-//           foreignField: "_id",
-//           as: "paymentType",
-//         },
-//       },
-//       { $unwind: "$bookDetails" },
-//       { $unwind: "$studentDetails" },
-//       { $unwind: "$paymentType" },
-//       {
-//         $project: {
-//           _id: 1,
-//           bookName: "$bookDetails.bookName",
-//           bookTitle: "$bookDetails.bookTitle",
-//           student_Name: "$studentDetails.student_Name",
-//           paymentType: "$paymentType.title",
-//           bookIssueDate: 1,
-//           submissionDate: 1,
-//         },
-//       },
-//       { $sort: { _id: -1 } },
-//     ]);
-
-//     console.log("newBookAllotment", newBookAllotment);
-
-//     return res.status(200).json(newBookAllotment);
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .json({ error: `${error.message || "An error occurred"}` });
-//   }
-// };
-
 export const bookAllotmentReport = async (req, res) => {
   console.log("API calling from backend");
 
@@ -778,48 +516,48 @@ export const bookAllotmentReport = async (req, res) => {
       },
       {
         $lookup: {
-          from: "bookmanagements",  // Join with the bookmanagements collection
-          localField: "books.bookId",      // Field in BookAllotment collection
-          foreignField: "_id",      // Field in bookmanagements collection
-          as: "bookDetails",        // Alias for the joined result
+          from: "bookmanagements",  
+          localField: "books.bookId",      
+          foreignField: "_id",     
+          as: "bookDetails",        
         },
       },
       {
         $lookup: {
-          from: "registermanagements", // Join with registermanagements collection
-          localField: "studentId",     // Field in BookAllotment collection
-          foreignField: "_id",         // Field in registermanagements collection
-          as: "studentDetails",        // Alias for the joined result
+          from: "registermanagements", 
+          localField: "studentId",    
+          foreignField: "_id",         
+          as: "studentDetails",        
         },
       },
       {
         $lookup: {
-          from: "subscriptiontypes",  // Join with subscriptiontypes collection
-          localField: "books.paymentType",   // Field in BookAllotment collection
-          foreignField: "_id",         // Field in subscriptiontypes collection
-          as: "paymentType",           // Alias for the joined result
+          from: "subscriptiontypes",  
+          localField: "books.paymentType",   
+          foreignField: "_id",         
+          as: "paymentType",           
         },
       },
       {
         $unwind: {
-          path: "$studentDetails",  // Unwind the studentDetails array
+          path: "$studentDetails",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $unwind: {
-          path: "$paymentType",  // Unwind the paymentType array
+          path: "$paymentType",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $unwind: {
-          path: "$bookDetails",  // Unwind the bookDetails array
+          path: "$bookDetails",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
-        $sort: { "createdAt": -1 }  // Sort by 'createdAt' in descending order to get latest data first
+        $sort: { "createdAt": -1 }  
       },
     ]);
 
@@ -841,18 +579,13 @@ export const bookAllotmentReport = async (req, res) => {
       });
   }
 };
-
-
-
 export const receiveBook = async (req, res) => {
   try {
-    // Fetching the book allotments and populating the necessary fields (student, book, and payment type)
     const ReceiveBooks = await BookAllotment.find()
-      .populate("studentId", "student_Name email mobile_Number") // Populating student details
-      .populate("books.bookId", "title author") // Populating book details
-      .populate("books.paymentType", "title"); // Populating payment type details
+      .populate("studentId", "student_Name email mobile_Number") 
+      .populate("books.bookId", "title author") 
+      .populate("books.paymentType", "title"); 
 
-    // Filter only the books that are active
     const activeBookAllotments = ReceiveBooks.filter((bookAllotment) =>
       bookAllotment.books.some((book) => book.active === true)
     );
@@ -863,20 +596,19 @@ export const receiveBook = async (req, res) => {
         .json({ message: "No active Book Allotments found" });
     }
 
-    // Flattening all active books into a single array
     const allBooks = activeBookAllotments.flatMap((bookAllotment) => {
       return bookAllotment.books.map((book) => ({
         allotmentId: bookAllotment._id,
         student: {
-          studentId: bookAllotment.studentId._id, // Student ID
-          studentName: bookAllotment.studentId.student_Name, // Student Name
-          email: bookAllotment.studentId.email, // Student Email
-          mobileNumber: bookAllotment.studentId.mobile_Number, // Student Mobile Number
+          studentId: bookAllotment.studentId._id, 
+          studentName: bookAllotment.studentId.student_Name, 
+          email: bookAllotment.studentId.email, 
+          mobileNumber: bookAllotment.studentId.mobile_Number, 
         },
         bookId: book.bookId._id,
         bookTitle: book.bookId.title,
         bookAuthor: book.bookId.author,
-        paymentType: book.paymentType ? book.paymentType.title : null, // Payment type title
+        paymentType: book.paymentType ? book.paymentType.title : null, 
         amount: book.amount,
         bookIssueDate: book.bookIssueDate,
         submissionDate: book.submissionDate,
@@ -890,7 +622,6 @@ export const receiveBook = async (req, res) => {
 
     console.log("All Active Books with Students:", allBooks);
 
-    // Returning the books along with student details in the response
     res.status(200).json({
       message: "All active books fetched successfully",
       books: allBooks,
@@ -900,7 +631,6 @@ export const receiveBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const postReceiveBook = async (req, res) => {
   const { bookId, studentId, email } = req.body;
 
@@ -926,7 +656,6 @@ export const postReceiveBook = async (req, res) => {
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
-
 export const newReceiveBook = async (req, res) => {
   const { bookId, studentId, email } = req.body;
 
@@ -967,7 +696,6 @@ export const newReceiveBook = async (req, res) => {
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
-
 export const getReceiveBook = async (req, res) => {
   try {
     console.log("Data.........");
@@ -1011,7 +739,6 @@ export const getReceiveBook = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const removeReceiveBook = async (req, res) => {
   const { id } = req.params;
   console.log(`Received ID for removal: ${id}`);
@@ -1042,7 +769,6 @@ export const removeReceiveBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const submitBook = async (req, res) => {
   const { id } = req.params;
   console.log("ID>>>", id);
@@ -1080,7 +806,6 @@ export const submitBook = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
-
 export const getSubmitBook = async (req, res) => {
   const { selectedStudentId } = req.params;
 
@@ -1106,7 +831,6 @@ export const getSubmitBook = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
-
 export const getSubmitBookDetails = async (req, res) => {
   const { selectedStudentId } = req?.params;
   console.log(`selectedStudentId`, selectedStudentId);
@@ -1157,66 +881,6 @@ export const getSubmitBookDetails = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
-
-// export const getInvoice = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     console.log(`id----->>>`, id);
-//     if (!mongoose.Types.ObjectId.isValid(id)) {
-//       return res.status(400).json({ message: "Invalid ObjectId format." });
-//     }
-//     const bookAllotments = await BookAllotment.aggregate([
-//       {
-//         $match: {
-//           _id: new mongoose.Types.ObjectId(id),
-//         },
-//       },
-//       console.log("Checking for BookAllotment with _id:", new mongoose.Types.ObjectId(id)),
-
-//       {
-//         $unwind: "$books",
-//       },
-//       {
-//         $lookup: {
-//           from: "bookmanagements",
-//           localField: "bookId",
-//           foreignField: "_id",
-//           as: "bookDetails",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "registermanagements",
-//           localField: "studentId",
-//           foreignField: "_id",
-//           as: "studentDetails",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "subscriptiontypes",
-//           localField: "paymentType",
-//           foreignField: "_id",
-//           as: "subscriptionDetails",
-//         },
-//       },
-//       { $unwind: "$bookDetails" },
-//       { $unwind: "$studentDetails" },
-//       { $unwind: "$subscriptionDetails" },
-//     ]);
-//     if (bookAllotments.length === 0) {
-//             console.log("No data found for this ID.");
-//             return res.status(404).json({ message: "No data found for this ID." });
-//           }
-//     console.log("bookAllotments", bookAllotments);
-
-//     return res.status(200).json(bookAllotments);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
-
 export const getInvoice = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1259,7 +923,6 @@ export const getInvoice = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
-
 export const getAllSubmitBookDetails = async (req, res) => {
   const { id } = req.params;
   try {
@@ -1275,7 +938,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
       {
         $lookup: {
           from: "bookmanagements",
-          localField: "books.bookId", // Correctly reference bookId from the books array
+          localField: "books.bookId", 
           foreignField: "_id",
           as: "bookDetails",
         },
@@ -1283,7 +946,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
       {
         $lookup: {
           from: "subscriptiontypes",
-          localField: "books.paymentType", // Correctly reference paymentType from the books array
+          localField: "books.paymentType", 
           foreignField: "_id",
           as: "paymentDetails",
         },
@@ -1296,24 +959,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
           as: "studentDetails",
         },
       },
-      // {
-      //   $project: {
-      //     _id: book?._id,
-      //     studentId: 1,
-
-      //     "books.bookId": 1,
-      //     "books.bookIssueDate": 1,
-      //     "books.submissionDate": 1,
-      //     "books.quantity": 1,
-      //     "books.amount": 1,
-      //     "books.active": 1,
-      //     "books.submit": 1,
-      //     "books.fine": 1,
-      //     bookDetails: { $arrayElemAt: ["$bookDetails", 0] }, // Extract single book detail
-      //     paymentDetails: { $arrayElemAt: ["$paymentDetails", 0] }, // Extract single payment detail
-      //     studentDetails: { $arrayElemAt: ["$studentDetails", 0] }, // Extract single student detail
-      //   },
-      // },
+      
     ]);
     console.log("Fetched submitted books:", submittedBooks);
     return res.status(200).json({
@@ -1328,20 +974,17 @@ export const getAllSubmitBookDetails = async (req, res) => {
     });
   }
 };
-
 export const fetchBooks = async (req, res) => {
   try {
-    // Fetch the data and sort by createdAt in descending order (latest first)
     const response = await BookAllotment.find()
       .populate("studentId", "student_Name email mobile_Number")
       .populate("books.bookId", "title author")
       .populate("books.paymentType", "title")
-      .sort({ createdAt: -1 }); // Sorting by createdAt in descending order (latest first)
+      .sort({ createdAt: -1 }); 
 
-    // Format the response
     const formattedResponse = response.map((item) => {
       const totalAmount = item.books.reduce(
-        (sum, book) => sum + (book.amount || 0) * (book.quantity || 1), // multiply by quantity
+        (sum, book) => sum + (book.amount || 0) * (book.quantity || 1), 
         0
       );
 
@@ -1364,7 +1007,6 @@ export const fetchBooks = async (req, res) => {
       };
     });
 
-    // Send the response back
     res
       .status(200)
       .json({ message: "Data is available", response: formattedResponse });
@@ -1373,7 +1015,6 @@ export const fetchBooks = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 export const getBookAllotmentInvoice = async (req, res) => {
   const { id } = req?.params;
 
@@ -1465,12 +1106,6 @@ export const trendingBooks = async (req, res) => {
       },
     ]);
 
-    console.log("Allotted Books after aggregation:", allottedBooks); // Debugging log
-
-    if (allottedBooks.length === 0) {
-      console.log("No books found in the allottedBooks");
-    }
-
     res.status(200).json({
       success: true,
       message: "Trending books fetched successfully",
@@ -1485,9 +1120,7 @@ export const trendingBooks = async (req, res) => {
     });
   }
 };
-
 export const submissionReport = async (req, res) => {
-  console.log("API calling from backend for submissionReport");
 
   const { startDate, endDate } = req.params;
 
@@ -1500,8 +1133,6 @@ export const submissionReport = async (req, res) => {
   const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
   const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
 
-  console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
-  console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
 
   try {
     const bookAllotments = await BookAllotment.aggregate([
@@ -1513,73 +1144,72 @@ export const submissionReport = async (req, res) => {
           },
           books: {
             $elemMatch: {
-              submit: true,  // Ensure the book is marked as submitted
+              submit: true, 
             },
           },
         },
       },
       {
         $lookup: {
-          from: "bookmanagements",  // Join with the bookmanagements collection
-          localField: "books.bookId",      // Field in BookAllotment collection
-          foreignField: "_id",      // Field in bookmanagements collection
-          as: "bookDetails",        // Alias for the joined result
+          from: "bookmanagements",  
+          localField: "books.bookId",     
+          foreignField: "_id",     
+          as: "bookDetails",       
         },
       },
       {
         $lookup: {
-          from: "registermanagements", // Join with registermanagements collection
-          localField: "studentId",     // Field in BookAllotment collection
-          foreignField: "_id",         // Field in registermanagements collection
-          as: "studentDetails",        // Alias for the joined result
+          from: "registermanagements", 
+          localField: "studentId",     
+          foreignField: "_id",         
+          as: "studentDetails",      
         },
       },
       {
         $lookup: {
-          from: "subscriptiontypes",  // Join with subscriptiontypes collection
-          localField: "books.paymentType",   // Field in BookAllotment collection
-          foreignField: "_id",         // Field in subscriptiontypes collection
-          as: "paymentType",           // Alias for the joined result
+          from: "subscriptiontypes",  
+          localField: "books.paymentType",   
+          foreignField: "_id",         
+          as: "paymentType",           
         },
       },
       {
         $lookup: {
-          from: "bookfines",  // Join with subscriptiontypes collection
-          localField: "_id",   // Field in BookAllotment collection
-          foreignField: "allotmentId",         // Field in subscriptiontypes collection
-          as: "finedetalis",           // Alias for the joined result
+          from: "bookfines",  
+          localField: "_id",   
+          foreignField: "allotmentId",         
+          as: "finedetalis",           
         },
       },
       {
         $unwind: {
-          path: "$studentDetails",  // Unwind the studentDetails array
+          path: "$studentDetails",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $unwind: {
-          path: "$paymentType",  // Unwind the paymentType array
+          path: "$paymentType",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $unwind: {
-          path: "$bookDetails",  // Unwind the bookDetails array
+          path: "$bookDetails",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $unwind: {
-          path: "$finedetalis",  // Unwind the bookDetails array
+          path: "$finedetalis",  
           preserveNullAndEmptyArrays: true,
         },
       },
       {
-        $sort: { "createdAt": -1 }  // Sort by 'createdAt' in descending order to get latest data first
+        $sort: { "createdAt": -1 }  
       },
     ]);
 
-    console.log("Book Allotments found:", bookAllotments);
 
     if (bookAllotments.length === 0) {
       return res

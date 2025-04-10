@@ -97,7 +97,6 @@ export const bookManagement = async (req, res) => {
         $sort: { _id: -1 },
       },
     ]);
-    console.log("bookmangment", bookManagementTable);
 
     res.status(200).json({
       status: true,
@@ -110,18 +109,15 @@ export const bookManagement = async (req, res) => {
 };
 export const bookmangmentTable = async (req, res) => {
   try {
-    // console.log("bookmanagementTable  calling ----------------------------")
     
     const books = await BookManagement.find(); 
    
     if (!books || books.length === 0) {
-      // console.log("book not found ")
       return res.status(404).json({
         status: false,
         message: "No books found",
       });
     }
-    // console.log("books----------------" , books)
     res.status(200).json({
       status: true,
       message: "Books retrieved successfully",
@@ -172,7 +168,6 @@ export const bookAllotments = async (req, res) => {
         $sort: { _id: -1 },
       },
     ]);
-    console.log("bookmangment", bookManagementTable);
 
     res.status(200).json({
       status: true,
@@ -210,9 +205,6 @@ export const updateBook = async (req, res) => {
     author,
     bookIssueDate,
     publisherName,
-    // totalPrice,
-    // returnPrice,
-    // quantity,
     bookDistribution,
   } = req.body;
 
@@ -225,9 +217,7 @@ export const updateBook = async (req, res) => {
         author,
         bookIssueDate,
         publisherName,
-        // totalPrice,
-        // returnPrice,
-        // quantity,
+       
         bookDistribution,
       },
       { new: true }
@@ -254,18 +244,15 @@ export const getBookCount = async (req, res) => {
 };
 export const viewBookUser = async (req, res) => {
   const { id } = req.params;
-  console.log("ID---------", id);
 
   try {
     const user = await RegisterManagement.findById(id, { active: false });
-    console.log("user", user);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const bookManagements = await BookManagement.find({ user_id: id });
-    console.log("viewBookUser", bookManagements);
 
     res.status(200).json({
       user,

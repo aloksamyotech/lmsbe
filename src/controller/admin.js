@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 let JWT_SECRET = "abc";
 
 export const createUser = async (req, res) => {
-  console.log("calling create user api ")
   const { student_Name, email, select_identity, mobile_Number, password, logo, role } = req.body;
   try {
     const existingUser = await Admin.findOne({ email });
@@ -61,7 +60,6 @@ export const adminProfilePage = async (req, res) => {
       message: " Admin fetched successfully",
       students: admin,
     });
-    // console.log("admin>>>>>>>", admin);
   } catch (error) {
     console.error("Error fetching  Admin:", error);
     res
@@ -71,12 +69,10 @@ export const adminProfilePage = async (req, res) => {
 };
 
 export const adminUpdateProfilePage = async (req, res) => {
-  console.log(`body data----------------------->>>>>>>>>> `, req.body);
-  console.log(`file data----------------------->>>>>>>>>>  `, req.file);
+ 
   const { id } = req.params;
   const { email, mobile_Number, student_Name, register_Date } = req.body;
   const logo = req.file ? req.file.path : "";
-  console.log(`logo`, logo);
   const updatedData = {
     email,
     mobile_Number,
@@ -115,48 +111,6 @@ export const adminGetLogo = async (req, res) => {
       .json({ status: false, message: "Internal server error", error });
   }
 };
-
-
-// export const loginAdmin = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//       return res
-//         .status(400)
-//         .json({ message: "Email and password are required" });
-//     }
-//     const admin = await Admin.findOne({ email });
-//     console.log("admin", admin)
-//     if (!admin) {
-//       return res
-//         .status(200)
-//         .json({ statusCode: 404, message: "Admin not found" });
-//     }
-
-//     const isPasswordMatch = await bcrypt.compare(password, admin.password);
-//     if (!isPasswordMatch) {
-//       return res.status(200).json({ statusCode: 404, message: "Password Not Match" });
-//     }
-//     const payload = {
-//       _id: admin._id,
-//       name: admin.name,
-//       logo: admin.logo,
-//       email: admin.email,
-//     };
-    
-//     const userToken = jwt.sign(password, JWT_SECRET);
-//     return res.status(200).json({
-//       statusCode: 200,
-//       message: `found Successfully`,
-//       payload,
-//       userToken,
-//     });
-//   } catch (error) {
-//     console.error("Error logging in:", error);
-//     return res.status(500).json({ message: "Server error" });
-//   }
-// };
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -167,8 +121,6 @@ export const loginAdmin = async (req, res) => {
         .json({ message: "Email and password are required" });
     }
     const admin = await Admin.findOne({ email });
-    console.log("admin", admin);
-
     if (!admin) {
       return res
         .status(200)
@@ -180,7 +132,6 @@ export const loginAdmin = async (req, res) => {
       return res.status(200).json({ statusCode: 404, message: "Password Not Match" });
     }
 
-    // Generate JWT token (sign the payload with JWT_SECRET)
     const payload = {
       _id: admin._id,
       name: admin.name,
@@ -190,7 +141,7 @@ export const loginAdmin = async (req, res) => {
       currencySymbol:admin.currencySymbol
     };
 
-    const userToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Make sure to include expiration
+    const userToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); 
 
     return res.status(200).json({
       statusCode: 200,
