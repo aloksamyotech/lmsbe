@@ -5,11 +5,9 @@ const BookManagementSchema = new Schema(
      
     bookName: {
       type: String,
-      // required: true,
     },
     title: {
       type: String,
-      // required: true,
     },
     bookIssueDate: {
       type: Date,
@@ -17,15 +15,12 @@ const BookManagementSchema = new Schema(
     },
     author: {
       type: String,
-      // required: true,
     },
     publisherName: {
       type: String,
-      // required: true,
     },
     upload_Book: {
       type: String,
-      // required: false,
     },
     active: {
       type: Boolean,
@@ -33,7 +28,6 @@ const BookManagementSchema = new Schema(
     },
     bookDistribution: {
       type: String,
-      // required: true,
     },
     bookQuantity: {
       type: Number,

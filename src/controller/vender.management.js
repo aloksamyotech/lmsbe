@@ -12,8 +12,6 @@ export const addVenderBook = async (req, res) => {
   } = req.body;
 
   try {
-    console.log("Loading................................");
-    console.log("print data", req.body);
 
     const VenderManagementSchema = new VenderManagement({
       vendorName,
@@ -25,7 +23,6 @@ export const addVenderBook = async (req, res) => {
     });
 
     const VenderManagementData = await VenderManagementSchema.save();
-    console.log(" Vender Management Data", VenderManagementData);
     return res.status(200).send(VenderManagementData);
   } catch (error) {
     console.error("Error in Vender Management", error);
@@ -43,14 +40,12 @@ export const getVenderManagement = async (req, res) => {
       null,
       { strictPopulate: false }
     );
-    console.log(" Vender Management Table", VenderManagementTable);
     res.status(200).json({
       status: true,
       message: "Help Support Table successful",
       VenderManagement: VenderManagementTable,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: " Internal server error", error });
   }
 };
@@ -84,9 +79,7 @@ export const updateVender = async (req, res) => {
     vendorName,
     companyName,
     address, 
-    // date,
     phoneNumber,
-    // email,
   } = req.body;
 
   try {
@@ -97,9 +90,7 @@ export const updateVender = async (req, res) => {
         vendorName,
         companyName,
         address, 
-        // date,
         phoneNumber,
-        // email,
       },
       { new: true }
     );

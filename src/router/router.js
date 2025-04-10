@@ -135,12 +135,6 @@ router.put(
 router.get("/user/adminGetLogo", adminGetLogo);
 router.post("/user/login", loginAdmin);
 
-//   -----------------------------  LMS -----------------------------
-
-// router.post("/user/register",registerUser);
-// router.post("/user/login",loginUser);
-// router.get("/user/getAllUsers",getAllUsers)
-
 // -----------------    SubscriptionManagement       ---------------------------
 
 router.post("/user/subscriptionType", addSubscriptionType);
@@ -188,7 +182,6 @@ router.get("/user/getPublicationsCount", getPublicationsCount);
 router.post("/user/addRegister", upload.single("upload_identity"), addRegister);
 router.post("/user/registerMany", registerMany);
 
-// router.post("/user/upload",uploadFiles);
 router.get("/user/registerManagement", registerManagement);
 router.put("/user/editRegister/:id", updateRegister);
 router.delete("/user/deleteRegister/:id", deleteRegister);
@@ -199,7 +192,6 @@ router.get("/user/getMarkFavorite", getMarkFavorite);
 router.post("/user/markSubscription/:id", markSubscription);
 router.get("/user/getSubscription", getSubscription);
 
-// router.get("/user/getAllUsers",getAllUsers)
 
 //  -------------------   Allotment Management  --------------------------
 
@@ -210,8 +202,8 @@ router.get(
 router.post("/user/bookAllotment", bookAllotment);
 router.post("/user/manyBookAllotment", manyBookAllotment);
 router.get("/user/allotmentManagement", getBookAllotment);
-router.get("/user/getReceiveBook", getReceiveBook); //-------------------------------
-router.post("/user/removeReceiveBook/:id", removeReceiveBook); //----------------------
+router.get("/user/getReceiveBook", getReceiveBook); 
+router.post("/user/removeReceiveBook/:id", removeReceiveBook); 
 router.post("/user/submitBook/:id", submitBook);
 router.get("/user/getSubmitBook/:selectedStudentId", getSubmitBook);
 router.get(
@@ -219,8 +211,6 @@ router.get(
   getSubmitBookDetails
 );
 router.get("/user/getAllSubmitBookDetails", getAllSubmitBookDetails);
-// router.post("/user/payFine/:id",payFine)  //>>>>>>>>>>>>>>>>...........<<<<<<<<<<
-// router.get("/user/fineBook/:selectedStudentId",fineBook)  //>>>>>>>>>>>>>>>>...........<<<<<<<<<<
 router.get("/user/getInvoice/:id", getInvoice);
 
 router.get("/user/receiveBook", receiveBook);
@@ -240,9 +230,7 @@ router.get(
 );
 router.get("/user/trendingBooks",trendingBooks);
 //  ----------------------   Fine    ----------------------
-// router.post("/user/payFine/:id",payFine)
 router.post("/user/addFineBook", addFineBook);
-// router.post("/user/addFineBook/:bookId/:studentId", addFineBook);
 router.get("/user/getFineBook/:studentId", getFineBook);
 router.get("/user/getAllFineBooks", getAllFineBooks);
 router.get("/user/findByStudentId", findByStudentId);
@@ -257,7 +245,6 @@ router.get(
   "/user/findFinebyAllotmentId/:allotmentId",
   findFinebyAllotmentId
 );
-// router.get("/user/fineBook/:selectedStudentId",fineBook)
 
 //  ---------------------- Purchase Book -----------------------
 

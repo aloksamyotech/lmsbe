@@ -40,7 +40,6 @@ export const getSubscriptionTypeTable = async (req, res) => {
       SubscriptionType: SubscriptionTypeTable,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: " Internal server error", error });
   }
 };

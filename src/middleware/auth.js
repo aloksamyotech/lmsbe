@@ -10,7 +10,6 @@ const verifyJWT = async (req, res, next) => {
             })
         }
         const decodedToken = jwt.verify(token,"Token");
-        console.log("Decoded token ", decodedToken);
         
         if(decodedToken){
             return res.status(401).json({
@@ -21,7 +20,6 @@ const verifyJWT = async (req, res, next) => {
         req.user = decodedToken
         next();
     } catch (error) {
-        console.log("error : ", error);
         return res.status(401).json({
             status: false,
             error: "Invalid token"

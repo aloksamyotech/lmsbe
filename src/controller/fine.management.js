@@ -6,7 +6,6 @@ import mongoose from "mongoose";
 
 export const addFineBook = async (req, res) => {
   const { reason, bookId, studentId, amount, _id, allotmentId } = req.body;
-  console.log("req.body>>>>>>>>>>>", req.body);
 
   try {
     if (!studentId || !bookId) {
@@ -59,7 +58,6 @@ export const addFineBook = async (req, res) => {
 export const getFineBook = async (req, res) => {
   try {
     const { studentId } = req.params;
-    console.log("selectedStudentId", studentId);
 
     const fineBooks = await BookFine.aggregate([
       { $match: { studentId: new mongoose.Types.ObjectId(studentId) } },
@@ -242,7 +240,6 @@ export const getAllFineBooks = async (req, res) => {
 export const findByStudentId = async (req, res) => {
   try {
     const { studentId } = req.params;
-    console.log("Fetching fines for studentId:", studentId);
 
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
       return res.status(400).json({ message: "Invalid student ID." });
@@ -329,8 +326,6 @@ export const findByStudentId = async (req, res) => {
 export const findFineByStudentIdAndBookId = async (req, res) => {
   try {
     const { bookId, studentId } = req?.params;
-    console.log(`bookId`, bookId);
-    console.log(`studentId`, studentId);
     const bookObjectId = new mongoose.Types.ObjectId(bookId);
     const studentObjectId = new mongoose.Types.ObjectId(studentId);
     const findData = await BookFine.aggregate([
@@ -359,8 +354,6 @@ export const findFineByStudentIdAndBookId = async (req, res) => {
 export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
   try {
     const { bookId, studentId } = req?.params;
-    console.log(`bookId`, bookId);
-    console.log(`studentId`, studentId);
     const bookObjectId = new mongoose.Types.ObjectId(bookId);
     const studentObjectId = new mongoose.Types.ObjectId(studentId);
     const findData = await BookFine.find({
@@ -381,11 +374,16 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
   }
 };
 export const findFinebyAllotmentId = async (req, res) => {
-  console.log("finding fine by allotemnt id -----------");
-  const { allotmentId } = req.params; 
+  const { allotmentId } = req.params;
+
+  if (!allotmentId || allotmentId === "null" || allotmentId === "undefined") {
+    return res.status(400).json({
+      message: "Invalid or missing allotment ID",
+    });
+  }
 
   try {
-    const fines = await BookFine.find({ allotmentId: allotmentId });
+    const fines = await BookFine.find({ allotmentId });
 
     if (fines.length === 0) {
       return res.status(404).json({
@@ -395,7 +393,7 @@ export const findFinebyAllotmentId = async (req, res) => {
 
     return res.status(200).json({
       message: "Fines found successfully",
-      fines: fines,
+      fines,
     });
   } catch (error) {
     console.error("Error fetching fines by allotmentId:", error);
