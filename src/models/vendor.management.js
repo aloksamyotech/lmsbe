@@ -13,10 +13,6 @@ const VenderManagementSchema = new Schema({
     type: String,
     required: true,
   },
-  // cityName: {
-  //   type: String,
-  //   required: true,
-  // },
   phoneNumber: {
     type: String,
     required: true,
@@ -31,7 +27,6 @@ const VenderManagementSchema = new Schema({
   },
   date: {
     type: Date,
-    // default: Date.now(),
   },
   address: {
     type: String,

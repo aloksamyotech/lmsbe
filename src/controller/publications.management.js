@@ -18,7 +18,6 @@ export const addPublications = async (req, res) => {
       await PublicationsManagementSchema.save(); 
     return res.status(200).send(PublicationsManagementData);
   } catch (error) {
-    console.log(" PublicationsManagement Error", error);
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
@@ -36,7 +35,6 @@ export const getPublications = async (req, res) => {
       PublicationsManagement: PublicationsManagementTable,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: " Internal server error", error });
   }
 };

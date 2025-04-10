@@ -122,7 +122,6 @@ export const manyBookAllotment = async (req, res) => {
       if (!bookManagement || bookManagement.quantity < quantity) {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       }
-      console.log("bookmanagment ------------",bookManagement )
 
      
       await BookManagement.findOneAndUpdate(
@@ -160,7 +159,6 @@ export const manyBookAllotment = async (req, res) => {
 export const getBookAllotment = async (req, res) => {
   try {
     
-    console.log("Fetching book allotments...");
 
     const bookAllotments = await BookAllotment.aggregate([
       { $unwind: "$books" },
@@ -311,7 +309,6 @@ export const getBookAllotmentById = async (req, res) => {
         },
       },
     ]);
-    console.log("bookAllotments", bookAllotments);
 
     if (!bookAllotments) {
       return res
@@ -379,7 +376,6 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
   const { id } = req.params;
 
   try {
-    console.log("id", id);
 
     const bookAllotments = await BookAllotment.find({ studentId: id })
       .populate({
@@ -397,7 +393,6 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
       })
       .sort({ createdAt: -1 }); 
 
-    console.log("bookAllotments", bookAllotments);
 
     if (!bookAllotments || bookAllotments.length === 0) {
       return res
@@ -488,7 +483,6 @@ export const getBookMonthVise = async (req, res) => {
   }
 };
 export const bookAllotmentReport = async (req, res) => {
-  console.log("API calling from backend");
 
   const { startDate, endDate } = req.params;
 
@@ -501,8 +495,6 @@ export const bookAllotmentReport = async (req, res) => {
   const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
   const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
 
-  console.log("Parsed Start Date (UTC):", parsedStartDate.toISOString());
-  console.log("Parsed End Date (UTC):", parsedEndDate.toISOString());
 
   try {
     const bookAllotments = await BookAllotment.aggregate([
@@ -561,7 +553,6 @@ export const bookAllotmentReport = async (req, res) => {
       },
     ]);
 
-    console.log("Book Allotments found:", bookAllotments);
 
     if (bookAllotments.length === 0) {
       return res
@@ -620,7 +611,6 @@ export const receiveBook = async (req, res) => {
       }));
     });
 
-    console.log("All Active Books with Students:", allBooks);
 
     res.status(200).json({
       message: "All active books fetched successfully",
@@ -635,8 +625,6 @@ export const postReceiveBook = async (req, res) => {
   const { bookId, studentId, email } = req.body;
 
   try {
-    console.log("Loading................................");
-    console.log("Received data:", req.body);
     if (!mongoose.Types.ObjectId.isValid(_Id)) {
       return res.status(400).json({ message: "Invalid bookId" });
     }
@@ -648,7 +636,6 @@ export const postReceiveBook = async (req, res) => {
     });
 
     const receiveBookData = await BookAllotmentSchema.save();
-    console.log("Received Book Data:", receiveBookData);
 
     return res.status(200).send(receiveBookData);
   } catch (error) {
@@ -660,8 +647,7 @@ export const newReceiveBook = async (req, res) => {
   const { bookId, studentId, email } = req.body;
 
   try {
-    console.log("Loading................................");
-    console.log("Received data:", req.body);
+
 
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
       return res.status(400).json({ message: "Invalid bookId" });
@@ -672,14 +658,6 @@ export const newReceiveBook = async (req, res) => {
       active: false,
     });
 
-    if (existingBookAllotment.length > 0) {
-      console.log(
-        "Found Book Allotment with this email:",
-        existingBookAllotment
-      );
-    } else {
-      console.log("No Book Allotment found with this email.");
-    }
 
     const BookAllotmentSchema = new BookAllotment({
       bookId,
@@ -688,7 +666,6 @@ export const newReceiveBook = async (req, res) => {
     });
 
     const receiveBookData = await BookAllotmentSchema.save();
-    console.log("Received Book Data:", receiveBookData);
 
     return res.status(200).send(receiveBookData);
   } catch (error) {
@@ -698,7 +675,6 @@ export const newReceiveBook = async (req, res) => {
 };
 export const getReceiveBook = async (req, res) => {
   try {
-    console.log("Data.........");
 
     const bookAllotments = await BookAllotment.aggregate([
       {
@@ -741,7 +717,6 @@ export const getReceiveBook = async (req, res) => {
 };
 export const removeReceiveBook = async (req, res) => {
   const { id } = req.params;
-  console.log(`Received ID for removal: ${id}`);
 
   try {
     const removedReceiveBook = await BookAllotment.findOneAndUpdate(
@@ -771,7 +746,6 @@ export const removeReceiveBook = async (req, res) => {
 };
 export const submitBook = async (req, res) => {
   const { id } = req.params;
-  console.log("ID>>>", id);
 
   try {
     const bookExists = await BookAllotment.findOne({
@@ -779,9 +753,6 @@ export const submitBook = async (req, res) => {
     });
     if (!bookExists) {
       return res.status(404).json({ message: "Book not found" });
-    }
-    if (bookExists) {
-      console.log("kdjflskdjfkdjflkdsjfldsfks", bookExists);
     }
     const submittedBook = await BookAllotment.findOneAndUpdate(
       { books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } } },
@@ -794,7 +765,6 @@ export const submitBook = async (req, res) => {
       return res.status(404).json({ message: "No book found to submit" });
     }
 
-    console.log("Submitted book:", submittedBook);
     return res.status(200).json({
       message: "Book successfully submitted",
       submittedBook,
@@ -819,7 +789,6 @@ export const getSubmitBook = async (req, res) => {
       return res.status(404).json({ message: "No submitted books found" });
     }
 
-    console.log("Fetched submitted books:", submittedBooks);
     return res.status(200).json({
       message: "Successfully fetched submitted books",
       submittedBooks,
@@ -833,7 +802,6 @@ export const getSubmitBook = async (req, res) => {
 };
 export const getSubmitBookDetails = async (req, res) => {
   const { selectedStudentId } = req?.params;
-  console.log(`selectedStudentId`, selectedStudentId);
 
   try {
     const submittedBooks = await BookAllotment.aggregate([
@@ -869,7 +837,6 @@ export const getSubmitBookDetails = async (req, res) => {
       },
     ]);
 
-    console.log("Fetched submitted books:", submittedBooks);
     return res.status(200).json({
       message: "Successfully fetched submitted books",
       submittedBooks,
@@ -885,14 +852,11 @@ export const getInvoice = async (req, res) => {
   try {
     const { id } = req.params;
 
-    console.log(`Received ID:`, id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.log("Invalid ObjectId format.");
       return res.status(400).json({ message: "Invalid ObjectId format." });
     }
 
-    console.log("Valid ObjectId format, proceeding with population...");
 
     const bookAllotment = await BookAllotment.findById(id)
       .populate({
@@ -911,11 +875,8 @@ export const getInvoice = async (req, res) => {
       });
 
     if (!bookAllotment) {
-      console.log("No data found for this ID.");
       return res.status(404).json({ message: "No data found for this ID." });
     }
-
-    console.log("BookAllotment with populated data:", bookAllotment);
 
     return res.status(200).json(bookAllotment);
   } catch (error) {
@@ -961,7 +922,6 @@ export const getAllSubmitBookDetails = async (req, res) => {
       },
       
     ]);
-    console.log("Fetched submitted books:", submittedBooks);
     return res.status(200).json({
       message: "Successfully fetched submitted books",
       submittedBooks,
@@ -993,12 +953,12 @@ export const fetchBooks = async (req, res) => {
         studentName: item.studentId?.student_Name || "N/A",
         studentEmail: item.studentId?.email || "N/A",
         studentMobile: item.studentId?.mobile_Number || "N/A",
-        totalAmount: `₹${totalAmount.toFixed(2)}`,
+        totalAmount: `${totalAmount.toFixed(2)}`,
         books: item.books.map((book) => ({
           bookName: book.bookId?.title || "N/A",
           bookAuthor: book.bookId?.author || "N/A",
           quantity: book.quantity,
-          amount: `₹${(book.amount || 0).toFixed(2)}`,
+          amount: `${(book.amount || 0).toFixed(2)}`,
           submissionType: book.paymentType?.title || "N/A",
           submissionDate: book.submissionDate
             ? new Date(book.submissionDate).toLocaleDateString()
@@ -1063,7 +1023,6 @@ export const getBookAllotmentInvoice = async (req, res) => {
   }
 };
 export const trendingBooks = async (req, res) => {
-  console.log("Finding trending books-----");
 
   try {
     const allottedBooks = await BookAllotment.aggregate([
@@ -1209,7 +1168,6 @@ export const submissionReport = async (req, res) => {
         $sort: { "createdAt": -1 }  
       },
     ]);
-
 
     if (bookAllotments.length === 0) {
       return res

@@ -69,9 +69,8 @@ export const adminProfilePage = async (req, res) => {
 };
 
 export const adminUpdateProfilePage = async (req, res) => {
- 
   const { id } = req.params;
-  const { email, mobile_Number, student_Name, register_Date } = req.body;
+  const { email, mobile_Number, student_Name, register_Date,currencyCode,currencySymbol} = req.body;
   const logo = req.file ? req.file.path : "";
   const updatedData = {
     email,
@@ -79,6 +78,8 @@ export const adminUpdateProfilePage = async (req, res) => {
     student_Name,
     register_Date,
     logo,
+    currencyCode,
+    currencySymbol,
   };
   try {
     const updatedRegister = await Admin.findByIdAndUpdate(id, updatedData, {
@@ -95,7 +96,6 @@ export const adminUpdateProfilePage = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const adminGetLogo = async (req, res) => {
   try {
     const logo = await Admin.find();

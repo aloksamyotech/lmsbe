@@ -6,18 +6,6 @@ const PublicationsManagementSchema = new Schema({
     type: String,
     required: true,
   },
-  // bookName: {
-  //   type: String,
-  //   required: true,
-  // },
-  // title: {
-  //   type: String,
-  //   required: true,
-  // },
-  // author: {
-  //   type: String,
-  //   required: true,
-  // },
   active: {
     type: Boolean,
     default: true,
@@ -26,10 +14,6 @@ const PublicationsManagementSchema = new Schema({
     type: String,
     required: true,
   },
-  // startDate: {
-  //   type: Date,
-  //   default: Date.now(),
-  // },
   description: {
     type: String,
     required: true,

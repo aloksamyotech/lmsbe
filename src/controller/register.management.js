@@ -65,14 +65,12 @@ export const registerManagement = async (req, res) => {
 
       { strictPopulate: false }
     );
-    console.log("Register Management Table", registerManagementTable);
     res.status(200).json({
       status: true,
       message: "Register Table successful",
       RegisterManagement: registerManagementTable,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: " Internal server error", error });
   }
 };
@@ -83,14 +81,12 @@ export const registerManagementView = async (req, res) => {
     const registerManagementTable = await RegisterManagement.findById(id, {
       active: false,
     }).populate("user_id", null, null, { strictPopulate: false });
-    console.log("Register Management Table", registerManagementTable);
     res.status(200).json({
       status: true,
       message: "Register Table successful",
       RegisterManagement: registerManagementTable,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: " Internal server error", error });
   }
 };
@@ -147,7 +143,6 @@ export const updateRegister = async (req, res) => {
 export const getUserDetails = async (req, res) => {
   try {
     const { userId } = req.query;
-    console.log("user id", userId);
 
     const user = await RegisterManagement.findById(userId, { active: false });
 
@@ -174,7 +169,6 @@ export const markFavorite = async (req, res) => {
 
   try {
     const student = await RegisterManagement.findById(id);
-    console.log("student========", student);
 
     if (!student) {
       return res
@@ -185,7 +179,6 @@ export const markFavorite = async (req, res) => {
     student.favorite = !student.favorite;
 
     const updatedStudent = await student.save();
-    console.log("updatedStudent=====", updatedStudent);
 
     res.status(200).json({
       status: true,

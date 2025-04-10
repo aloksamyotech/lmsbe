@@ -16,12 +16,6 @@ const HelpSupportSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
-    // date: {
-    //   required: true,
-    //   type: Date,
-    //   default: Date.now,
-    // },
     status: {
       type: String,
       required: true,
