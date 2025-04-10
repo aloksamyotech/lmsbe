@@ -1161,9 +1161,10 @@ export const getInvoice = async (req, res) => {
         model: 'RegisterManagement',  
       })
       .populate({
-        path: 'paymentType',  
-        model: 'SubscriptionType',  
-        strictPopulate: false,
+        path: 'books.paymentType',
+        model: 'SubscriptionType',
+        select: 'title',  
+        strictPopulate: false, 
       });
 
     
@@ -1261,7 +1262,7 @@ export const fetchBooks = async (req, res) => {
 
     const formattedResponse = response.map((item) => {
       const totalAmount = item.books.reduce(
-        (sum, book) => sum + (book.amount || 0),
+        (sum, book) => sum + (book.amount || 0) * (book.quantity || 1), // multiply by quantity
         0
       );
 
