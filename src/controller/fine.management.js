@@ -373,30 +373,6 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
     });
   }
 };
-// export const findFinebyAllotmentId = async (req, res) => {
-//   const { allotmentId } = req.params; 
-
-//   try {
-//     const fines = await BookFine.find({ allotmentId: allotmentId });
-
-//     if (fines.length === 0) {
-//       return res.status(404).json({
-//         message: "No fines found for this allotment ID",
-//       });
-//     }
-
-//     return res.status(200).json({
-//       message: "Fines found successfully",
-//       fines: fines,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching fines by allotmentId:", error);
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
 export const findFinebyAllotmentId = async (req, res) => {
   const { allotmentId } = req.params;
 
