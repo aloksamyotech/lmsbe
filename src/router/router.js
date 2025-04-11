@@ -19,7 +19,10 @@ import {
   getContactManagement,
   updateContact,
 } from "../controller/contact.management.js";
-
+import{
+  submitedBook,
+  getsubmitedBook,
+} from "../controller/bookSubmission.js";
 import {
   addVenderBook,
   deleteVender,
@@ -154,6 +157,11 @@ router.delete("/user/deleteBook/:id", deleteBook);
 router.put("/user/editBook/:id", updateBook);
 router.get("/user/getBookCount", getBookCount);
 router.get("/user/bookmangmentTable", bookmangmentTable);
+
+//--------------   book submission  ------------------------
+router.post("/user/submitedBook",submitedBook);
+router.get("/user/getsubmitedBook",getsubmitedBook);
+
 //--------------   Vendor Management ------------------------
 
 router.post("/user/addVenderBook", addVenderBook);
