@@ -32,23 +32,47 @@ export const addFineBook = async (req, res) => {
       reason,
       allotmentId: new mongoose.Types.ObjectId(allotmentId),
     });
-    const FineManagementData = await FineManagementSchema.save();
+
+    await FineManagementSchema.save();
+
+    const fineObj = {
+      reason,
+      fineAmount: amount,
+    };
+
     const updatedAllotment = await BookAllotment.updateOne(
       {
-        _id: allotmentId, 
+        _id: allotmentId,
         "books.bookId": bookId,
       },
       {
         $set: {
-          "books.$.fine": true, 
+          "books.$.fine": true,
+        },
+        $push: {
+          "books.$.fines": fineObj,
         },
       }
     );
-    if (updatedAllotment.nModified === 0) {
+
+    if (updatedAllotment.modifiedCount === 0) {
       return res.status(400).send({ message: "Allotment update failed" });
     }
 
-    return res.status(200).send(FineManagementData);
+    const updatedBook = await BookAllotment.findOne(
+      {
+        _id: allotmentId,
+        "books.bookId": bookId,
+      },
+      {
+        "books.$": 1,
+      }
+    );
+
+    return res.status(200).send({
+      message: "Fine added successfully",
+      updatedBook: updatedBook.books[0],
+    });
   } catch (error) {
     console.error("Error in Fine Book Management", error);
     return res.status(500).send({ message: "Internal Server Error" });

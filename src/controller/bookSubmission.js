@@ -7,6 +7,7 @@ export const submitedBook = async (req, res) => {
 
   try {
     const {
+      allotmentId,
       studentId,
       bookId,
       submissionDate,
@@ -16,16 +17,18 @@ export const submitedBook = async (req, res) => {
       submit,
       fine,
       count,
-      bookIssueDate
+      bookIssueDate,
     } = req.body;
 
     if (!studentId || !bookId || !submissionDate || !paymentType) {
       return res.status(400).json({
-        message: "Required fields missing: studentId, bookId, submissionDate, paymentType",
+        message:
+          "Required fields missing: studentId, bookId, submissionDate, paymentType",
       });
     }
 
     const newSubmission = new SubmittedBooks({
+      allotmentId,
       studentId,
       bookId,
       submissionDate,
@@ -54,61 +57,78 @@ export const submitedBook = async (req, res) => {
   }
 };
 export const getsubmitedBook = async (req, res) => {
-    try {
-      const allSubmittedBooks = await SubmittedBooks.aggregate([
-        {
-          $lookup: {
-            from: "bookmanagements",
-            localField: "bookId",
-            foreignField: "_id",
-            as: "bookDetails"
-          }
+  try {
+    const allSubmittedBooks = await SubmittedBooks.aggregate([
+      {
+        $lookup: {
+          from: "bookmanagements",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
         },
-        {
-          $lookup: {
-            from: "registermanagements",
-            localField: "studentId",
-            foreignField: "_id",
-            as: "studentDetails"
-          }
+      },
+      {
+        $lookup: {
+          from: "registermanagements",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentDetails",
         },
-        {
-          $unwind: "$studentDetails"
+      },
+      {
+        $lookup: {
+          from: "subscriptiontypes",
+          localField: "paymentType",
+          foreignField: "_id",
+          as: "subscriptiontypes",
         },
-        {
-          $unwind: "$bookDetails"
+      },
+      {
+        $lookup: {
+          from: "bookfines",
+          localField: "allotmentId",
+          foreignField: "allotmentId",
+          as: "fineDetails",
         },
-        {
-          $project: {
-            studentName: "$studentDetails.student_Name",
-            studentEmail: "$studentDetails.email",
-            bookName: "$bookDetails.bookName",
-            bookIssueDate: 1,
-            submissionDate: 1,
-            paymentType: 1,
-            quantity: 1,
-            amount: 1,
-            submit: 1,
-            fine: 1,
-            createdAt: 1,
-            updatedAt: 1
-          }
+      },
+      {
+        $addFields: {
+          totalFineAmount: { $sum: "$fineDetails.fineAmount" },
         },
-        {
-          $sort: { createdAt: -1 }
-        }
-      ]);
-  
-      return res.status(200).json({
-        message: "Submitted books fetched successfully",
-        data: allSubmittedBooks,
-      });
-    } catch (error) {
-      console.error("Error fetching submitted books:", error);
-      return res.status(500).json({
-        message: "Server error while fetching submitted books",
-        error: error.message,
-      });
-    }
-  };
-  
+      },
+      { $unwind: "$studentDetails" },
+      { $unwind: "$bookDetails" },
+      {
+        $project: {
+          studentName: "$studentDetails.student_Name",
+          studentEmail: "$studentDetails.email",
+          bookName: "$bookDetails.bookName",
+          bookIssueDate: 1,
+          submissionDate: 1,
+          paymentType: "$subscriptiontypes.title",
+          quantity: 1,
+          amount: 1,
+          submit: 1,
+          fine: 1,
+          fineAmount: "$totalFineAmount",
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ]);
+
+    return res.status(200).json({
+      message: "Submitted books fetched successfully",
+      data: allSubmittedBooks,
+    });
+  } catch (error) {
+    console.error("Error fetching submitted books:", error);
+    return res.status(500).json({
+      message: "Server error while fetching submitted books",
+      error: error.message,
+    });
+  }
+};
