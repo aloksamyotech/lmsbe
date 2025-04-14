@@ -2,8 +2,9 @@ import { MongoServerClosedError } from "mongodb";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
-import{BookFine} from "../models/fine.management.js";
+import { BookFine } from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
+import {SubmittedBooks} from "../models/SubmittedBooks.js";
 const { ObjectId } = mongoose.Types;
 import mongoose from "mongoose";
 import Types from "mongoose";
@@ -39,7 +40,6 @@ export const bookAllotment = async (req, res) => {
     paymentType,
     amount,
   } = req.body;
-
   try {
     const studentAllotments = await BookAllotment.countDocuments({
       studentId,
@@ -90,6 +90,7 @@ export const bookAllotment = async (req, res) => {
 };
 export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
+
   try {
     const studentId = allotmentsData[0]?.studentId;
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
@@ -117,20 +118,17 @@ export const manyBookAllotment = async (req, res) => {
       if (!mongoose.Types.ObjectId.isValid(bookId)) {
         throw new Error(`Invalid book ID: ${bookId}`);
       }
-      
+
       const bookManagement = await BookManagement.findById(bookId);
       if (!bookManagement || bookManagement.quantity < quantity) {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       }
 
-     
       await BookManagement.findOneAndUpdate(
-        { _id: bookId }, 
+        { _id: bookId },
         { $inc: { bookQuantity: -quantity } },
         { new: true }
       );
-      
-
 
       newAllotment.books.push({
         bookId,
@@ -143,7 +141,7 @@ export const manyBookAllotment = async (req, res) => {
     }
 
     newAllotment.count = newAllotment.books.length;
-   
+
     await newAllotment.save();
 
     return res.status(201).json({
@@ -158,8 +156,6 @@ export const manyBookAllotment = async (req, res) => {
 };
 export const getBookAllotment = async (req, res) => {
   try {
-    
-
     const bookAllotments = await BookAllotment.aggregate([
       { $unwind: "$books" },
       { $match: { "books.active": true } },
@@ -318,7 +314,6 @@ export const getBookAllotmentById = async (req, res) => {
 
     return res.status(200).json(bookAllotments);
   } catch (error) {
-  
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
@@ -376,7 +371,6 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
   const { id } = req.params;
 
   try {
-
     const bookAllotments = await BookAllotment.find({ studentId: id })
       .populate({
         path: "books.bookId",
@@ -391,8 +385,7 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
         model: "SubscriptionType",
         strictPopulate: false,
       })
-      .sort({ createdAt: -1 }); 
-
+      .sort({ createdAt: -1 });
 
     if (!bookAllotments || bookAllotments.length === 0) {
       return res
@@ -462,7 +455,6 @@ export const getBookMonthVise = async (req, res) => {
         },
       },
     ]);
-   
 
     const dataMap = data.reduce((acc, { month, count }) => {
       acc[month] = count;
@@ -475,7 +467,6 @@ export const getBookMonthVise = async (req, res) => {
         count: dataMap[month] || 0,
       });
     }
-  
 
     res.status(200).json(result);
   } catch (error) {
@@ -483,7 +474,6 @@ export const getBookMonthVise = async (req, res) => {
   }
 };
 export const bookAllotmentReport = async (req, res) => {
-
   const { startDate, endDate } = req.params;
 
   if (!startDate || !endDate) {
@@ -494,7 +484,6 @@ export const bookAllotmentReport = async (req, res) => {
 
   const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
   const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
-
 
   try {
     const bookAllotments = await BookAllotment.aggregate([
@@ -508,51 +497,89 @@ export const bookAllotmentReport = async (req, res) => {
       },
       {
         $lookup: {
-          from: "bookmanagements",  
-          localField: "books.bookId",      
-          foreignField: "_id",     
-          as: "bookDetails",        
+          from: "registermanagements",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$studentDetails",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
-          from: "registermanagements", 
-          localField: "studentId",    
-          foreignField: "_id",         
-          as: "studentDetails",        
+          from: "bookmanagements",
+          localField: "books.bookId",
+          foreignField: "_id",
+          as: "allBookDetails",
         },
       },
       {
         $lookup: {
-          from: "subscriptiontypes",  
-          localField: "books.paymentType",   
-          foreignField: "_id",         
-          as: "paymentType",           
+          from: "subscriptiontypes",
+          localField: "books.paymentType",
+          foreignField: "_id",
+          as: "allPaymentTypes",
         },
       },
       {
-        $unwind: {
-          path: "$studentDetails",  
-          preserveNullAndEmptyArrays: true,
+        $addFields: {
+          books: {
+            $map: {
+              input: "$books",
+              as: "book",
+              in: {
+                $mergeObjects: [
+                  "$$book",
+                  {
+                    bookDetail: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$allBookDetails",
+                            as: "bd",
+                            cond: {
+                              $eq: ["$$bd._id", "$$book.bookId"],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                    paymentDetail: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$allPaymentTypes",
+                            as: "pt",
+                            cond: {
+                              $eq: ["$$pt._id", "$$book.paymentType"],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
         },
       },
       {
-        $unwind: {
-          path: "$paymentType",  
-          preserveNullAndEmptyArrays: true,
+        $project: {
+          allBookDetails: 0,
+          allPaymentTypes: 0,
         },
       },
       {
-        $unwind: {
-          path: "$bookDetails",  
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $sort: { "createdAt": -1 }  
+        $sort: { createdAt: -1 },
       },
     ]);
-
 
     if (bookAllotments.length === 0) {
       return res
@@ -563,19 +590,17 @@ export const bookAllotmentReport = async (req, res) => {
     return res.status(200).json(bookAllotments);
   } catch (error) {
     console.error("Error:", error);
-    return res
-      .status(500)
-      .json({
-        error: error.message || "An error occurred while fetching data",
-      });
+    return res.status(500).json({
+      error: error.message || "An error occurred while fetching data",
+    });
   }
 };
 export const receiveBook = async (req, res) => {
   try {
     const ReceiveBooks = await BookAllotment.find()
-      .populate("studentId", "student_Name email mobile_Number") 
-      .populate("books.bookId", "title author") 
-      .populate("books.paymentType", "title"); 
+      .populate("studentId", "student_Name email mobile_Number")
+      .populate("books.bookId", "title author")
+      .populate("books.paymentType", "title");
 
     const activeBookAllotments = ReceiveBooks.filter((bookAllotment) =>
       bookAllotment.books.some((book) => book.active === true)
@@ -591,15 +616,15 @@ export const receiveBook = async (req, res) => {
       return bookAllotment.books.map((book) => ({
         allotmentId: bookAllotment._id,
         student: {
-          studentId: bookAllotment.studentId._id, 
-          studentName: bookAllotment.studentId.student_Name, 
-          email: bookAllotment.studentId.email, 
-          mobileNumber: bookAllotment.studentId.mobile_Number, 
+          studentId: bookAllotment.studentId._id,
+          studentName: bookAllotment.studentId.student_Name,
+          email: bookAllotment.studentId.email,
+          mobileNumber: bookAllotment.studentId.mobile_Number,
         },
         bookId: book.bookId._id,
         bookTitle: book.bookId.title,
         bookAuthor: book.bookId.author,
-        paymentType: book.paymentType ? book.paymentType.title : null, 
+        paymentType: book.paymentType ? book.paymentType.title : null,
         amount: book.amount,
         bookIssueDate: book.bookIssueDate,
         submissionDate: book.submissionDate,
@@ -610,7 +635,6 @@ export const receiveBook = async (req, res) => {
         _id: book._id,
       }));
     });
-
 
     res.status(200).json({
       message: "All active books fetched successfully",
@@ -647,8 +671,6 @@ export const newReceiveBook = async (req, res) => {
   const { bookId, studentId, email } = req.body;
 
   try {
-
-
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
       return res.status(400).json({ message: "Invalid bookId" });
     }
@@ -657,7 +679,6 @@ export const newReceiveBook = async (req, res) => {
       email,
       active: false,
     });
-
 
     const BookAllotmentSchema = new BookAllotment({
       bookId,
@@ -675,7 +696,6 @@ export const newReceiveBook = async (req, res) => {
 };
 export const getReceiveBook = async (req, res) => {
   try {
-
     const bookAllotments = await BookAllotment.aggregate([
       {
         $match: { active: true },
@@ -760,7 +780,6 @@ export const submitBook = async (req, res) => {
 
       { new: true }
     );
-
     if (!submittedBook) {
       return res.status(404).json({ message: "No book found to submit" });
     }
@@ -852,11 +871,9 @@ export const getInvoice = async (req, res) => {
   try {
     const { id } = req.params;
 
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid ObjectId format." });
     }
-
 
     const bookAllotment = await BookAllotment.findById(id)
       .populate({
@@ -899,7 +916,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
       {
         $lookup: {
           from: "bookmanagements",
-          localField: "books.bookId", 
+          localField: "books.bookId",
           foreignField: "_id",
           as: "bookDetails",
         },
@@ -907,7 +924,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
       {
         $lookup: {
           from: "subscriptiontypes",
-          localField: "books.paymentType", 
+          localField: "books.paymentType",
           foreignField: "_id",
           as: "paymentDetails",
         },
@@ -920,7 +937,6 @@ export const getAllSubmitBookDetails = async (req, res) => {
           as: "studentDetails",
         },
       },
-      
     ]);
     return res.status(200).json({
       message: "Successfully fetched submitted books",
@@ -940,11 +956,11 @@ export const fetchBooks = async (req, res) => {
       .populate("studentId", "student_Name email mobile_Number")
       .populate("books.bookId", "title author")
       .populate("books.paymentType", "title")
-      .sort({ createdAt: -1 }); 
+      .sort({ createdAt: -1 });
 
     const formattedResponse = response.map((item) => {
       const totalAmount = item.books.reduce(
-        (sum, book) => sum + (book.amount || 0) * (book.quantity || 1), 
+        (sum, book) => sum + (book.amount || 0) * (book.quantity || 1),
         0
       );
 
@@ -1023,7 +1039,6 @@ export const getBookAllotmentInvoice = async (req, res) => {
   }
 };
 export const trendingBooks = async (req, res) => {
-
   try {
     const allottedBooks = await BookAllotment.aggregate([
       {
@@ -1080,111 +1095,105 @@ export const trendingBooks = async (req, res) => {
   }
 };
 export const submissionReport = async (req, res) => {
-
   const { startDate, endDate } = req.params;
 
   if (!startDate || !endDate) {
-    return res
-      .status(400)
-      .json({ error: "Both startDate and endDate are required" });
+    return res.status(400).json({ error: "Both startDate and endDate are required" });
   }
 
   const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
   const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
 
-
   try {
     const bookAllotments = await BookAllotment.aggregate([
       {
+        $unwind: "$books"
+      },
+      {
         $match: {
-          createdAt: {
+          "books.submit": true,
+          "books.updatedAt": {
             $gte: parsedStartDate.toDate(),
-            $lte: parsedEndDate.toDate(),
-          },
-          books: {
-            $elemMatch: {
-              submit: true, 
-            },
-          },
-        },
+            $lte: parsedEndDate.toDate()
+          }
+        }
       },
       {
         $lookup: {
-          from: "bookmanagements",  
-          localField: "books.bookId",     
-          foreignField: "_id",     
-          as: "bookDetails",       
-        },
+          from: "bookmanagements",
+          localField: "books.bookId",
+          foreignField: "_id",
+          as: "bookDetails"
+        }
       },
       {
         $lookup: {
-          from: "registermanagements", 
-          localField: "studentId",     
-          foreignField: "_id",         
-          as: "studentDetails",      
-        },
+          from: "registermanagements",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentDetails"
+        }
       },
       {
         $lookup: {
-          from: "subscriptiontypes",  
-          localField: "books.paymentType",   
-          foreignField: "_id",         
-          as: "paymentType",           
-        },
+          from: "subscriptiontypes",
+          localField: "books.paymentType",
+          foreignField: "_id",
+          as: "paymentType"
+        }
       },
       {
         $lookup: {
-          from: "bookfines",  
-          localField: "_id",   
-          foreignField: "allotmentId",         
-          as: "finedetalis",           
-        },
+          from: "bookfines",
+          localField: "_id",
+          foreignField: "allotmentId",
+          as: "finedetalis"
+        }
       },
       {
         $unwind: {
-          path: "$studentDetails",  
-          preserveNullAndEmptyArrays: true,
-        },
+          path: "$studentDetails",
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $unwind: {
-          path: "$paymentType",  
-          preserveNullAndEmptyArrays: true,
-        },
+          path: "$paymentType",
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $unwind: {
-          path: "$bookDetails",  
-          preserveNullAndEmptyArrays: true,
-        },
+          path: "$bookDetails",
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $unwind: {
-          path: "$finedetalis",  
-          preserveNullAndEmptyArrays: true,
-        },
+          path: "$finedetalis",
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
-        $sort: { "createdAt": -1 }  
+        $sort: {
+          "books.updatedAt": -1
+        }
       },
+
     ]);
 
     if (bookAllotments.length === 0) {
-      return res
-        .status(200)
-        .json({
-          message:
-            "No records found for the given date range with submit = true",
-        });
+      return res.status(200).json({
+        message: "No records found for the given date range with submit = true"
+      });
     }
 
     return res.status(200).json(bookAllotments);
   } catch (error) {
     console.error("Error:", error);
-    return res
-      .status(500)
-      .json({
-        error: error.message || "An error occurred while fetching data",
-      });
+    return res.status(500).json({
+      error: error.message || "An error occurred while fetching data"
+    });
   }
 };
+
