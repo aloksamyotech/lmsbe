@@ -49,6 +49,12 @@ const BookAllotmentSchema = new Schema(
           type: Boolean,
           default: false,
         },
+        fines: [
+          {
+            reason: String,
+            fineAmount: Number,
+          },
+        ],
       },
     ],
     count: {
