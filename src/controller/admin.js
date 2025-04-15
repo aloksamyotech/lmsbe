@@ -67,10 +67,15 @@ export const adminProfilePage = async (req, res) => {
       .json({ status: false, message: "Internal server error", error });
   }
 };
-
 export const adminUpdateProfilePage = async (req, res) => {
   const { id } = req.params;
-  const { email, mobile_Number, student_Name, register_Date,currencyCode,currencySymbol} = req.body;
+  let { email, mobile_Number, student_Name, register_Date, currencyCode, currencySymbol } = req.body;
+
+  if (register_Date && register_Date.includes("/")) {
+    const [day, month, year] = register_Date.split('/');
+    register_Date = new Date(`${year}-${month}-${day}`);
+  }
+
   const logo = req.file ? req.file.path : "";
   const updatedData = {
     email,
@@ -88,9 +93,7 @@ export const adminUpdateProfilePage = async (req, res) => {
     if (!updatedRegister) {
       return res.status(404).json({ message: "Register not found" });
     }
-    res
-      .status(200)
-      .json({ message: "Register updated successfully", updatedRegister });
+    res.status(200).json({ message: "Register updated successfully", updatedRegister });
   } catch (error) {
     console.error("Error updating Register:", error);
     res.status(500).json({ message: "Internal Server Error" });

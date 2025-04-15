@@ -258,7 +258,7 @@ router.get(
 
 router.post("/user/purchaseBook", purchaseBook);
 router.delete("/user/deletePurchaseBook/:id", deletePurchaseBook);
-router.put("/user/updatePurchaseBook", updatePurchaseBook);
+router.patch("/user/updatePurchaseBook", updatePurchaseBook);
 router.get("/user/purchaseManagement", purchaseManagement);
 router.get("/user/getPurchaseInvoice/:id", getPurchaseInvoice);
 router.get(

@@ -75,34 +75,44 @@ export const deletePurchaseBook = async (req, res) => {
     console.error("Error deleting book:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-}; 
+};
+
 export const updatePurchaseBook = async (req, res) => {
-  const { id } = req.params;
-   const { price, quantity } = req.body;
+  const { id, price, quantity, bookId } = req.body;
 
   try {
-    const updatedBook = await PurchaseManagement.findByIdAndUpdate(
+    const updatedPurchase = await PurchaseManagement.findByIdAndUpdate(
       id,
-      { active: false },
+      { price, quantity },
+      { new: true }
+    );
 
-      {
-        price,
-        quantity,
-      },
-      { new: true },
-      { sort: _id }
+    if (!updatedPurchase) {
+      return res.status(404).json({ message: "Purchase record not found" });
+    }
+
+    const updatedBook = await BookManagement.findByIdAndUpdate(
+      bookId,
+      { bookQuantity: quantity },
+      { new: true }  
     );
 
     if (!updatedBook) {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    res.status(200).json({ message: "Book updated successfully", updatedBook });
+    res.status(200).json({
+      message: "Book & Purchase updated successfully",
+      updatedPurchase,
+      updatedBook,
+    });
+
   } catch (error) {
-    console.error("Error updating book:", error);
+    console.error("Error updating records:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 export const purchaseManagement = async (req, res) => {
   try {
@@ -133,6 +143,7 @@ export const purchaseManagement = async (req, res) => {
       {
         $project: {
           _id: 1,
+          bookId:"$bookDetails._id",
           bookName: "$bookDetails.bookName",
           vendorId: "$vendorDetails.vendorName", 
           quantity: 1,
