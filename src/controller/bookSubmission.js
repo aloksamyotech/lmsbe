@@ -18,6 +18,7 @@ export const submitedBook = async (req, res) => {
       fine,
       count,
       bookIssueDate,
+      totalFineAmount
     } = req.body;
 
     if (!studentId || !bookId || !submissionDate || !paymentType) {
@@ -37,6 +38,7 @@ export const submitedBook = async (req, res) => {
       amount: amount || 0,
       submit: submit || false,
       fine: fine || false,
+      totalFineAmount:totalFineAmount||0,
       count: count || 0,
       bookIssueDate: bookIssueDate || Date.now(),
     });
@@ -89,11 +91,6 @@ export const getsubmitedBook = async (req, res) => {
           localField: "allotmentId",
           foreignField: "allotmentId",
           as: "fineDetails",
-        },
-      },
-      {
-        $addFields: {
-          totalFineAmount: { $sum: "$fineDetails.fineAmount" },
         },
       },
       { $unwind: "$studentDetails" },

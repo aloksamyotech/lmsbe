@@ -41,6 +41,10 @@ const SubmittedBooksSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    totalFineAmount:{
+      type:Number,
+      default:0,
+    },
 
   },
   { timestamps: true }
