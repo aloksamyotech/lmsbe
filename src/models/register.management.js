@@ -47,6 +47,10 @@ const RegisterManagementSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  bookCount: {
+    type: Number,
+    default: 0,
+  },
   count: { 
     type: Number,
     required: false,
