@@ -92,7 +92,7 @@ import {
   findFineByStudentIdAndBookIdInvoice,
   getAllFineBooks,
   getFineBook,
-  findFinebyAllotmentId,
+  findFinebyAllotmentIdAndBookId,
 } from "../controller/fine.management.js";
 import {
   deletePurchaseBook,
@@ -249,10 +249,8 @@ router.get(
   "/user/findFineInvoice/:studentId/:bookId",
   findFineByStudentIdAndBookIdInvoice
 );
-router.get(
-  "/user/findFinebyAllotmentId/:allotmentId",
-  findFinebyAllotmentId
-);
+router.get("/user/findFinebyAllotmentIdAndBookId/:allotmentId/:bookId", findFinebyAllotmentIdAndBookId);
+
 
 //  ---------------------- Purchase Book -----------------------
 

@@ -397,30 +397,31 @@ export const findFineByStudentIdAndBookIdInvoice = async (req, res) => {
     });
   }
 };
-export const findFinebyAllotmentId = async (req, res) => {
-  const { allotmentId } = req.params;
+export const findFinebyAllotmentIdAndBookId = async (req, res) => {  
+  const { allotmentId, bookId } = req.params;
 
-  if (!allotmentId || allotmentId === "null" || allotmentId === "undefined") {
+  if (!allotmentId || !bookId) {
     return res.status(400).json({
-      message: "Invalid or missing allotment ID",
+      message: "Invalid or missing allotment ID or book ID",
     });
   }
 
   try {
-    const fines = await BookFine.find({ allotmentId });
+    const fines = await BookFine.find({ allotmentId, bookId });
 
     if (fines.length === 0) {
-      return res.status(404).json({
-        message: "No fines found for this allotment ID",
+      return res.status(200).json({
+        message: "No fine found for this allotment and book ID",
+        fines: [], 
       });
     }
 
     return res.status(200).json({
-      message: "Fines found successfully",
+      message: "Fine found successfully",
       fines,
     });
   } catch (error) {
-    console.error("Error fetching fines by allotmentId:", error);
+    console.error("Error fetching fine by allotmentId and bookId:", error);
     return res.status(500).json({
       message: "Internal Server Error",
       error: error.message,

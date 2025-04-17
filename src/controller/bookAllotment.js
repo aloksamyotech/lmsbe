@@ -88,7 +88,7 @@ export const bookAllotment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
-export const manyBookAllotment = async (req, res) => {
+export const manyBookAllotment = async (req, res) => { 
   const allotmentsData = req.body;
 
   try {
@@ -97,6 +97,19 @@ export const manyBookAllotment = async (req, res) => {
       return res
         .status(400)
         .json({ message: `Invalid student ID: ${studentId}` });
+    }
+
+    const student = await RegisterManagement.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const newBookCount = allotmentsData.reduce((acc, item) => acc + item.quantity, 0);
+
+    if (student.bookCount + newBookCount > 5) {
+      return res.status(400).json({
+        message: `Student already has ${student.bookCount} books. Can only take ${5 - student.bookCount} more.`,
+      });
     }
 
     const newAllotment = new BookAllotment({
@@ -120,7 +133,7 @@ export const manyBookAllotment = async (req, res) => {
       }
 
       const bookManagement = await BookManagement.findById(bookId);
-      if (!bookManagement || bookManagement.quantity < quantity) {
+      if (!bookManagement || bookManagement.bookQuantity < quantity) {
         throw new Error(`Book with ID ${bookId} is out of stock.`);
       }
 
@@ -143,6 +156,9 @@ export const manyBookAllotment = async (req, res) => {
     newAllotment.count = newAllotment.books.length;
 
     await newAllotment.save();
+
+    student.bookCount += newBookCount;
+    await student.save();
 
     return res.status(201).json({
       message: "Books allotted successfully",
@@ -764,35 +780,59 @@ export const removeReceiveBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const submitBook = async (req, res) => {
   const { id } = req.params;
+  const { quantity } = req.body;
 
   try {
     const bookExists = await BookAllotment.findOne({
       books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } },
     });
+
     if (!bookExists) {
       return res.status(404).json({ message: "Book not found" });
     }
-    const submittedBook = await BookAllotment.findOneAndUpdate(
-      { books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } } },
-      { $set: { "books.$.submit": true } },
 
-      { new: true }
+    const targetBook = bookExists.books.find(
+      (b) => b._id.toString() === id.toString()
     );
-    if (!submittedBook) {
-      return res.status(404).json({ message: "No book found to submit" });
+
+    if (!targetBook) {
+      return res.status(404).json({ message: "Book not found in allotment" });
     }
 
+    if (quantity > targetBook.quantity) {
+      return res.status(400).json({ message: "Quantity exceeds the allotted amount" });
+    }
+
+    const remainingQuantity = targetBook.quantity - quantity;
+
+    let updateQuery = {};
+    if (remainingQuantity === 0) {
+      updateQuery = { "books.$.submit": true };
+    }
+    updateQuery["books.$.quantity"] = remainingQuantity;
+
+    const submittedBook = await BookAllotment.findOneAndUpdate(
+      { books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } } },
+      { $set: updateQuery },
+      { new: true }
+    );
+
+    await RegisterManagement.findByIdAndUpdate(
+      bookExists.studentId,
+      { $inc: { bookCount: -quantity } },
+      { new: true }
+    );
+
     return res.status(200).json({
-      message: "Book successfully submitted",
+      message: "Book submitted successfully",
       submittedBook,
     });
   } catch (error) {
     console.error("Error submitting book:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 export const getSubmitBook = async (req, res) => {
