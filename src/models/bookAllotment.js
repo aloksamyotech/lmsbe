@@ -45,6 +45,10 @@ const BookAllotmentSchema = new Schema(
           type: Boolean,
           default: false,
         },
+        submitCount:{
+          type:Number,
+          default:0,
+        },
         fine: {
           type: Boolean,
           default: false,
