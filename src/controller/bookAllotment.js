@@ -810,9 +810,6 @@ export const submitBook = async (req, res) => {
 
     const isFullySubmitted = updatedSubmitCount === targetBook.quantity;
     const isActive = !isFullySubmitted;
-    console.log(isFullySubmitted);
-    console.log("isActive",isActive);
-    
     
     const submittedBook = await BookAllotment.findOneAndUpdate(
       { "books._id": id },
