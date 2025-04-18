@@ -649,6 +649,7 @@ export const receiveBook = async (req, res) => {
         active: book.active,
         submit: book.submit,
         _id: book._id,
+        submitCount:book.submitCount,
       }));
     });
 
@@ -780,10 +781,9 @@ export const removeReceiveBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const submitBook = async (req, res) => {
   const { id } = req.params;
-  const { quantity } = req.body;
+  const { receivequantity } = req.body;
 
   try {
     const bookExists = await BookAllotment.findOne({
@@ -802,27 +802,30 @@ export const submitBook = async (req, res) => {
       return res.status(404).json({ message: "Book not found in allotment" });
     }
 
-    if (quantity > targetBook.quantity) {
-      return res.status(400).json({ message: "Quantity exceeds the allotted amount" });
+    const updatedSubmitCount = (targetBook.submitCount || 0) + receivequantity;
+
+    if (updatedSubmitCount > targetBook.quantity) {
+      return res.status(400).json({ message: "Submitted quantity exceeds allotted amount" });
     }
 
-    const remainingQuantity = targetBook.quantity - quantity;
-
-    let updateQuery = {};
-    if (remainingQuantity === 0) {
-      updateQuery = { "books.$.submit": true };
-    }
-    updateQuery["books.$.quantity"] = remainingQuantity;
-
+    const isFullySubmitted = updatedSubmitCount === targetBook.quantity;
+    const isActive = !isFullySubmitted;
+    
     const submittedBook = await BookAllotment.findOneAndUpdate(
-      { books: { $elemMatch: { _id: new mongoose.Types.ObjectId(id) } } },
-      { $set: updateQuery },
+      { "books._id": id },
+      {
+        $set: {
+          "books.$.submitCount": updatedSubmitCount,
+          "books.$.submit": isFullySubmitted,
+          "books.$.active": isActive,
+        }
+      },
       { new: true }
     );
 
     await RegisterManagement.findByIdAndUpdate(
       bookExists.studentId,
-      { $inc: { bookCount: -quantity } },
+      { $inc: { bookCount: -receivequantity } },
       { new: true }
     );
 

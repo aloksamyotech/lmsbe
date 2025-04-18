@@ -22,6 +22,7 @@ import {
 import{
   submitedBook,
   getsubmitedBook,
+  getsubmitedBookinvoice,
 } from "../controller/bookSubmission.js";
 import {
   addVenderBook,
@@ -161,6 +162,7 @@ router.get("/user/bookmangmentTable", bookmangmentTable);
 //--------------   book submission  ------------------------
 router.post("/user/submitedBook",submitedBook);
 router.get("/user/getsubmitedBook",getsubmitedBook);
+router.get("/user/getsubmitedBookinvoice",getsubmitedBookinvoice);
 
 //--------------   Vendor Management ------------------------
 

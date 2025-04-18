@@ -12,6 +12,11 @@ const SubmittedBooksSchema = new Schema(
       ref: "BookManagement",
       required: true,
     },
+    allotmentId:{
+      type: Schema.Types.ObjectId,
+      ref: "BookAllotment",
+      required: true,
+    },
     bookIssueDate: {
       type: Date,
       default: Date.now,
@@ -45,7 +50,12 @@ const SubmittedBooksSchema = new Schema(
       type:Number,
       default:0,
     },
-
+    fines: [
+      {
+        reason: { type: String },
+        fineAmount: { type: Number },
+      }
+    ],
   },
   { timestamps: true }
 );
