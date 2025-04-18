@@ -1,4 +1,5 @@
 import { RegisterManagement } from "../models/register.management.js";
+import {sendRegistrationEmail} from "./email.js"
 import multer from "multer";
 import path from "path";
 
@@ -17,6 +18,7 @@ export const addRegister = async (req, res) => {
       register_Date,
     });
     const savedData = await registerData.save();
+    sendRegistrationEmail(email,student_Name)
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Register Management", error);
@@ -47,7 +49,9 @@ export const registerMany = async (req, res) => {
       };
     });
     const savedData = await RegisterManagement.insertMany(registerData);
-
+   for (const student of savedData) {
+      await sendRegistrationEmail(student.email, student.student_Name);
+    }
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Register Management Bulk Insert", error);
