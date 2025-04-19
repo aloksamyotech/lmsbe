@@ -4,6 +4,7 @@ import router from "./src/router/router.js";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { configDotenv } from "dotenv";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
