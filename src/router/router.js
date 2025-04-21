@@ -114,6 +114,7 @@ import {
   adminProfilePage,
   adminUpdateProfilePage,
   loginAdmin,
+  updateEmailContorller,
 } from "../controller/admin.js";
 
 const storage = multer.diskStorage({
@@ -138,6 +139,7 @@ router.put(
 );
 router.get("/user/adminGetLogo", adminGetLogo);
 router.post("/user/login", loginAdmin);
+router.put("/user/updateEmailContorller", updateEmailContorller);
 
 // -----------------    SubscriptionManagement       ---------------------------
 

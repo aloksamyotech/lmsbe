@@ -1,11 +1,18 @@
 import { RegisterManagement } from "../models/register.management.js";
-import {sendRegistrationEmail} from "./email.js"
+import { sendRegistrationEmail } from "./email.js";
+import { Admin } from "../models/admin.js";
 import multer from "multer";
 import path from "path";
 
 export const addRegister = async (req, res) => {
-  const { student_Name, email, mobile_Number, select_identity, register_Date } =
-    req.body;
+  const {
+    student_Name,
+    email,
+    mobile_Number,
+    select_identity,
+    register_Date,
+    adminId,
+  } = req.body;
   const upload_identity = req.file ? req.file.path : "";
 
   try {
@@ -18,7 +25,12 @@ export const addRegister = async (req, res) => {
       register_Date,
     });
     const savedData = await registerData.save();
-    sendRegistrationEmail(email,student_Name)
+    const admin = await Admin.findById(adminId);
+
+    if (admin?.registrationEmail) {
+      await sendRegistrationEmail(email, student_Name);
+    }
+
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Register Management", error);
@@ -28,7 +40,8 @@ export const addRegister = async (req, res) => {
 
 export const registerMany = async (req, res) => {
   const data = req?.body;
-
+  const adminId =data[0].adminId
+ 
   try {
     const registerData = data.map((student) => {
       const {
@@ -49,9 +62,16 @@ export const registerMany = async (req, res) => {
       };
     });
     const savedData = await RegisterManagement.insertMany(registerData);
-   for (const student of savedData) {
-      await sendRegistrationEmail(student.email, student.student_Name);
+    const admin = await Admin.findById(adminId);
+
+    if (admin?.registrationEmail) {
+      
+      for (const student of savedData) {
+        await sendRegistrationEmail(student.email, student.student_Name);
+      }  
     }
+
+    
     return res.status(200).send(savedData);
   } catch (error) {
     console.error("Error in Register Management Bulk Insert", error);

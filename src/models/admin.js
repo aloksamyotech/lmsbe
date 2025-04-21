@@ -17,7 +17,12 @@ const AdminSchema = new Schema({
   currencySymbol: {
     type: String,
     default: "₹",
-  },
+  }, 
+  registrationEmail:{type:Boolean, default:true},
+  allotmentEmail:{type:Boolean, default:true},
+  submissionEmail:{type:Boolean, default:true},
+  purchesEmail:{type:Boolean, default:true},
+
 });
 
 
