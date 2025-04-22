@@ -35,30 +35,7 @@ export const addFineBook = async (req, res) => {
 
     await FineManagementSchema.save();
 
-    const fineObj = {
-      reason,
-      fineAmount: amount,
-    };
-
-    const updatedAllotment = await BookAllotment.updateOne(
-      {
-        _id: allotmentId,
-        "books.bookId": bookId,
-      },
-      {
-        $set: {
-          "books.$.fine": true,
-        },
-        $push: {
-          "books.$.fines": fineObj,
-        },
-      }
-    );
-
-    if (updatedAllotment.modifiedCount === 0) {
-      return res.status(400).send({ message: "Allotment update failed" });
-    }
-
+    
     const updatedBook = await BookAllotment.findOne(
       {
         _id: allotmentId,

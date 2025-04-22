@@ -7,9 +7,11 @@ import mongoose from "mongoose";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
+import { VenderManagement } from "../models/vendor.management.js";
 import { BookFine } from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
+import { SubmittedBooks } from "../models/SubmittedBooks.js";
 
 dotenv.config();
 const transporter = nodemailer.createTransport({
@@ -109,7 +111,174 @@ const generateInvoicePdf = (invoiceData) => {
   doc.end();
   return filePath;
 };
+const generatePurchaseInvoicePdf = (purchaseData) => {
+  const doc = new PDFDocument({ margin: 40 });
+  const filePath = "./purchase_invoice.pdf";
 
+  doc.pipe(fs.createWriteStream(filePath));
+
+  doc.fontSize(24).text("SAMYOTECH", { align: "center" });
+  doc.fontSize(18).text("Purchase Invoice", { align: "center" });
+  doc.moveDown();
+  doc.fontSize(14).text(`Invoice`);
+  doc.text(`Date: ${moment().format("MMMM D, YYYY")}`, { align: "right" });
+  doc.moveDown(1.5);
+
+  doc.fontSize(16).text("Vendor Information");
+  doc
+    .moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor("#CCCCCC")
+    .stroke();
+
+  doc.moveDown(2);
+  doc
+    .fontSize(12)
+    .text(`Vendor Name: ${purchaseData.vendorName}`, { continued: true })
+    .text(`Phone: ${purchaseData.phoneNumber}`, { align: "right" });
+  doc.moveDown(0.5);
+
+  doc
+    .fontSize(12)
+    .text(`Email: ${purchaseData.email}`, { continued: true })
+    .text(`Company Name: ${purchaseData.companyName}`, { align: "right" });
+
+  doc.moveDown(2);
+
+  doc.fontSize(16).text("Purchase Items");
+  doc
+    .moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor("#CCCCCC")
+    .stroke();
+
+  doc.moveDown(2);
+  doc
+    .fontSize(12)
+    .text(`Book Name: ${purchaseData.bookname}`, { continued: true })
+    .text(`Quantity: ${purchaseData.quantity}`, { align: "right" });
+  doc.moveDown(0.5);
+
+  doc
+    .fontSize(12)
+    .text(`Unit Price: ₹${purchaseData.priceperBook.toFixed(2)}`, {
+      continued: true,
+    })
+    .text(
+      `Total: ₹${(purchaseData.priceperBook * purchaseData.quantity).toFixed(2)}`,
+      { align: "right" }
+    );
+  doc
+    .fontSize(12)
+    .text(`Advance Paytment: ${purchaseData.advancepayment}`, {
+      continued: true,
+    })
+    .text(`Discount: ${purchaseData.discount}`, { align: "right" });
+  doc.text(
+    `Purches Date:${new Date(purchaseData.purchesDate).toLocaleDateString()}`
+  );
+  doc.moveDown(2);
+
+  doc.fontSize(16).text("Total Amount");
+  doc
+    .moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor("#CCCCCC")
+    .stroke();
+
+  doc.moveDown(2);
+  doc.fontSize(12).text(`Total Items: ${purchaseData.quantity}`);
+  doc.fontSize(16).text(`Total Amount: ₹${purchaseData.totalAmount}`, {});
+
+  doc.end();
+  return filePath;
+};
+const generateSubmitInvoicePdf = (submissionData) => {
+ 
+  const doc = new PDFDocument({ margin: 40 });
+  const filePath = './submit_invoice.pdf';
+
+  doc.pipe(fs.createWriteStream(filePath));
+
+  doc.fontSize(24).text('SAMYOTECH', { align: 'center' });
+  doc.fontSize(18).text('Library Management System', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(14).text('Invoice');
+  doc.text(`Date: ${moment().format('MMMM D, YYYY')}`, { align: 'right' });
+  doc.moveDown(1.5);
+
+  doc.fontSize(16).text('Book Information');
+  doc.moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor('#CCCCCC')
+    .stroke();
+  doc.moveDown(2);
+
+  doc.fontSize(12)
+    .text(`Book Name: ${submissionData.bookName}`, { continued: true })
+    .text(`Quantity: ${submissionData.quantity}`, { align: 'right' });
+
+  doc.fontSize(12)
+    .text(`Issue Date: ${moment(submissionData.bookIssueDate).format('DD/MM/YYYY')}`, { continued: true })
+    .text(`Submission Date: ${moment(submissionData.submissionDate).format('DD/MM/YYYY')}`, { align: 'right' });
+
+  doc.moveDown(2);
+
+  doc.fontSize(16).text('Student Information');
+  doc.moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor('#CCCCCC')
+    .stroke();
+  doc.moveDown(2);
+
+  doc.fontSize(12)
+    .text(`Name: ${submissionData.studentName}`, { continued: true })
+    .text(`Phone: ${submissionData.phone}`, { align: 'right' });
+
+  doc.fontSize(12)
+    .text(`Email: ${submissionData.email}`, { continued: true })
+    .text(`Register Date: ${moment(submissionData.registerDate).format('DD/MM/YYYY')}`, { align: 'right' });
+
+  doc.moveDown(2);
+
+  doc.fontSize(16).text('Payment Information');
+  doc.moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor('#CCCCCC')
+    .stroke();
+  doc.moveDown(2);
+
+  doc.fontSize(12)
+    .text(`Subscription Type: ${submissionData.paymentType}`, { continued: true })
+    .text(`Amount: ₹${submissionData.amount?.toFixed(2) || '0.00'}`, { align: 'right' });
+
+  doc.moveDown(2);
+  doc.fontSize(16).text('Fine Details');
+  doc.moveTo(doc.page.margins.left, doc.y + 5)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 5)
+    .strokeColor('#CCCCCC')
+    .stroke();
+  doc.moveDown(2);
+
+  if (submissionData.fine && submissionData.fine.length > 0) {
+    submissionData.fine.forEach((fine, index) => {
+      doc.fontSize(12).text(`${index + 1}. ${fine.reason || 'N/A'} - ₹${fine.amount || '0.00'}`);
+    });
+  } else {
+    doc.fontSize(12).fillColor('gray').text('No fines applied.');
+  }
+
+  const totalFine = submissionData.fine?.reduce((sum, f) => sum + (f.amount || 0), 0) || 0;
+  const totalAmount = (submissionData.amount || 0) + totalFine;
+
+  doc.moveDown(3);
+  doc.fontSize(16).fillColor('black')
+    .text(`Total Amount: ₹${totalAmount.toFixed(2)}`, { align: 'right' });
+
+  doc.end();
+  return filePath;
+
+};
 export const sendRegistrationEmail = async (studentEmail, studentName) => {
   try {
     const info = await transporter.sendMail({
@@ -149,7 +318,6 @@ export const sendRegistrationEmail = async (studentEmail, studentName) => {
   }
 };
 export const sendAllotmentInvoiceEmail = async (allotmentId) => {
-
   try {
     if (!mongoose.Types.ObjectId.isValid(allotmentId)) {
       throw new Error("Invalid ObjectId format.");
@@ -223,5 +391,119 @@ export const sendAllotmentInvoiceEmail = async (allotmentId) => {
   } catch (error) {
     console.error("Error in sendAllotmentInvoiceEmail:", error.message);
     throw error;
+  }
+};
+export const sendpurchesInvoiceEmail = async (purchesId) => {
+  try {
+    const purchase = await PurchaseManagement.findById(purchesId)
+      .populate({
+        path: "vendorId",
+        model: VenderManagement,
+      })
+      .populate({
+        path: "bookId",
+        model: BookManagement,
+      });
+
+    if (!purchase) {
+      console.error("Purchase not found");
+      return;
+    }
+    const purchesData = {
+      bookname: purchase.bookId.bookName || "NaN",
+      vendorName: purchase.vendorId.vendorName || "NaN",
+      companyName: purchase.vendorId.companyName || "NaN",
+      phoneNumber: purchase.vendorId.phoneNumber || "NaN",
+      email: purchase.vendorId.email || "NaN",
+      priceperBook: purchase.price || 0,
+      quantity: purchase.quantity || 0,
+      purchesDate: purchase.bookIssueDate || "NaN",
+      totalAmount: purchase.price * purchase.quantity || 0,
+      advancepayment: purchase.advancepayment || 0,
+      discount: purchase.discount || 0,
+    };
+    const pdfPath = generatePurchaseInvoicePdf(purchesData);
+    const mailOptions = {
+      from: process.env.BREVO_SMTP_FROM,
+      to: purchase.vendorId?.email,
+      subject: "New Purchase Invoice",
+      text: ` <h2>Purchase Invoice</h2>
+      <p><strong>Purchase ID:</strong> ${purchase._id}</p>
+      <p><strong>Book:</strong> ${purchase.bookId?.bookTitle || "N/A"}</p>
+      <p><strong>Vendor:</strong> ${purchase.vendorId?.vendorName || "N/A"}</p>
+      <p><strong>Issue Date:</strong> ${new Date(purchase.bookIssueDate).toLocaleDateString()}</p>
+      <p><strong>Quantity:</strong> ${purchase.quantity}</p>
+      <p><strong>Price per unit:</strong> ₹${purchase.price}</p>
+      <p><strong>Total Price:</strong> ₹${purchase.totalPrice}</p>
+      <p><strong>Comment:</strong> ${purchase.bookComment}</p>
+    `,
+      attachments: [
+        {
+          filename: "invoice.pdf",
+          path: pdfPath,
+        },
+      ],
+    };
+    await transporter.sendMail(mailOptions);
+    fs.unlinkSync(pdfPath);
+  } catch (error) {
+    console.error("Error sending invoice email", error);
+  }
+};
+export const sendSubmitInvoiceEmail = async (submitId) => {
+  try {
+    const submission = await SubmittedBooks.findById(submitId)
+      .populate({
+        path: "studentId",
+        model: RegisterManagement,
+      })
+      .populate({
+        path: "bookId",
+        model: BookManagement,
+      })
+      .populate({
+        path: "paymentType",
+        model: SubscriptionType,
+      });
+
+
+    if (!submission) {
+      console.error("Submission not found");
+      return;
+    }
+    const submissionData = {
+      studentName: submission.studentId.student_Name || "NaN",
+      phone: submission.studentId.mobile_Number || "N/A",
+      email: submission.studentId.email || "N/A",
+      registerDate: submission.studentId.registerDate || new Date(),
+
+      bookName: submission.bookId.bookName || "N/A",
+      quantity: submission.quantity||0 ,
+      bookIssueDate: submission.bookId.bookIssueDate || "N/A",
+      submissionDate: submission.createdAt || "N/A",
+      fine:submission.fines|| [],
+      paymentType: submission.paymentType.title || "NaN",
+
+    };
+    
+    const pdfPath = generateSubmitInvoicePdf(submissionData);
+    const mailOptions = {
+      from: process.env.BREVO_SMTP_FROM,
+      to: submission.studentId.email,
+      subject: "Book Submission Invoice",
+      text: ` 
+    `,
+      attachments: [
+        {
+          filename: "invoice.pdf",
+          path: pdfPath,
+        },
+      ],
+    };
+    await transporter.sendMail(mailOptions);
+    fs.unlinkSync(pdfPath);
+
+  } catch (error) {
+    console.error("Error sending invoice email", error);
   }
 };

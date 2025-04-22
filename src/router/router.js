@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import { verifyJWT } from '../middleware/auth.js';
 
 import {
   addBook,
@@ -115,6 +116,7 @@ import {
   adminUpdateProfilePage,
   loginAdmin,
   updateEmailContorller,
+  updatepassword,
 } from "../controller/admin.js";
 
 const storage = multer.diskStorage({
@@ -140,6 +142,7 @@ router.put(
 router.get("/user/adminGetLogo", adminGetLogo);
 router.post("/user/login", loginAdmin);
 router.put("/user/updateEmailContorller", updateEmailContorller);
+router.put("/user/updatepassword", verifyJWT, updatepassword);
 
 // -----------------    SubscriptionManagement       ---------------------------
 

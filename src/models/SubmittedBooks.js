@@ -53,7 +53,7 @@ const SubmittedBooksSchema = new Schema(
     fines: [
       {
         reason: { type: String },
-        fineAmount: { type: Number },
+        amount: { type: Number },
       }
     ],
   },

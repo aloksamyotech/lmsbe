@@ -2,8 +2,11 @@ import mongoose from "mongoose";
 import { PurchaseManagement } from "../models/purchase.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { BookManagement } from "../models/book.management.js";
-import {VenderManagement } from "../models/vendor.management.js"; 
-import moment from 'moment-timezone';
+import { VenderManagement } from "../models/vendor.management.js";
+import moment from "moment-timezone";
+import { Admin } from "../models/admin.js";
+import { sendpurchesInvoiceEmail } from "./email.js";
+
 export const purchaseBook = async (req, res) => {
   const {
     bookId,
@@ -13,6 +16,7 @@ export const purchaseBook = async (req, res) => {
     quantity,
     totalPrice,
     bookComment,
+    adminId,
   } = req.body;
 
   try {
@@ -42,13 +46,17 @@ export const purchaseBook = async (req, res) => {
     const updatedBook = await BookManagement.findByIdAndUpdate(
       bookId,
       { bookQuantity: newQuantity },
-      { new: true }  
+      { new: true }
     );
 
     if (!updatedBook) {
       return res.status(400).json({ message: "Error updating book quantity" });
     }
+    const admin = await Admin.findById(adminId);
 
+    if (admin?.purchesEmail) {
+      await sendpurchesInvoiceEmail( PurchaseBookData._id);
+    }
     return res.status(200).json({
       purchase: PurchaseBookData,
       updatedBook: updatedBook,
