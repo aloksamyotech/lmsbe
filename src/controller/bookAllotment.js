@@ -4,13 +4,15 @@ import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
 import { BookFine } from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
-import {SubmittedBooks} from "../models/SubmittedBooks.js";
+import { SubmittedBooks } from "../models/SubmittedBooks.js";
+import { Admin } from "../models/admin.js";
 const { ObjectId } = mongoose.Types;
 import mongoose from "mongoose";
 import Types from "mongoose";
 import { BookAllotmentHistory } from "../models/bookallotmentHistory.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 import moment from "moment-timezone";
+import { sendAllotmentInvoiceEmail } from "./email.js";
 export const bookAllotmentCount = async (req, res) => {
   const { studentId } = req.params;
 
@@ -159,6 +161,12 @@ export const manyBookAllotment = async (req, res) => {
 
     student.bookCount += newBookCount;
     await student.save();
+    const adminId = allotmentsData[0]?.adminId;
+    const admin = await Admin.findById(adminId);
+
+    if (admin?.allotmentEmail) {      
+      await sendAllotmentInvoiceEmail(newAllotment._id);
+    }
 
     return res.status(201).json({
       message: "Books allotted successfully",

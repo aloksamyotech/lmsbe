@@ -157,3 +157,27 @@ export const loginAdmin = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+export const updateEmailContorller = async (req, res) => {  
+  try {
+    const { adminId, registrationEmail, allotmentEmail, submissionEmail, purchesEmail } = req.body;
+
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      adminId,
+      {
+        registrationEmail,
+        allotmentEmail,
+        submissionEmail,
+        purchesEmail
+      },
+      { new: true }
+    );
+
+    if (!updatedAdmin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.status(200).json({ message: "Email preferences updated", updatedAdmin });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating preferences", error });
+  }
+};
