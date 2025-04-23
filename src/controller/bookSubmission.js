@@ -2,9 +2,9 @@ import { SubmittedBooks } from "../models/SubmittedBooks.js";
 import mongoose from "mongoose";
 import { BookManagement } from "../models/book.management.js";
 import { RegisterManagement } from "../models/register.management.js";
-
+import { Admin } from "../models/admin.js";
+import {sendSubmitInvoiceEmail} from "../controller/email.js";
 export const submitedBook = async (req, res) => {
-
   try {
     const {
       allotmentId,
@@ -20,6 +20,7 @@ export const submitedBook = async (req, res) => {
       bookIssueDate,
       totalFineAmount,
       fines,
+      adminId,
     } = req.body;
 
     if (!studentId || !bookId || !submissionDate || !paymentType) {
@@ -39,19 +40,22 @@ export const submitedBook = async (req, res) => {
       amount: amount || 0,
       submit: submit || false,
       fine: fine || false,
-      totalFineAmount:totalFineAmount||0,
-      fines:fines||[],
+      totalFineAmount: totalFineAmount || 0,
+      fines: fines || [],
       count: count || 0,
       bookIssueDate: bookIssueDate || Date.now(),
     });
 
     const savedSubmission = await newSubmission.save();
+    const admin = await Admin.findById(adminId);
 
+    if (admin?.submissionEmail) {
+      await sendSubmitInvoiceEmail(savedSubmission._id.toString());
+    }
     return res.status(201).json({
       message: "Book submission saved successfully in db ",
       data: savedSubmission,
     });
-
   } catch (error) {
     console.error("Error saving submitted book:", error);
     return res.status(500).json({

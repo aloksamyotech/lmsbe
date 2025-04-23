@@ -1,29 +1,34 @@
-const jwt = require("jsonwebtoken"); 
+import jwt from "jsonwebtoken";
 
-const verifyJWT = async (req, res, next) => {
-    try {
-        const token = req?.headers['authorization']?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({
-                status: false,
-                error: "Unauthorized request"
-            })
-        }
-        const decodedToken = jwt.verify(token,"Token");
-        
-        if(decodedToken){
-            return res.status(401).json({
-                status: false,
-                error: "Invalid request"
-            })
-        }
-        req.user = decodedToken
-        next();
-    } catch (error) {
-        return res.status(401).json({
-            status: false,
-            error: "Invalid token"
-        })
+const statusCodes = {
+  forbidden: 403,
+  unauthorized: 401,
+};
+
+const messages = {
+  required: "Token is required",
+  invalid_format: "Invalid token format",
+};
+
+const secret = "abc";
+
+export const verifyJWT = (req, res, next) => {
+  try {
+    let token = req.headers["authorization"]?.split(" ")[1]?.replace(/^"|"$/g, "").trim();
+    if (!token) {
+      return res.status(statusCodes.forbidden).json({ message: messages.required });
     }
-}
-module.exports = verifyJWT;
+
+    jwt.verify(token, secret, (err, decoded) => {
+      if (err) {
+        return res.status(statusCodes.unauthorized).json({
+          message: err.name === 'TokenExpiredError' ? 'Token has expired' : messages.invalid_format
+        });
+      }
+      req.user = decoded; 
+      next();
+    });
+  } catch (error) {
+    return res.status(statusCodes.unauthorized).json({ message: "Unauthorized", error: error.message });
+  }
+};
