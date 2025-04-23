@@ -162,10 +162,9 @@ export const manyBookAllotment = async (req, res) => {
     student.bookCount += newBookCount;
     await student.save();
     const adminId = allotmentsData[0]?.adminId;
-    const admin = await Admin.findById(adminId);
-
+    const admin = await Admin.findById(adminId);    
     if (admin?.allotmentEmail) {      
-      await sendAllotmentInvoiceEmail(newAllotment._id);
+      await sendAllotmentInvoiceEmail(newAllotment._id,adminId );
     }
 
     return res.status(201).json({
