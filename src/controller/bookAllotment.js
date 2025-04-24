@@ -636,30 +636,30 @@ export const receiveBook = async (req, res) => {
     }
 
     const allBooks = activeBookAllotments.flatMap((bookAllotment) => {
-      return bookAllotment.books.map((book) => ({
-        allotmentId: bookAllotment._id,
+      return (bookAllotment.books || []).map((book) => ({
+        allotmentId: bookAllotment._id || "N/A",
         student: {
-          studentId: bookAllotment.studentId._id,
-          studentName: bookAllotment.studentId.student_Name,
-          email: bookAllotment.studentId.email,
-          mobileNumber: bookAllotment.studentId.mobile_Number,
+          studentId: bookAllotment.studentId?._id || "N/A",
+          studentName: bookAllotment.studentId?.student_Name || "N/A",
+          email: bookAllotment.studentId?.email || "N/A",
+          mobileNumber: bookAllotment.studentId?.mobile_Number || "N/A",
         },
-        bookId: book.bookId._id,
-        bookTitle: book.bookId.title,
-        bookAuthor: book.bookId.author,
-        paymentType: book.paymentType ? book.paymentType.title : null,
-        amount: book.amount,
-        bookIssueDate: book.bookIssueDate,
-        submissionDate: book.submissionDate,
-        quantity: book.quantity,
-        fine: book.fine,
-        active: book.active,
-        submit: book.submit,
-        _id: book._id,
-        submitCount:book.submitCount,
+        bookId: book.bookId?._id || "N/A",
+        bookTitle: book.bookId?.title || "N/A",
+        bookAuthor: book.bookId?.author || "N/A",
+        paymentType: book.paymentType?.title || "N/A",
+        amount: book.amount ?? 0,
+        bookIssueDate: book.bookIssueDate || null,
+        submissionDate: book.submissionDate || null,
+        quantity: book.quantity ?? 0,
+        fine: book.fine ?? 0,
+        active: book.active ?? false,
+        submit: book.submit ?? false,
+        _id: book._id || "N/A",
+        submitCount: book.submitCount ?? 0,
       }));
     });
-
+    
     res.status(200).json({
       message: "All active books fetched successfully",
       books: allBooks,

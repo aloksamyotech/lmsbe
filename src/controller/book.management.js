@@ -263,3 +263,24 @@ export const viewBookUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+export const bookData = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const book = await BookManagement.findById(id);
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    return res.status(200).json({
+      message: "Book data fetched successfully",
+      data: book,
+    });
+  } catch (error) {
+    console.error("Error fetching book data:", error);
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
