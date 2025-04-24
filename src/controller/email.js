@@ -12,6 +12,7 @@ import { BookFine } from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 import { SubmittedBooks } from "../models/SubmittedBooks.js";
+import { Admin } from "../models/admin.js";
 
 dotenv.config();
 const transporter = nodemailer.createTransport({
@@ -23,7 +24,19 @@ const transporter = nodemailer.createTransport({
     pass: process.env.BREVO_SMTP_KEY,
   },
 });
-
+const getCurrencySymbol = async (adminId) => {
+  try {
+    const admin = await Admin.findById(adminId).select('currencySymbol');
+    if (!admin) {
+      console.error('Admin not found');
+      return null;
+    }    
+    return admin.currencySymbol;
+  } catch (error) {
+    console.error('Error fetching currency symbol:', error);
+    return null;
+  }
+};
 const generateInvoicePdf = (invoiceData) => {
   const doc = new PDFDocument({ margin: 40 });
   const filePath = "./invoice.pdf";
@@ -50,7 +63,7 @@ const generateInvoicePdf = (invoiceData) => {
       .fontSize(12)
       .text(`Book Name: ${book.bookName}`, { continued: true })
       .text(`Quantity: ${book.quantity}`, {align: "right"});
-
+      doc.moveDown(1);
     doc
       .fontSize(12)
       .text(`Issue Date: ${moment(book.bookIssueDate).format("DD/MM/YY")}`, {
@@ -76,6 +89,7 @@ const generateInvoicePdf = (invoiceData) => {
     .fontSize(12)
     .text(`  Name: ${invoiceData.student.studentName}`, { continued: true })
     .text(`  Phone: ${invoiceData.student.phone}`, {align: "right"});
+    doc.moveDown(1);
 
   doc
     .fontSize(12)
@@ -98,13 +112,15 @@ const generateInvoicePdf = (invoiceData) => {
     .text(`  Subscription Type: ${invoiceData.payment.paymentType}`, {
       continued: true,
     })
-    .text(` Amount: ₹${invoiceData.payment.amount.toFixed(2)}`, {align: "right"});
-  doc.text(` Total Items: ${invoiceData.totalQuantity}`);
+    .text(`Amount: ${invoiceData.currency}${invoiceData.payment.amount.toFixed(2)}`, {
+      align: "right",
+    });
+    doc.text(` Total Items: ${invoiceData.totalQuantity}`);
   doc.moveDown(3);
 
   doc
     .fontSize(16)
-    .text(`Total Amount: ₹${invoiceData.totalAmount.toFixed(2)}`, {
+    .text(`Total Amount: ${invoiceData.currency}${invoiceData.totalAmount.toFixed(2)}`, {
       align: "right",
     });
 
@@ -317,7 +333,8 @@ export const sendRegistrationEmail = async (studentEmail, studentName) => {
     console.error("Error sending email:", error);
   }
 };
-export const sendAllotmentInvoiceEmail = async (allotmentId) => {
+export const sendAllotmentInvoiceEmail = async (allotmentId,adminId) => {
+  
   try {
     if (!mongoose.Types.ObjectId.isValid(allotmentId)) {
       throw new Error("Invalid ObjectId format.");
@@ -342,7 +359,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId) => {
     if (!bookAllotment) {
       throw new Error("No data found for this ID.");
     }
-
+    const currency = await getCurrencySymbol(adminId);
     const invoiceData = {
       books: bookAllotment.books.map((book) => ({
         bookName: book.bookId?.bookName || "N/A",
@@ -371,7 +388,8 @@ export const sendAllotmentInvoiceEmail = async (allotmentId) => {
         (total, book) => total + (book.amount || 0) * (book.quantity || 0),
         0
       ),
-    };
+      currency,
+    };    
     const pdfPath = generateInvoicePdf(invoiceData);
     const mailOptions = {
       from: process.env.BREVO_SMTP_FROM,
@@ -393,6 +411,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId) => {
     throw error;
   }
 };
+
 export const sendpurchesInvoiceEmail = async (purchesId) => {
   try {
     const purchase = await PurchaseManagement.findById(purchesId)
