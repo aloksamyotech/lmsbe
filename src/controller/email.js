@@ -8,7 +8,6 @@ import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
 import { VenderManagement } from "../models/vendor.management.js";
-import { BookFine } from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 import { SubmittedBooks } from "../models/SubmittedBooks.js";
@@ -142,11 +141,11 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
   doc.pipe(fs.createWriteStream(filePath));
 
   doc.fontSize(24).text("SAMYOTECH", { align: "center" });
-  doc.fontSize(18).text("Purchase Invoice", { align: "center" });
+  doc.fontSize(18).text("Library Management System", { align: "center" });
   doc.moveDown();
   doc.fontSize(14).text(`Invoice`);
   doc.text(`Date: ${moment().format("MMMM D, YYYY")}`, { align: "right" });
-  doc.moveDown(1.5);
+  doc.moveDown(1);
 
   doc.fontSize(16).text("Vendor Information");
   doc
@@ -181,7 +180,7 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
     .fontSize(12)
     .text(`Book Name: ${purchaseData.bookname}`, { continued: true })
     .text(`Quantity: ${purchaseData.quantity}`, { align: "right" });
-  doc.moveDown(0.5);
+  doc.moveDown(1);
 
   doc
     .fontSize(12)
@@ -192,12 +191,16 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
       `Total: ₹${(purchaseData.priceperBook * purchaseData.quantity).toFixed(2)}`,
       { align: "right" }
     );
+    doc.moveDown(1);
+
   doc
     .fontSize(12)
     .text(`Advance Paytment: ${purchaseData.advancepayment}`, {
       continued: true,
     })
     .text(`Discount: ${purchaseData.discount}`, { align: "right" });
+    doc.moveDown(1);
+
   doc.text(
     `Purches Date:${new Date(purchaseData.purchesDate).toLocaleDateString()}`
   );
@@ -211,8 +214,8 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
     .stroke();
 
   doc.moveDown(2);
-  doc.fontSize(12).text(`Total Items: ${purchaseData.quantity}`);
-  doc.fontSize(16).text(`Total Amount: ₹${purchaseData.totalAmount}`, {});
+  doc.fontSize(12).text(`Total Items: ${purchaseData.quantity}`, { continued: true });
+  doc.fontSize(16).text(`Total Amount: ₹${purchaseData.totalAmount}`, { align: "right" });
 
   doc.end();
   return filePath;
@@ -493,16 +496,11 @@ export const sendpurchesInvoiceEmail = async (purchesId) => {
       from: process.env.BREVO_SMTP_FROM,
       to: purchase.vendorId?.email,
       subject: "New Purchase Invoice",
-      text: ` <h2>Purchase Invoice</h2>
-      <p><strong>Purchase ID:</strong> ${purchase._id}</p>
-      <p><strong>Book:</strong> ${purchase.bookId?.bookTitle || "N/A"}</p>
-      <p><strong>Vendor:</strong> ${purchase.vendorId?.vendorName || "N/A"}</p>
-      <p><strong>Issue Date:</strong> ${new Date(purchase.bookIssueDate).toLocaleDateString()}</p>
-      <p><strong>Quantity:</strong> ${purchase.quantity}</p>
-      <p><strong>Price per unit:</strong> ₹${purchase.price}</p>
-      <p><strong>Total Price:</strong> ₹${purchase.totalPrice}</p>
-      <p><strong>Comment:</strong> ${purchase.bookComment}</p>
-    `,
+      text: ` Dear Vendor,
+        Please find attached the invoice for your recent purchase.
+
+        Best regards,
+        Library Team`,
       attachments: [
         {
           filename: "invoice.pdf",

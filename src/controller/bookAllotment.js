@@ -2,7 +2,6 @@ import { MongoServerClosedError } from "mongodb";
 import { BookManagement } from "../models/book.management.js";
 import { BookAllotment } from "../models/bookAllotment.js";
 import { PurchaseManagement } from "../models/purchase.js";
-import { BookFine } from "../models/fine.management.js";
 import { RegisterManagement } from "../models/register.management.js";
 import { SubmittedBooks } from "../models/SubmittedBooks.js";
 import { Admin } from "../models/admin.js";
@@ -422,78 +421,12 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
     res.status(500).json({ message: "Failed to retrieve book allotments" });
   }
 };
-export const deleteAllotmentBook = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const deletedAllotmentBook = await BookAllotment.findByIdAndDelete(id, {
-      active: false,
-    });
-    if (!deletedAllotmentBook) {
-      return res.status(404).json({ message: "Book Allotment not found" });
-    }
-    res.status(200).json({
-      message: "Book Allotment deleted successfully",
-      deletedAllotmentBook,
-    });
-  } catch (error) {
-    console.error("Error deleting book Allotment:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
 export const getBookAllotedCount = async (req, res) => {
   try {
     const bookAllotedCount = await BookAllotment.countDocuments({});
     res.status(200).json({ count: bookAllotedCount });
   } catch (error) {
     res.status(500).json({ message: "Error fetching book count", error });
-  }
-};
-export const getBookMonthVise = async (req, res) => {
-  try {
-    const data = await BookAllotment.aggregate([
-      {
-        $match: { active: true },
-      },
-      {
-        $project: {
-          year: { $year: "$createdAt" },
-          month: { $month: "$createdAt" },
-        },
-      },
-      {
-        $group: {
-          _id: "$month",
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
-      {
-        $project: {
-          month: "$_id",
-          count: 1,
-          _id: 0,
-        },
-      },
-    ]);
-
-    const dataMap = data.reduce((acc, { month, count }) => {
-      acc[month] = count;
-      return acc;
-    }, {});
-    const result = [];
-    for (let month = 1; month <= 12; month++) {
-      result.push({
-        month,
-        count: dataMap[month] || 0,
-      });
-    }
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };
 export const bookAllotmentReport = async (req, res) => {
@@ -622,7 +555,7 @@ export const receiveBook = async (req, res) => {
   try {
     const ReceiveBooks = await BookAllotment.find()
       .populate("studentId", "student_Name email mobile_Number")
-      .populate("books.bookId", "title author")
+      .populate("books.bookId", "title author bookName")
       .populate("books.paymentType", "title");
 
     const activeBookAllotments = ReceiveBooks.filter((bookAllotment) =>
@@ -645,6 +578,7 @@ export const receiveBook = async (req, res) => {
           mobileNumber: bookAllotment.studentId?.mobile_Number || "N/A",
         },
         bookId: book.bookId?._id || "N/A",
+        bookName:book.bookId?.bookName || "N/A",
         bookTitle: book.bookId?.title || "N/A",
         bookAuthor: book.bookId?.author || "N/A",
         paymentType: book.paymentType?.title || "N/A",
@@ -716,47 +650,6 @@ export const newReceiveBook = async (req, res) => {
   } catch (error) {
     console.error("Error in Book Management:", error);
     return res.status(500).send({ message: "Internal Server Error" });
-  }
-};
-export const getReceiveBook = async (req, res) => {
-  try {
-    const bookAllotments = await BookAllotment.aggregate([
-      {
-        $match: { active: true },
-      },
-
-      {
-        $lookup: {
-          from: "bookmanagements",
-          localField: "bookId",
-          foreignField: "_id",
-          as: "bookDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "registermanagements",
-          localField: "studentId",
-          foreignField: "_id",
-          as: "studentDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "subscriptiontypes",
-          localField: "paymentType",
-          foreignField: "_id",
-          as: "subscriptionDetails",
-        },
-      },
-      { $unwind: "$bookDetails" },
-      { $unwind: "$studentDetails" },
-      { $unwind: "$subscriptionDetails" },
-    ]);
-
-    return res.status(200).json(bookAllotments);
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error });
   }
 };
 export const removeReceiveBook = async (req, res) => {
@@ -1144,106 +1037,3 @@ export const trendingBooks = async (req, res) => {
     });
   }
 };
-export const submissionReport = async (req, res) => {
-  const { startDate, endDate } = req.params;
-
-  if (!startDate || !endDate) {
-    return res.status(400).json({ error: "Both startDate and endDate are required" });
-  }
-
-  const parsedStartDate = moment.utc(startDate, "YYYY-MM-DD").startOf("day");
-  const parsedEndDate = moment.utc(endDate, "YYYY-MM-DD").endOf("day");
-
-  try {
-    const bookAllotments = await BookAllotment.aggregate([
-      {
-        $unwind: "$books"
-      },
-      {
-        $match: {
-          "books.submit": true,
-          "books.updatedAt": {
-            $gte: parsedStartDate.toDate(),
-            $lte: parsedEndDate.toDate()
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: "bookmanagements",
-          localField: "books.bookId",
-          foreignField: "_id",
-          as: "bookDetails"
-        }
-      },
-      {
-        $lookup: {
-          from: "registermanagements",
-          localField: "studentId",
-          foreignField: "_id",
-          as: "studentDetails"
-        }
-      },
-      {
-        $lookup: {
-          from: "subscriptiontypes",
-          localField: "books.paymentType",
-          foreignField: "_id",
-          as: "paymentType"
-        }
-      },
-      {
-        $lookup: {
-          from: "bookfines",
-          localField: "_id",
-          foreignField: "allotmentId",
-          as: "finedetalis"
-        }
-      },
-      {
-        $unwind: {
-          path: "$studentDetails",
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $unwind: {
-          path: "$paymentType",
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $unwind: {
-          path: "$bookDetails",
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $unwind: {
-          path: "$finedetalis",
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $sort: {
-          "books.updatedAt": -1
-        }
-      },
-
-    ]);
-
-    if (bookAllotments.length === 0) {
-      return res.status(200).json({
-        message: "No records found for the given date range with submit = true"
-      });
-    }
-
-    return res.status(200).json(bookAllotments);
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
-      error: error.message || "An error occurred while fetching data"
-    });
-  }
-};
-

@@ -56,30 +56,23 @@ import {
   bookAllotment,
   bookAllotmentCount,
   bookAllotmentReport,
-  deleteAllotmentBook,
-  editBookAllotment,
   fetchBooks,
   findHistoryBookAllotmentUser,
   getAllSubmitBookDetails,
   getBookAllotedCount,
   getBookAllotment,
-  getBookAllotmentById,
   getBookAllotmentInvoice,
-  getBookMonthVise,
   getInvoice,
-  getReceiveBook,
   getSubmitBook,
   getSubmitBookDetails,
   manyBookAllotment,
   newReceiveBook,
   postReceiveBook,
-  reBookAllotment,
   receiveBook,
   removeReceiveBook,
   submitBook,
   viewBookAllotmentUser,
   trendingBooks,
-  submissionReport
 } from "../controller/bookAllotment.js";
 
 import {
@@ -88,15 +81,6 @@ import {
   getSubscriptionTypeTable,
   updateSubscriptionType,
 } from "../controller/subscriptionType.js";
-import {
-  addFineBook,
-  findByStudentId,
-  findFineByStudentIdAndBookId,
-  findFineByStudentIdAndBookIdInvoice,
-  getAllFineBooks,
-  getFineBook,
-  findFinebyAllotmentIdAndBookId,
-} from "../controller/fine.management.js";
 import {
   deletePurchaseBook,
   getPurchaseInvoice,
@@ -219,7 +203,6 @@ router.get(
 router.post("/user/bookAllotment",verifyJWT, bookAllotment);
 router.post("/user/manyBookAllotment",verifyJWT, manyBookAllotment);
 router.get("/user/allotmentManagement",verifyJWT,  getBookAllotment);
-router.get("/user/getReceiveBook",verifyJWT,  getReceiveBook);
 router.post("/user/removeReceiveBook/:id", verifyJWT, removeReceiveBook);
 router.post("/user/submitBook/:id",verifyJWT, submitBook);
 router.get("/user/getSubmitBook/:selectedStudentId", getSubmitBook);
@@ -232,35 +215,15 @@ router.get("/user/getInvoice/:id",verifyJWT,  getInvoice);
 router.get("/user/receiveBook",verifyJWT,  receiveBook);
 router.post("/user/postReceiveBook",verifyJWT, postReceiveBook);
 router.post("/user/newReceiveBook", newReceiveBook);
-router.get("/user/reBookAllotment", reBookAllotment);
-router.put("/user/editBookAllotment/:id", editBookAllotment);
-router.get("/user/getBookAllotmentById/:id", getBookAllotmentById);
 router.get("/user/viewBookAllotmentUser/:id", verifyJWT, viewBookAllotmentUser);
-router.delete("/user/deleteAllotmentBook/:id", deleteAllotmentBook);
+
 router.get("/user/bookAllotmentCount/:studentId",verifyJWT, bookAllotmentCount);
-router.get("/user/getBookMonthVise", getBookMonthVise);
 router.get("/user/getBookAllotedCount",verifyJWT, getBookAllotedCount);
 router.get(
   "/user/bookAllotmentReport/:startDate/:endDate",verifyJWT, 
   bookAllotmentReport
 );
 router.get("/user/trendingBooks",verifyJWT,  trendingBooks);
-//  ----------------------   Fine    ----------------------
-router.post("/user/addFineBook", addFineBook);
-router.get("/user/getFineBook/:studentId", getFineBook);
-router.get("/user/getAllFineBooks", getAllFineBooks);
-router.get("/user/findByStudentId", findByStudentId);
-router.get("/user/findFine/:bookId/:studentId", findFineByStudentIdAndBookId);
-router.get("/user/submissionReport/:startDate/:endDate", submissionReport);
-
-router.get(
-  "/user/findFineInvoice/:studentId/:bookId",
-  findFineByStudentIdAndBookIdInvoice
-);
-router.get(
-  "/user/findFinebyAllotmentIdAndBookId/:allotmentId/:bookId",
-  findFinebyAllotmentIdAndBookId
-);
 
 //  ---------------------- Purchase Book -----------------------
 
