@@ -38,10 +38,6 @@ const SubmittedBooksSchema = new Schema(
       type: Number,
       default: 0,
     },
-    submit: {
-      type: Boolean,
-      default: false,
-    },
     fine: {
       type: Boolean,
       default: false,

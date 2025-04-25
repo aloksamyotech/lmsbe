@@ -9,7 +9,6 @@ const messages = {
   required: "Token is required",
   invalid_format: "Invalid token format",
 };
-
 const secret = "abc";
 
 export const verifyJWT = (req, res, next) => {

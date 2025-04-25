@@ -13,6 +13,7 @@ import {
   viewBookUser,
   bookAllotments,
   bookmangmentTable,
+  bookData
 } from "../controller/book.management.js";
 import {
   addContact,
@@ -55,30 +56,23 @@ import {
   bookAllotment,
   bookAllotmentCount,
   bookAllotmentReport,
-  deleteAllotmentBook,
-  editBookAllotment,
   fetchBooks,
   findHistoryBookAllotmentUser,
   getAllSubmitBookDetails,
   getBookAllotedCount,
   getBookAllotment,
-  getBookAllotmentById,
   getBookAllotmentInvoice,
-  getBookMonthVise,
   getInvoice,
-  getReceiveBook,
   getSubmitBook,
   getSubmitBookDetails,
   manyBookAllotment,
   newReceiveBook,
   postReceiveBook,
-  reBookAllotment,
   receiveBook,
   removeReceiveBook,
   submitBook,
   viewBookAllotmentUser,
   trendingBooks,
-  submissionReport
 } from "../controller/bookAllotment.js";
 
 import {
@@ -87,15 +81,6 @@ import {
   getSubscriptionTypeTable,
   updateSubscriptionType,
 } from "../controller/subscriptionType.js";
-import {
-  addFineBook,
-  findByStudentId,
-  findFineByStudentIdAndBookId,
-  findFineByStudentIdAndBookIdInvoice,
-  getAllFineBooks,
-  getFineBook,
-  findFinebyAllotmentIdAndBookId,
-} from "../controller/fine.management.js";
 import {
   deletePurchaseBook,
   getPurchaseInvoice,
@@ -133,15 +118,15 @@ const router = express.Router();
 
 // -------------------------------------------  Admin  ---------------------
 router.post("/user/createUser", createUser);
-router.get("/user/adminProfilePage", adminProfilePage);
+router.get("/user/adminProfilePage", verifyJWT, adminProfilePage);
 router.put(
-  "/user/adminEditProfilePage/:id",
+  "/user/adminEditProfilePage/:id", verifyJWT,
   upload.single("logo"),
   adminUpdateProfilePage
 );
 router.get("/user/adminGetLogo", adminGetLogo);
 router.post("/user/login", loginAdmin);
-router.put("/user/updateEmailContorller", updateEmailContorller);
+router.put("/user/updateEmailContorller", verifyJWT, updateEmailContorller);
 router.put("/user/updatepassword", verifyJWT, updatepassword);
 
 // -----------------    SubscriptionManagement       ---------------------------
@@ -150,7 +135,7 @@ router.post("/user/subscriptionType",verifyJWT, addSubscriptionType);
 
 router.get("/user/getSubscriptionType",verifyJWT,  getSubscriptionTypeTable);
 router.delete("/user/deleteSubscriptionType/:id",verifyJWT, deleteSubscriptionType);
-router.put("/user/editSubscriptionType/:id", updateSubscriptionType);
+router.put("/user/editSubscriptionType/:id",verifyJWT, updateSubscriptionType);
 
 //------------------    BOOK MANAGEMENT ---------------------
 
@@ -160,9 +145,11 @@ router.get("/user/alotmentsbooks", bookAllotments);
 router.get("/user/bookManagement", bookManagement);
 router.get("/user/viewBookUser", viewBookUser);
 router.delete("/user/deleteBook/:id",verifyJWT, deleteBook);
-router.put("/user/editBook/:id",  updateBook);
+router.put("/user/editBook/:id",  verifyJWT, updateBook);
 router.get("/user/getBookCount",verifyJWT,getBookCount);
-router.get("/user/bookmangmentTable", bookmangmentTable);
+router.get("/user/bookmangmentTable",verifyJWT, bookmangmentTable);
+router.get("/user/bookData/:id",verifyJWT, bookData);
+
 
 //--------------   book submission  ------------------------
 router.post("/user/submitedBook",verifyJWT, submitedBook);
@@ -174,21 +161,21 @@ router.get("/user/getsubmitedBookinvoice",verifyJWT,  getsubmitedBookinvoice);
 router.post("/user/addVenderBook",verifyJWT, addVenderBook);
 router.get("/user/venderManagement",verifyJWT, getVenderManagement);
 router.delete("/user/deleteVender/:id",verifyJWT, deleteVender);
-router.put("/user/editVender/:id", updateVender);
+router.put("/user/editVender/:id",verifyJWT, updateVender);
 router.get("/user/getVenderCount", verifyJWT, getVenderCount);
 
 //-----------------  Favorite Students ----------------------
 
-router.post("/user/addContact", addContact);
+router.post("/user/addContact",verifyJWT, addContact);
 router.get("/user/contactManagement", getContactManagement);
 router.put("/user/editContact/:id", updateContact);
 router.delete("/user/deleteContact/:id",verifyJWT, deleteContact);
 
 //------------------ Publications --------------------
 
-router.post("/user/addPublications", addPublications);
+router.post("/user/addPublications",verifyJWT, addPublications);
 router.get("/user/getPublications",verifyJWT, getPublications);
-router.put("/user/editPublications/:id", editPublications);
+router.put("/user/editPublications/:id",verifyJWT, editPublications);
 router.delete("/user/deletePublications/:id",verifyJWT, deletePublications);
 router.get("/user/getPublicationsCount",verifyJWT,  getPublicationsCount);
 
@@ -198,11 +185,11 @@ router.post("/user/addRegister", upload.single("upload_identity"),verifyJWT,  ad
 router.post("/user/registerMany",verifyJWT, registerMany);
 
 router.get("/user/registerManagement", verifyJWT, registerManagement);
-router.put("/user/editRegister/:id", updateRegister);
+router.put("/user/editRegister/:id",verifyJWT,  updateRegister);
 router.delete("/user/deleteRegister/:id",verifyJWT, deleteRegister);
 router.get("/user/getRegisterStudentCount", verifyJWT, getRegisterStudentCount);
 router.post("/user/markFavorite/:id",verifyJWT, markFavorite);
-router.get("/user/getMarkFavorite", getMarkFavorite);
+router.get("/user/getMarkFavorite",verifyJWT, getMarkFavorite);
 
 router.post("/user/markSubscription/:id",verifyJWT, markSubscription);
 router.get("/user/getSubscription",verifyJWT,  getSubscription);
@@ -216,7 +203,6 @@ router.get(
 router.post("/user/bookAllotment",verifyJWT, bookAllotment);
 router.post("/user/manyBookAllotment",verifyJWT, manyBookAllotment);
 router.get("/user/allotmentManagement",verifyJWT,  getBookAllotment);
-router.get("/user/getReceiveBook",verifyJWT,  getReceiveBook);
 router.post("/user/removeReceiveBook/:id", verifyJWT, removeReceiveBook);
 router.post("/user/submitBook/:id",verifyJWT, submitBook);
 router.get("/user/getSubmitBook/:selectedStudentId", getSubmitBook);
@@ -226,45 +212,24 @@ router.get(
 );
 router.get("/user/getAllSubmitBookDetails", verifyJWT, getAllSubmitBookDetails);
 router.get("/user/getInvoice/:id",verifyJWT,  getInvoice);
-
 router.get("/user/receiveBook",verifyJWT,  receiveBook);
 router.post("/user/postReceiveBook",verifyJWT, postReceiveBook);
 router.post("/user/newReceiveBook", newReceiveBook);
-router.get("/user/reBookAllotment", reBookAllotment);
-router.put("/user/editBookAllotment/:id", editBookAllotment);
-router.get("/user/getBookAllotmentById/:id", getBookAllotmentById);
 router.get("/user/viewBookAllotmentUser/:id", verifyJWT, viewBookAllotmentUser);
-router.delete("/user/deleteAllotmentBook/:id", deleteAllotmentBook);
-router.get("/user/bookAllotmentCount/:studentId", bookAllotmentCount);
-router.get("/user/getBookMonthVise", getBookMonthVise);
+
+router.get("/user/bookAllotmentCount/:studentId",verifyJWT, bookAllotmentCount);
 router.get("/user/getBookAllotedCount",verifyJWT, getBookAllotedCount);
 router.get(
   "/user/bookAllotmentReport/:startDate/:endDate",verifyJWT, 
   bookAllotmentReport
 );
 router.get("/user/trendingBooks",verifyJWT,  trendingBooks);
-//  ----------------------   Fine    ----------------------
-router.post("/user/addFineBook", addFineBook);
-router.get("/user/getFineBook/:studentId", getFineBook);
-router.get("/user/getAllFineBooks", getAllFineBooks);
-router.get("/user/findByStudentId", findByStudentId);
-router.get("/user/findFine/:bookId/:studentId", findFineByStudentIdAndBookId);
-router.get("/user/submissionReport/:startDate/:endDate", submissionReport);
-
-router.get(
-  "/user/findFineInvoice/:studentId/:bookId",
-  findFineByStudentIdAndBookIdInvoice
-);
-router.get(
-  "/user/findFinebyAllotmentIdAndBookId/:allotmentId/:bookId",
-  findFinebyAllotmentIdAndBookId
-);
 
 //  ---------------------- Purchase Book -----------------------
 
 router.post("/user/purchaseBook", verifyJWT, purchaseBook);
 router.delete("/user/deletePurchaseBook/:id",verifyJWT, deletePurchaseBook);
-router.patch("/user/updatePurchaseBook", updatePurchaseBook);
+router.patch("/user/updatePurchaseBook",verifyJWT,  updatePurchaseBook);
 router.get("/user/purchaseManagement",verifyJWT,  purchaseManagement);
 router.get("/user/getPurchaseInvoice/:id", verifyJWT,  getPurchaseInvoice);
 router.get("/user/purchaseReport/:startDate/:endDate", verifyJWT, purchaseReport);
