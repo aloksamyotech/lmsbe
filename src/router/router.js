@@ -118,7 +118,7 @@ const router = express.Router();
 
 // -------------------------------------------  Admin  ---------------------
 router.post("/user/createUser", createUser);
-router.get("/user/adminProfilePage", verifyJWT, adminProfilePage);
+router.get("/user/adminProfilePage", adminProfilePage);
 router.put(
   "/user/adminEditProfilePage/:id", verifyJWT,
   upload.single("logo"),
