@@ -16,6 +16,11 @@ export const addRegister = async (req, res) => {
   const upload_identity = req.file ? req.file.path : "";
 
   try {
+    const existingStudent = await RegisterManagement.findOne({ email });
+    if (existingStudent) {
+      return res.status(400).send({ message: "Email already exists. Please use a different email." });
+    }
+
     const registerData = new RegisterManagement({
       student_Name,
       email,
@@ -40,10 +45,17 @@ export const addRegister = async (req, res) => {
 
 export const registerMany = async (req, res) => {
   const data = req?.body;
-  const adminId =data[0].adminId
- 
+  const adminId = data[0]?.adminId;
+
   try {
-    const registerData = data.map((student) => {
+    const emails = data.map((student) => student.email);
+
+    const existingStudents = await RegisterManagement.find({ email: { $in: emails } });
+    const existingEmails = existingStudents.map((s) => s.email);
+
+    const filteredData = data.filter((student) => !existingEmails.includes(student.email));
+
+    const registerData = filteredData.map((student) => {
       const {
         student_Name,
         email,
@@ -71,8 +83,12 @@ export const registerMany = async (req, res) => {
       }  
     }
 
-    
-    return res.status(200).send(savedData);
+    return res.status(200).send({
+      inserted: savedData,
+      skippedEmails: existingEmails,
+      message: `${savedData.length} students registered. ${existingEmails.length} emails skipped.`,
+    });
+
   } catch (error) {
     console.error("Error in Register Management Bulk Insert", error);
     return res.status(500).send({ message: "Internal Server Error" });
