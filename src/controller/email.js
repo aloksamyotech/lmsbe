@@ -415,7 +415,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
         quantity: book.quantity,
         bookIssueDate: book.bookIssueDate,
         submissionDate: book.submissionDate,
-        SubscriptionType: book.paymentType?.title || "N/A", // fixed here
+        SubscriptionType: book.paymentType?.title || "N/A", 
         amount: book.amount,
       })),
       totalQuantity: bookAllotment.books.reduce(
