@@ -97,7 +97,7 @@ const generateInvoicePdf = (invoiceData) => {
       issueDate: moment(book.bookIssueDate).format("DD/MM/YY"),
       submissionDate: moment(book.submissionDate).format("DD/MM/YYYY"),
       amount: book.amount || 0,
-      paymentType: invoiceData.payment?.paymentType || "N/A",
+      paymentType: book.SubscriptionType || "N/A",
     })),
   };
   
@@ -415,7 +415,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
         quantity: book.quantity,
         bookIssueDate: book.bookIssueDate,
         submissionDate: book.submissionDate,
-        SubscriptionType: book.title,
+        SubscriptionType: book.paymentType?.title || "N/A", // fixed here
         amount: book.amount,
       })),
       totalQuantity: bookAllotment.books.reduce(
@@ -440,7 +440,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
         0
       ),
       currency,
-    };    
+    };
     const pdfPath = generateInvoicePdf(invoiceData);
     const mailOptions = {
       from: process.env.BREVO_SMTP_FROM,

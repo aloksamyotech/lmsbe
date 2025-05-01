@@ -12,6 +12,17 @@ export const addBook = async (req, res) => {
   let upload_Book = req.file ? req.file.path : "";
 
   try {
+    const existingBook = await BookManagement.findOne({
+      bookName: { $regex: new RegExp(`^${bookName}$`, 'i') }, 
+      author: { $regex: new RegExp(`^${author}$`, 'i') },
+    });
+
+    if (existingBook) {
+      return res.status(400).send({
+        message: `Book "${bookName}" by author "${author}" already exists.`,
+      });
+    }
+
     const newBook = new BookManagement({
       bookName,
       title,
@@ -34,7 +45,26 @@ export const addManyBooks = async (req, res) => {
   const data = req?.body;
 
   try {
-    const addManyBooks = data.map((book) => {
+    const bookAuthorPairs = data.map((book) => ({
+      bookName: book["Book Name"],
+      author: book["Author Name"],
+    }));
+    const existingBooks = await BookManagement.find({
+      $or: bookAuthorPairs.map(({ bookName, author }) => ({
+        bookName,
+        author,
+      })),
+    });
+    const existingSet = new Set(
+      existingBooks.map((b) => `${b.bookName.toLowerCase()}|${b.author.toLowerCase()}`)
+    );
+
+    const filteredData = data.filter((book) => {
+      const key = `${book["Book Name"].toLowerCase()}|${book["Author Name"].toLowerCase()}`;
+      return !existingSet.has(key);
+    });
+
+    const booksToInsert = filteredData.map((book) => {
       const {
         "Book Name": bookName,
         "Book Title": title,
@@ -54,9 +84,15 @@ export const addManyBooks = async (req, res) => {
         bookDescription,
       };
     });
-    const savedData = await BookManagement.insertMany(addManyBooks);
 
-    return res.status(200).send(savedData);
+    const savedData = await BookManagement.insertMany(booksToInsert);
+
+    return res.status(200).send({
+      inserted: savedData,
+      skipped: data.length - savedData.length,
+      message: `${savedData.length} books added. ${data.length - savedData.length} duplicate entries skipped.`,
+    });
+
   } catch (error) {
     console.error("Error in Book Management Bulk Insert", error);
     return res.status(500).send({ message: "Internal Server Error" });
