@@ -234,7 +234,7 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
 const generateSubmitInvoicePdf = (submissionData) => {
   const doc = new PDFDocument({ margin: 40 });
   const filePath = "./submit_invoice.pdf";
-  const currency = submissionData.currency || "₹"; // fallback to ₹
+  const currency = submissionData.currency || "₹";
 
   doc.pipe(fs.createWriteStream(filePath));
 
