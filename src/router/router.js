@@ -32,6 +32,7 @@ import {
   getVenderCount,
   getVenderManagement,
   updateVender,
+  viewVendorDetails,
 } from "../controller/vender.management.js";
 import {
   addPublications,
@@ -163,6 +164,7 @@ router.get("/user/venderManagement",verifyJWT, getVenderManagement);
 router.delete("/user/deleteVender/:id",verifyJWT, deleteVender);
 router.put("/user/editVender/:id",verifyJWT, updateVender);
 router.get("/user/getVenderCount", verifyJWT, getVenderCount);
+router.get("/user/viewVendorDetails/:id",verifyJWT, viewVendorDetails);
 
 //-----------------  Favorite Students ----------------------
 

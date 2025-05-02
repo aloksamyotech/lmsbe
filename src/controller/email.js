@@ -82,13 +82,17 @@ const generateInvoicePdf = (invoiceData) => {
 
   const bookTable = {
     headers: [
-      { label: "S.No", property: "sno", width: 40 }, 
+      { label: "S.No", property: "sno", width: 40 },
       { label: "Book Name", property: "bookName", width: 120 },
       { label: "Quantity", property: "quantity", width: 60 },
       { label: "Issue Date", property: "issueDate", width: 90 },
-      { label: "Submission Date", property: "submissionDate", width: 80 },
-      { label: "Subscription Type", property: "paymentType", width: 80 }, 
-      { label: "Amount", property: "amount", width: 60 }, 
+      {
+        label: "Expected Submission Date",
+        property: "submissionDate",
+        width: 80,
+      },
+      { label: "Subscription Type", property: "paymentType", width: 80 },
+      { label: "Amount", property: "amount", width: 60 },
     ],
     datas: invoiceData.books.map((book, index) => ({
       sno: index + 1,
@@ -96,18 +100,17 @@ const generateInvoicePdf = (invoiceData) => {
       quantity: book.quantity ?? 0,
       issueDate: moment(book.bookIssueDate).format("DD/MM/YY"),
       submissionDate: moment(book.submissionDate).format("DD/MM/YYYY"),
-      amount: book.amount || 0,
+      amount: `${invoiceData.currency}${(book.amount || 0).toFixed(2)}`,
       paymentType: book.SubscriptionType || "N/A",
     })),
   };
-  
 
   doc.table(bookTable, {
     prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
     prepareRow: (row, i) => {
       doc.font("Helvetica").fontSize(12);
       return {
-        paddingBottom: 3, 
+        paddingBottom: 3,
       };
     },
   });
@@ -122,14 +125,15 @@ const generateInvoicePdf = (invoiceData) => {
     .stroke();
 
   doc.moveDown(1);
-  doc.text(`Total Items: ${invoiceData.totalQuantity}`,{ continued: true })
+  doc
+    .text(`Total Items: ${invoiceData.totalQuantity}`, { continued: true })
     .text(
       `Total Amount: ${invoiceData.currency}${invoiceData.totalAmount.toFixed(2)}`,
       {
         align: "right",
-      },)
+      }
+    );
   doc.moveDown(1);
-
 
   doc.end();
   return filePath;
@@ -137,6 +141,7 @@ const generateInvoicePdf = (invoiceData) => {
 const generatePurchaseInvoicePdf = (purchaseData) => {
   const doc = new PDFDocument({ margin: 40 });
   const filePath = "./purchase_invoice.pdf";
+  const currency = purchaseData.currency || "₹";
 
   doc.pipe(fs.createWriteStream(filePath));
 
@@ -184,25 +189,25 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
 
   doc
     .fontSize(12)
-    .text(`Unit Price: ₹${purchaseData.priceperBook.toFixed(2)}`, {
+    .text(`Unit Price: ${currency}${purchaseData.priceperBook.toFixed(2)}`, {
       continued: true,
     })
     .text(
-      `Total: ₹${(purchaseData.priceperBook * purchaseData.quantity).toFixed(2)}`,
+      `Total: ${currency}${(purchaseData.priceperBook * purchaseData.quantity).toFixed(2)}`,
       { align: "right" }
     );
-    doc.moveDown(1);
+  doc.moveDown(1);
 
   doc
     .fontSize(12)
-    .text(`Advance Paytment: ${purchaseData.advancepayment}`, {
+    .text(`Advance Payment: ${currency}${purchaseData.advancepayment}`, {
       continued: true,
     })
-    .text(`Discount: ${purchaseData.discount}`, { align: "right" });
-    doc.moveDown(1);
+    .text(`Discount: ${currency}${purchaseData.discount}`, { align: "right" });
+  doc.moveDown(1);
 
   doc.text(
-    `Purches Date:${new Date(purchaseData.purchesDate).toLocaleDateString()}`
+    `Purchase Date: ${new Date(purchaseData.purchesDate).toLocaleDateString()}`
   );
   doc.moveDown(2);
 
@@ -214,8 +219,14 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
     .stroke();
 
   doc.moveDown(2);
-  doc.fontSize(12).text(`Total Items: ${purchaseData.quantity}`, { continued: true });
-  doc.fontSize(16).text(`Total Amount: ₹${purchaseData.totalAmount}`, { align: "right" });
+  doc
+    .fontSize(12)
+    .text(`Total Items: ${purchaseData.quantity}`, { continued: true });
+  doc
+    .fontSize(16)
+    .text(`Total Amount: ${currency}${purchaseData.totalAmount.toFixed(2)}`, {
+      align: "right",
+    });
 
   doc.end();
   return filePath;
@@ -223,6 +234,7 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
 const generateSubmitInvoicePdf = (submissionData) => {
   const doc = new PDFDocument({ margin: 40 });
   const filePath = "./submit_invoice.pdf";
+  const currency = submissionData.currency || "₹"; // fallback to ₹
 
   doc.pipe(fs.createWriteStream(filePath));
 
@@ -245,7 +257,7 @@ const generateSubmitInvoicePdf = (submissionData) => {
     .fontSize(12)
     .text(`Book Name: ${submissionData.bookName}`, { continued: true })
     .text(`Quantity: ${submissionData.quantity}`, { align: "right" });
-    doc.moveDown(1);
+  doc.moveDown(1);
 
   doc
     .fontSize(12)
@@ -272,7 +284,7 @@ const generateSubmitInvoicePdf = (submissionData) => {
     .fontSize(12)
     .text(`Name: ${submissionData.studentName}`, { continued: true })
     .text(`Phone: ${submissionData.phone}`, { align: "right" });
-    doc.moveDown(1);
+  doc.moveDown(1);
 
   doc
     .fontSize(12)
@@ -297,7 +309,7 @@ const generateSubmitInvoicePdf = (submissionData) => {
     .text(`Subscription Type: ${submissionData.paymentType}`, {
       continued: true,
     })
-    .text(`Amount: ₹${submissionData.amount?.toFixed(2) || "0.00"}`, {
+    .text(`Amount: ${currency}${submissionData.amount?.toFixed(2) || "0.00"}`, {
       align: "right",
     });
 
@@ -316,16 +328,17 @@ const generateSubmitInvoicePdf = (submissionData) => {
       rows: submissionData.fine.map((fine, index) => [
         index + 1,
         fine.reason || "N/A",
-        fine.amount?.toFixed(2) || "0.00",
+        `${currency}${fine.amount?.toFixed(2) || "0.00"}`,
       ]),
     };
-  
+
     doc.table(fineTable, {
       width: 500,
       padding: 2,
       columnSpacing: 10,
       prepareHeader: () => doc.fontSize(13).fillColor("black"),
-      prepareRow: (row, i) => doc.fontSize(12).fillColor(i % 2 ? "black" : "#444444"),
+      prepareRow: (row, i) =>
+        doc.fontSize(12).fillColor(i % 2 ? "black" : "#444444"),
     });
   } else {
     doc.fontSize(12).fillColor("gray").text("No fines applied.");
@@ -333,14 +346,15 @@ const generateSubmitInvoicePdf = (submissionData) => {
 
   const totalFine =
     submissionData.fine?.reduce((sum, f) => sum + (f.amount || 0), 0) || 0;
-  const totalAmount = (submissionData.amount || 0) + totalFine;
 
   doc.moveDown(3);
   doc
     .fontSize(16)
     .fillColor("black")
-    .text(`Total Item : ${submissionData.quantity} `,{ continued: true})
-    .text(`Total Amount: ₹${totalAmount.toFixed(2)}`, { align: "right" });
+    .text(`Total Item : ${submissionData.quantity} `, { continued: true })
+    .text(`Total Amount: ${currency}${submissionData.totalAmount.toFixed(2)}`, {
+      align: "right",
+    });
 
   doc.end();
   return filePath;
@@ -415,7 +429,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
         quantity: book.quantity,
         bookIssueDate: book.bookIssueDate,
         submissionDate: book.submissionDate,
-        SubscriptionType: book.paymentType?.title || "N/A", 
+        SubscriptionType: book.paymentType?.title || "N/A",
         amount: book.amount,
       })),
       totalQuantity: bookAllotment.books.reduce(
@@ -462,7 +476,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
     throw error;
   }
 };
-export const sendpurchesInvoiceEmail = async (purchesId) => {
+export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
   try {
     const purchase = await PurchaseManagement.findById(purchesId)
       .populate({
@@ -478,6 +492,7 @@ export const sendpurchesInvoiceEmail = async (purchesId) => {
       console.error("Purchase not found");
       return;
     }
+    const currency = await getCurrencySymbol(adminId);
     const purchesData = {
       bookname: purchase.bookId.bookName || "NaN",
       vendorName: purchase.vendorId.vendorName || "NaN",
@@ -490,6 +505,7 @@ export const sendpurchesInvoiceEmail = async (purchesId) => {
       totalAmount: purchase.price * purchase.quantity || 0,
       advancepayment: purchase.advancepayment || 0,
       discount: purchase.discount || 0,
+      currency,
     };
     const pdfPath = generatePurchaseInvoicePdf(purchesData);
     const mailOptions = {
@@ -514,7 +530,7 @@ export const sendpurchesInvoiceEmail = async (purchesId) => {
     console.error("Error sending invoice email", error);
   }
 };
-export const sendSubmitInvoiceEmail = async (submitId) => {
+export const sendSubmitInvoiceEmail = async (submitId, adminId) => {
   try {
     const submission = await SubmittedBooks.findById(submitId)
       .populate({
@@ -534,27 +550,37 @@ export const sendSubmitInvoiceEmail = async (submitId) => {
       console.error("Submission not found");
       return;
     }
+    const fineTotal = Array.isArray(submission.fines)
+      ? submission.fines.reduce((sum, f) => sum + (f.amount || 0), 0)
+      : 0;
+
+    const baseAmount = (submission.quantity || 0) * (submission.amount || 0);
+
+    const totalAmount = baseAmount + fineTotal;
+    const currency = await getCurrencySymbol(adminId);
     const submissionData = {
       studentName: submission.studentId.student_Name || "NaN",
       phone: submission.studentId.mobile_Number || "N/A",
       email: submission.studentId.email || "N/A",
       registerDate: submission.studentId.registerDate || new Date(),
-      amount:submission.amount||0,
+      amount: submission.amount || 0,
       bookName: submission.bookId.bookName || "N/A",
       quantity: submission.quantity || 0,
       bookIssueDate: submission.bookId.bookIssueDate || "N/A",
       submissionDate: submission.createdAt || "N/A",
       fine: submission.fines || [],
       paymentType: submission.paymentType.title || "NaN",
+      currency,
+      totalAmount,
     };
-    
+
     const pdfPath = generateSubmitInvoicePdf(submissionData);
     const mailOptions = {
       from: process.env.BREVO_SMTP_FROM,
       to: submission.studentId.email,
       subject: "Book Submission Invoice",
       text: `
-    Dear ${submission.studentId.name || 'Student'},
+    Dear ${submission.studentId.name || "Student"},
     
     Thank you for submitting your book(s) to the library. Please find attached the invoice for your recent submission.    
     Best regards,  
@@ -567,7 +593,7 @@ export const sendSubmitInvoiceEmail = async (submitId) => {
         },
       ],
     };
-    
+
     await transporter.sendMail(mailOptions);
     fs.unlinkSync(pdfPath);
   } catch (error) {

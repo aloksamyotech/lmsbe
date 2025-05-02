@@ -48,7 +48,7 @@ export const submitedBook = async (req, res) => {
     const admin = await Admin.findById(adminId);
 
     if (admin?.submissionEmail) {
-      await sendSubmitInvoiceEmail(savedSubmission._id.toString());
+      await sendSubmitInvoiceEmail(savedSubmission._id.toString(),adminId);
     }
     return res.status(201).json({
       message: "Book submission saved successfully in db ",
