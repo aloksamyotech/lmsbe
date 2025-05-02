@@ -1,12 +1,13 @@
-// import { Schema } from "mongoose";
 import mongoose, { Schema } from "mongoose";
 
 const PublicationsManagementSchema = new Schema({
   publisherName: {
     type: String,
     required: true,
+    unique: true,
+    set: v => v.toLowerCase().trim(),
   },
-  active: {
+    active: {
     type: Boolean,
     default: true,
   },

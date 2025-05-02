@@ -8,14 +8,23 @@ export const addPublications = async (req, res) => {
   } = req.body;
 
   try {
+    const normalizedPublisherName = publisherName.trim().toLowerCase();
+
+    const existingPublisher = await PublicationsManagement.findOne({
+      publisherName: { $regex: new RegExp(`^${normalizedPublisherName}$`, 'i') }
+    });
+
+    if (existingPublisher) {
+      return res.status(400).send({ message: "Publisher name already exists" });
+    }
+
     const PublicationsManagementSchema = new PublicationsManagement({
-      publisherName, 
+      publisherName: normalizedPublisherName, 
       address, 
       description,
     });
 
-    const PublicationsManagementData =
-      await PublicationsManagementSchema.save(); 
+    const PublicationsManagementData = await PublicationsManagementSchema.save(); 
     return res.status(200).send(PublicationsManagementData);
   } catch (error) {
     return res.status(500).send({ message: "Internal Server Error" });

@@ -1,21 +1,31 @@
  
 import { VenderManagement } from "../models/vendor.management.js";
-
+import {PurchaseManagement} from "../models/purchase.js";
+import {BookManagement} from "../models/book.management.js"
 export const addVenderBook = async (req, res) => {
   const {
     vendorName,
     companyName,
-    address, 
+    address,
     date,
     phoneNumber,
     email,
   } = req.body;
 
   try {
+    const normalizedVendorName = vendorName.trim().toLowerCase();
+
+    const existingVendor = await VenderManagement.findOne({
+      vendorName: { $regex: new RegExp(`^${normalizedVendorName}$`, 'i') }
+    });
+
+    if (existingVendor) {
+      return res.status(400).send({ message: "Vendor name already exists" });
+    }
 
     const VenderManagementSchema = new VenderManagement({
-      vendorName,
-      companyName, 
+      vendorName: normalizedVendorName, 
+      companyName,
       date,
       phoneNumber,
       email,
@@ -114,5 +124,36 @@ export const getVenderCount = async (req, res) => {
     res.status(200).json({ count: bookCount });
   } catch (error) {
     res.status(500).json({ message: "Error fetching book count", error });
+  }
+};
+export const viewVendorDetails = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const vendor = await VenderManagement.findById(id);
+
+    if (!vendor) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    const purchases = await PurchaseManagement.find({ vendorId: id });
+
+    const detailedPurchases = await Promise.all(
+      purchases.map(async (purchase) => {
+        const book = await BookManagement.findById(purchase.bookId);
+        return {
+          ...purchase._doc,
+          bookDetails: book || null
+        };
+      })
+    );
+
+    res.status(200).json({
+      vendor,
+      purchases: detailedPurchases
+    });
+  } catch (error) {
+    console.error('Error fetching vendor details:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

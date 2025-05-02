@@ -4,8 +4,18 @@ export const addSubscriptionType = async (req, res) => {
   const { title, amount, discount, active, desc, numberOfDays } = req.body;
 
   try {
+    const normalizedTitle = title.trim().toLowerCase();
+
+    const existingSubscription = await SubscriptionType.findOne({
+      title: { $regex: new RegExp(`^${normalizedTitle}$`, 'i') }
+    });
+
+    if (existingSubscription) {
+      return res.status(400).send({ message: "Subscription title already exists" });
+    }
+
     const newSubscription = new SubscriptionType({
-      title,
+      title: normalizedTitle, 
       amount,
       discount,
       active,
@@ -16,7 +26,7 @@ export const addSubscriptionType = async (req, res) => {
     const savedSubscription = await newSubscription.save();
     return res.status(200).send(savedSubscription);
   } catch (error) {
-    console.error("Error saving  Subscription:", error);
+    console.error("Error saving Subscription:", error);
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };

@@ -55,7 +55,7 @@ export const purchaseBook = async (req, res) => {
     const admin = await Admin.findById(adminId);
 
     if (admin?.purchesEmail) {
-      await sendpurchesInvoiceEmail( PurchaseBookData._id);
+      await sendpurchesInvoiceEmail( PurchaseBookData._id,adminId);
     }
     return res.status(200).json({
       purchase: PurchaseBookData,
@@ -157,6 +157,7 @@ export const purchaseManagement = async (req, res) => {
           quantity: 1,
           bookComment: 1,
           price: 1,
+          bookIssueDate:1,
         },
       },
       { $sort: { _id: -1 } },

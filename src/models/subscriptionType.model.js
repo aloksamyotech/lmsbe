@@ -4,8 +4,10 @@ const SubscriptionTypeSchema = new Schema({
   title: {
     type: String,
     required: true,
+    unique: true,
+    set: v => v.toLowerCase().trim(),
   },
-  amount: {
+    amount: {
     type: Number,
     required: true,
   },

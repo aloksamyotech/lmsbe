@@ -8,8 +8,10 @@ const VenderManagementSchema = new Schema({
   vendorName: {
     type: String,
     required: true,
+    unique: true,
+    set: v => v.toLowerCase().trim(),
   },
-  companyName: {
+    companyName: {
     type: String,
     required: true,
   },
