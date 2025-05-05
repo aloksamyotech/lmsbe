@@ -2,43 +2,6 @@
 import { VenderManagement } from "../models/vendor.management.js";
 import {PurchaseManagement} from "../models/purchase.js";
 import {BookManagement} from "../models/book.management.js"
-// export const addVenderBook = async (req, res) => {
-//   const {
-//     vendorName,
-//     companyName,
-//     address,
-//     date,
-//     phoneNumber,
-//     email,
-//   } = req.body;
-
-//   try {
-//     const normalizedemail = email.trim().toLowerCase();
-
-//     const existingVendor = await VenderManagement.findOne({
-//       email: { $regex: new RegExp(`^${normalizedemail}$`, 'i') }
-//     });
-
-//     if (existingVendor) {
-//       return res.status(400).send({ message: "Email already exists" });
-//     }
-
-//     const VenderManagementSchema = new VenderManagement({
-//       vendorName: normalizedVendorName, 
-//       companyName,
-//       date,
-//       phoneNumber,
-//       email,
-//       address,
-//     });
-
-//     const VenderManagementData = await VenderManagementSchema.save();
-//     return res.status(200).send(VenderManagementData);
-//   } catch (error) {
-//     console.error("Error in Vender Management", error);
-//     return res.status(500).send({ message: "Internal Server Error" });
-//   }
-// };
 export const addVenderBook = async (req, res) => {
   const {
     vendorName,

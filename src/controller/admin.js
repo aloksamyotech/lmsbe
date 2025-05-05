@@ -215,7 +215,6 @@ export const updatepassword = async (req, res) => {
   }
 };
 export const emailInfo = async (req,res)=>{
-  console.log("emailInfo calling ---------------");
   
   const { smtpCode, email, adminId } = req.body;
 
