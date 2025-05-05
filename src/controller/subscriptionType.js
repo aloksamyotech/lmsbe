@@ -1,7 +1,7 @@
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 
 export const addSubscriptionType = async (req, res) => {
-  const { title, amount, discount, active, desc, numberOfDays } = req.body;
+  const { title, amount, active, desc, numberOfDays } = req.body;
 
   try {
     const normalizedTitle = title.trim().toLowerCase();
@@ -11,13 +11,12 @@ export const addSubscriptionType = async (req, res) => {
     });
 
     if (existingSubscription) {
-      return res.status(400).send({ message: "Subscription title already exists" });
+      return res.status(400).send({ message: "Title already exists" });
     }
 
     const newSubscription = new SubscriptionType({
       title: normalizedTitle, 
       amount,
-      discount,
       active,
       desc,
       numberOfDays,

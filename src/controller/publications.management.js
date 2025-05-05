@@ -15,7 +15,7 @@ export const addPublications = async (req, res) => {
     });
 
     if (existingPublisher) {
-      return res.status(400).send({ message: "Publisher name already exists" });
+      return res.status(400).send({ message: "Name already exists" });
     }
 
     const PublicationsManagementSchema = new PublicationsManagement({

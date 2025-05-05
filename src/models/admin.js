@@ -17,6 +17,17 @@ const AdminSchema = new Schema({
   currencySymbol: {
     type: String,
     default: "₹",
+  },
+  Sending_email: {
+    type: String,
+    required: true,
+    match: /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, 
+    default:''
+  },
+  smtpCode: {
+    type: String,
+    required: true,
+    default:''
   }, 
   registrationEmail:{type:Boolean, default:true},
   allotmentEmail:{type:Boolean, default:true},
