@@ -13,18 +13,18 @@ export const addVenderBook = async (req, res) => {
   } = req.body;
 
   try {
-    const normalizedVendorName = vendorName.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     const existingVendor = await VenderManagement.findOne({
-      vendorName: { $regex: new RegExp(`^${normalizedVendorName}$`, 'i') }
+      email: { $regex: new RegExp(`^${normalizedEmail}$`, 'i') }
     });
 
     if (existingVendor) {
-      return res.status(400).send({ message: "Vendor name already exists" });
+      return res.status(400).send({ message: "Email already exists" });
     }
 
-    const VenderManagementSchema = new VenderManagement({
-      vendorName: normalizedVendorName, 
+    const newVendor = new VenderManagement({
+      vendorName,
       companyName,
       date,
       phoneNumber,
@@ -32,8 +32,8 @@ export const addVenderBook = async (req, res) => {
       address,
     });
 
-    const VenderManagementData = await VenderManagementSchema.save();
-    return res.status(200).send(VenderManagementData);
+    const savedVendor = await newVendor.save();
+    return res.status(200).send(savedVendor);
   } catch (error) {
     console.error("Error in Vender Management", error);
     return res.status(500).send({ message: "Internal Server Error" });

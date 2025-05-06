@@ -18,7 +18,7 @@ export const addRegister = async (req, res) => {
   try {
     const existingStudent = await RegisterManagement.findOne({ email });
     if (existingStudent) {
-      return res.status(400).send({ message: "Email already exists. Please use a different email." });
+      return res.status(400).send({ message: "Email already exists." });
     }
 
     const registerData = new RegisterManagement({

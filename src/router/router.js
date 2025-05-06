@@ -103,6 +103,7 @@ import {
   loginAdmin,
   updateEmailContorller,
   updatepassword,
+  emailInfo,
 } from "../controller/admin.js";
 
 const storage = multer.diskStorage({
@@ -129,6 +130,8 @@ router.get("/user/adminGetLogo", adminGetLogo);
 router.post("/user/login", loginAdmin);
 router.put("/user/updateEmailContorller", verifyJWT, updateEmailContorller);
 router.put("/user/updatepassword", verifyJWT, updatepassword);
+router.patch("/user/emailInfo", verifyJWT, emailInfo);
+
 
 // -----------------    SubscriptionManagement       ---------------------------
 

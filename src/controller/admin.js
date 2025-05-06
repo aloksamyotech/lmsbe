@@ -181,7 +181,6 @@ export const updateEmailContorller = async (req, res) => {
     res.status(500).json({ message: "Error updating preferences", error });
   }
 };
-
 export const updatepassword = async (req, res) => {
 
   try {
@@ -214,4 +213,31 @@ export const updatepassword = async (req, res) => {
     console.error('Error updating password:', error);
     res.status(500).json({ message: 'Server error' });
   }
+};
+export const emailInfo = async (req,res)=>{
+  
+  const { smtpCode, email, adminId } = req.body;
+
+  if (!smtpCode || !email || !adminId) {
+    return res.status(400).json({ message: 'SMTP code, email, and adminId are required' });
+  }
+
+  try {
+    const admin = await Admin.findById(adminId);
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    admin.smtpCode = smtpCode;
+    admin.Sending_email = email;
+
+    await admin.save();
+
+    return res.status(200).json({ message: 'Admin email settings updated', admin });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+
 };

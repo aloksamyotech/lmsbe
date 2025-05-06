@@ -11,10 +11,6 @@ const SubscriptionTypeSchema = new Schema({
     type: Number,
     required: true,
   },
-  discount: {
-    type: Number,
-    required: true,
-  },
   active: {
     type: Boolean,
     default: true,

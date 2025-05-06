@@ -8,8 +8,6 @@ const VenderManagementSchema = new Schema({
   vendorName: {
     type: String,
     required: true,
-    unique: true,
-    set: v => v.toLowerCase().trim(),
   },
     companyName: {
     type: String,
@@ -26,6 +24,8 @@ const VenderManagementSchema = new Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
+    set: v => v.toLowerCase().trim(),
   },
   date: {
     type: Date,
