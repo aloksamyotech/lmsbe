@@ -33,7 +33,7 @@ export const addRegister = async (req, res) => {
     const admin = await Admin.findById(adminId);
 
     if (admin?.registrationEmail) {
-      await sendRegistrationEmail(email, student_Name);
+      await sendRegistrationEmail(email, student_Name,adminId);
     }
 
     return res.status(200).send(savedData);
@@ -79,7 +79,7 @@ export const registerMany = async (req, res) => {
     if (admin?.registrationEmail) {
       
       for (const student of savedData) {
-        await sendRegistrationEmail(student.email, student.student_Name);
+        await sendRegistrationEmail(student.email, student.student_Name,adminId);
       }  
     }
 

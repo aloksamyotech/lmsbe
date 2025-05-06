@@ -277,3 +277,39 @@ export const purchaseReport = async (req, res) => {
     return res.status(500).json({ error: error.message || "An error occurred while fetching data" });
   }
 };
+export const purchaseMonthviseData = async (req, res) => {
+  try {
+    const { year } = req.body;
+    
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31T23:59:59`);
+
+    const data = await PurchaseManagement.aggregate([
+      {
+        $match: {
+          bookIssueDate: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: { $month: '$bookIssueDate' }, 
+          totalPurchasedBooks: { $sum: '$quantity' } 
+        }
+      },
+      {
+        $sort: { _id: 1 }  
+      }
+    ]);
+    
+
+    const result = Array(12).fill(0);
+    data.forEach((entry) => {
+      result[entry._id - 1] = entry.totalPurchasedBooks;  
+    });
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error fetching purchase month-wise data:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};

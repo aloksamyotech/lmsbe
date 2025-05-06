@@ -12,6 +12,7 @@ import { BookAllotmentHistory } from "../models/bookallotmentHistory.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 import moment from "moment-timezone";
 import { sendAllotmentInvoiceEmail } from "./email.js";
+import { log } from "console";
 export const bookAllotmentCount = async (req, res) => {
   const { studentId } = req.params;
 
@@ -89,7 +90,7 @@ export const bookAllotment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
-export const manyBookAllotment = async (req, res) => { 
+export const manyBookAllotment = async (req, res) => {
   const allotmentsData = req.body;
 
   try {
@@ -105,7 +106,10 @@ export const manyBookAllotment = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const newBookCount = allotmentsData.reduce((acc, item) => acc + item.quantity, 0);
+    const newBookCount = allotmentsData.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    );
 
     if (student.bookCount + newBookCount > 5) {
       return res.status(400).json({
@@ -161,9 +165,9 @@ export const manyBookAllotment = async (req, res) => {
     student.bookCount += newBookCount;
     await student.save();
     const adminId = allotmentsData[0]?.adminId;
-    const admin = await Admin.findById(adminId);    
-    if (admin?.allotmentEmail) {      
-      await sendAllotmentInvoiceEmail(newAllotment._id,adminId );
+    const admin = await Admin.findById(adminId);
+    if (admin?.allotmentEmail) {
+      await sendAllotmentInvoiceEmail(newAllotment._id, adminId);
     }
 
     return res.status(201).json({
@@ -578,7 +582,7 @@ export const receiveBook = async (req, res) => {
           mobileNumber: bookAllotment.studentId?.mobile_Number || "N/A",
         },
         bookId: book.bookId?._id || "N/A",
-        bookName:book.bookId?.bookName || "N/A",
+        bookName: book.bookId?.bookName || "N/A",
         bookTitle: book.bookId?.title || "N/A",
         bookAuthor: book.bookId?.author || "N/A",
         paymentType: book.paymentType?.title || "N/A",
@@ -593,7 +597,7 @@ export const receiveBook = async (req, res) => {
         submitCount: book.submitCount ?? 0,
       }));
     });
-    
+
     res.status(200).json({
       message: "All active books fetched successfully",
       books: allBooks,
@@ -705,12 +709,14 @@ export const submitBook = async (req, res) => {
     const updatedSubmitCount = (targetBook.submitCount || 0) + receivequantity;
 
     if (updatedSubmitCount > targetBook.quantity) {
-      return res.status(400).json({ message: "Submitted quantity exceeds allotted amount" });
+      return res
+        .status(400)
+        .json({ message: "Submitted quantity exceeds allotted amount" });
     }
 
     const isFullySubmitted = updatedSubmitCount === targetBook.quantity;
     const isActive = !isFullySubmitted;
-    
+
     const submittedBook = await BookAllotment.findOneAndUpdate(
       { "books._id": id },
       {
@@ -718,7 +724,7 @@ export const submitBook = async (req, res) => {
           "books.$.submitCount": updatedSubmitCount,
           "books.$.submit": isFullySubmitted,
           "books.$.active": isActive,
-        }
+        },
       },
       { new: true }
     );
@@ -735,7 +741,9 @@ export const submitBook = async (req, res) => {
     });
   } catch (error) {
     console.error("Error submitting book:", error);
-    return res.status(500).json({ message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
 export const getSubmitBook = async (req, res) => {
@@ -1035,5 +1043,43 @@ export const trendingBooks = async (req, res) => {
       message: "Failed to fetch trending books",
       error: error.message,
     });
+  }
+};
+export const monthviseData = async (req, res) => {
+  try {
+    const { year } = req.body;
+
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+
+    const data = await BookAllotment.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $unwind: "$books",
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          totalAllottedBooks: { $sum: "$books.quantity" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const result = Array(12).fill(0);
+    data.forEach((entry) => {
+      result[entry._id - 1] = entry.totalAllottedBooks;
+    });
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error fetching month-wise data:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
