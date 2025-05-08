@@ -997,8 +997,8 @@ export const trendingBooks = async (req, res) => {
       },
       {
         $project: {
-          _id: 0,
           bookId: "$books.bookId",
+          quantity: "$books.quantity"
         },
       },
       {
@@ -1015,6 +1015,7 @@ export const trendingBooks = async (req, res) => {
       {
         $group: {
           _id: "$bookId",
+          totalQuantity: { $sum: "$quantity" },
           title: { $first: "$bookDetails.title" },
           author: { $first: "$bookDetails.author" },
           img: { $first: "$bookDetails.upload_Book" },
@@ -1027,13 +1028,20 @@ export const trendingBooks = async (req, res) => {
           title: 1,
           author: 1,
           img: 1,
+          quantity: "$totalQuantity"
         },
       },
+      {
+        $sort: { quantity: -1 }
+      },
+      {
+        $limit: 5
+      }
     ]);
 
     res.status(200).json({
       success: true,
-      message: "Trending books fetched successfully",
+      message: "Top 5 trending books fetched successfully",
       data: allottedBooks,
     });
   } catch (error) {
