@@ -179,3 +179,38 @@ export const getsubmitedBookinvoice = async (req, res) => {
     });
   }
 };
+export const monthwiseSubmission = async (req, res) => {
+  try {
+    const { year } = req.body;
+
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31T23:59:59`);
+
+    const data = await SubmittedBooks.aggregate([
+      {
+        $match: {
+          submissionDate: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: { $month: '$submissionDate' },
+          totalSubmissions: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]);
+
+    const result = Array(12).fill(0);
+    data.forEach((entry) => {
+      result[entry._id - 1] = entry.totalSubmissions;
+    });
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error fetching submission month-wise data:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};

@@ -14,15 +14,6 @@ import { SubmittedBooks } from "../models/SubmittedBooks.js";
 import { Admin } from "../models/admin.js";
 
 dotenv.config();
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_USER,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
 const getCurrencySymbol = async (adminId) => {
   try {
     const admin = await Admin.findById(adminId).select("currencySymbol");
@@ -359,40 +350,54 @@ const generateSubmitInvoicePdf = (submissionData) => {
   doc.end();
   return filePath;
 };
-export const sendRegistrationEmail = async (studentEmail, studentName) => {
+export const sendRegistrationEmail = async (studentEmail, studentName, adminId) => {
+
+  const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
+
+  if (!admin) {
+    throw new Error("Admin not found.");
+  }
+
+  const formeamil = admin.Sending_email;
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_USER, 
+      pass: admin.smtpCode,
+    },
+  });
+
   try {
     const info = await transporter.sendMail({
-      from: process.env.BREVO_SMTP_FROM,
+      from: formeamil,
       to: studentEmail,
       subject: "Welcome to Our Library!",
       html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
-        <div style="text-align: center; padding-bottom: 20px;">
-          <h1 style="color: #4CAF50;">📚 Welcome to Our Library!</h1>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
+          <div style="text-align: center; padding-bottom: 20px;">
+            <h1 style="color: #4CAF50;">📚 Welcome to Our Library!</h1>
+          </div>
+          <p style="font-size: 16px; color: #333;">Hi <strong>${studentName}</strong>,</p>
+          <p style="font-size: 15px; color: #333;">
+            Thank you for registering with our library. We’re excited to have you on board!
+          </p>
+          <p style="font-size: 15px; color: #333;">
+            You now have access to a wide range of books, study materials, and resources. We hope this will enhance your learning journey.
+          </p>
+          <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4CAF50;">
+            <p style="margin: 0; font-size: 15px;">If you have any questions, feel free to reach out to us.</p>
+          </div>
+          <p style="font-size: 15px; margin-top: 30px;">Best regards,<br><strong>Library Team</strong></p>
+          <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #888;">
+            <p>© ${new Date().getFullYear()} Library Management System</p>
+          </div>
         </div>
-    
-        <p style="font-size: 16px; color: #333;">Hi <strong>${studentName}</strong>,</p>
-    
-        <p style="font-size: 15px; color: #333;">
-          Thank you for registering with our library. We’re excited to have you on board!
-        </p>
-    
-        <p style="font-size: 15px; color: #333;">
-          You now have access to a wide range of books, study materials, and resources. We hope this will enhance your learning journey.
-        </p>
-    
-        <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4CAF50;">
-          <p style="margin: 0; font-size: 15px;">If you have any questions, feel free to reach out to us.</p>
-        </div>
-    
-        <p style="font-size: 15px; margin-top: 30px;">Best regards,<br><strong>Library Team</strong></p>
-    
-        <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #888;">
-          <p>© ${new Date().getFullYear()} Library Management System</p>
-        </div>
-      </div>
-    `,
+      `,
     });
+
   } catch (error) {
     console.error("Error sending email:", error);
   }
@@ -402,7 +407,20 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
     if (!mongoose.Types.ObjectId.isValid(allotmentId)) {
       throw new Error("Invalid ObjectId format.");
     }
-
+    const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
+    if (!admin) {
+      throw new Error("Admin not found.");
+    }
+    const formeamil = admin.Sending_email
+    const transporter = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user:process.env.BREVO_SMTP_USER,
+        pass: admin.smtpCode, 
+      },
+    });
     const bookAllotment = await BookAllotment.findById(allotmentId)
       .populate({
         path: "books.bookId",
@@ -457,7 +475,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
     };
     const pdfPath = generateInvoicePdf(invoiceData);
     const mailOptions = {
-      from: process.env.BREVO_SMTP_FROM,
+      from: formeamil,
       to: invoiceData.student.email,
       subject: "Library Book Allotment Invoice",
       text: `Hi ${invoiceData.student.studentName},\n\nPlease find your invoice attached.\n\nRegards,\nLibrary Team`,
@@ -477,6 +495,20 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
   }
 };
 export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
+  const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
+    if (!admin) {
+      throw new Error("Admin not found.");
+    }
+    const formeamil = admin.Sending_email
+    const transporter = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user:process.env.BREVO_SMTP_USER,
+        pass: admin.smtpCode, 
+      },
+    });
   try {
     const purchase = await PurchaseManagement.findById(purchesId)
       .populate({
@@ -509,7 +541,7 @@ export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
     };
     const pdfPath = generatePurchaseInvoicePdf(purchesData);
     const mailOptions = {
-      from: process.env.BREVO_SMTP_FROM,
+      from: formeamil,
       to: purchase.vendorId?.email,
       subject: "New Purchase Invoice",
       text: ` Dear Vendor,
@@ -531,6 +563,20 @@ export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
   }
 };
 export const sendSubmitInvoiceEmail = async (submitId, adminId) => {
+  const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
+    if (!admin) {
+      throw new Error("Admin not found.");
+    }
+    const formeamil = admin.Sending_email
+    const transporter = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user:process.env.BREVO_SMTP_USER,
+        pass: admin.smtpCode, 
+      },
+    });
   try {
     const submission = await SubmittedBooks.findById(submitId)
       .populate({
@@ -576,7 +622,7 @@ export const sendSubmitInvoiceEmail = async (submitId, adminId) => {
 
     const pdfPath = generateSubmitInvoicePdf(submissionData);
     const mailOptions = {
-      from: process.env.BREVO_SMTP_FROM,
+      from: formeamil,
       to: submission.studentId.email,
       subject: "Book Submission Invoice",
       text: `
