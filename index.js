@@ -5,12 +5,26 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { configDotenv } from "dotenv";
+import fs from "fs";
+
+configDotenv();
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+const uploadDir = path.join(__dirname, "uploads");
+
+const ensureUploadDir = () => {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true }); 
+  }
+};
+
+ensureUploadDir();
+
+app.use("/uploads", express.static(uploadDir));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
