@@ -16,9 +16,8 @@ const BookManagementSchema = new Schema(
     author: {
       type: String,
     },
-    publisherName: {
-      type: String,
-    },
+    publisher: { type: mongoose.Schema.Types.ObjectId, ref: 'PublicationsManagement' },
+
     upload_Book: {
       type: String,
     },

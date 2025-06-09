@@ -1,20 +1,21 @@
 import { BookManagement } from "../models/book.management.js";
+import {PublicationsManagement} from '../models/publications.management.js'; 
 export const addBook = async (req, res) => {
   const {
     bookName,
     title,
     author,
     bookIssueDate,
-    publisherName,
+    publisher,
     bookDistribution,
   } = req.body;
-
+  
   let upload_Book = req.file ? req.file.path : "";
 
   try {
     const existingBook = await BookManagement.findOne({
-      bookName: { $regex: new RegExp(`^${bookName}$`, 'i') }, 
-      author: { $regex: new RegExp(`^${author}$`, 'i') },
+      bookName: { $regex: new RegExp(`^${bookName}$`, "i") },
+      author: { $regex: new RegExp(`^${author}$`, "i") },
     });
 
     if (existingBook) {
@@ -28,7 +29,7 @@ export const addBook = async (req, res) => {
       title,
       author,
       bookIssueDate,
-      publisherName,
+      publisher,
       upload_Book,
       bookDistribution,
     });
@@ -45,26 +46,47 @@ export const addManyBooks = async (req, res) => {
   const data = req?.body;
 
   try {
-    const bookAuthorPairs = data.map((book) => ({
+    const publisherNames = [...new Set(data.map(b => b["Publisher Name"].trim()))];
+
+    const existingPublishers = await PublicationsManagement.find({
+      publisherName: { $in: publisherNames }
+    });
+
+    const publisherMap = {};
+    existingPublishers.forEach(pub => {
+      publisherMap[pub.publisherName.toLowerCase()] = pub._id;
+    });
+
+    for (const pubName of publisherNames) {
+      if (!publisherMap[pubName.toLowerCase()]) {
+        const newPub = new PublicationsManagement({ publisherName: pubName });
+        const savedPub = await newPub.save();
+        publisherMap[pubName.toLowerCase()] = savedPub._id;
+      }
+    }
+
+    const bookAuthorPairs = data.map(book => ({
       bookName: book["Book Name"],
-      author: book["Author Name"],
+      author: book["Author Name"]
     }));
+
     const existingBooks = await BookManagement.find({
       $or: bookAuthorPairs.map(({ bookName, author }) => ({
         bookName,
         author,
       })),
     });
+
     const existingSet = new Set(
-      existingBooks.map((b) => `${b.bookName.toLowerCase()}|${b.author.toLowerCase()}`)
+      existingBooks.map(b => `${b.bookName.toLowerCase()}|${b.author.toLowerCase()}`)
     );
 
-    const filteredData = data.filter((book) => {
+    const filteredData = data.filter(book => {
       const key = `${book["Book Name"].toLowerCase()}|${book["Author Name"].toLowerCase()}`;
       return !existingSet.has(key);
     });
 
-    const booksToInsert = filteredData.map((book) => {
+    const booksToInsert = filteredData.map(book => {
       const {
         "Book Name": bookName,
         "Book Title": title,
@@ -73,14 +95,13 @@ export const addManyBooks = async (req, res) => {
         "Upload Book Image": upload_Book,
         "Book Description": bookDescription,
       } = book;
-      let uploadBookPath = req.file ? req.file.path : upload_Book;
 
       return {
         bookName,
         title,
         author,
-        publisherName,
-        upload_Book: uploadBookPath,
+        publisher: publisherMap[publisherName.trim().toLowerCase()], // Use the _id here
+        upload_Book,
         bookDescription,
       };
     });
@@ -92,12 +113,12 @@ export const addManyBooks = async (req, res) => {
       skipped: data.length - savedData.length,
       message: `${savedData.length} books added. ${data.length - savedData.length} duplicate entries skipped.`,
     });
-
   } catch (error) {
     console.error("Error in Book Management Bulk Insert", error);
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
+
 export const bookManagement = async (req, res) => {
   try {
     const bookManagementTable = await BookManagement.aggregate([
@@ -143,11 +164,34 @@ export const bookManagement = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
+// export const bookmangmentTable = async (req, res) => {
+//   try {
+//     const books = await BookManagement.find();
+
+//     if (!books || books.length === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "No books found",
+//       });
+//     }
+//     res.status(200).json({
+//       status: true,
+//       message: "Books retrieved successfully",
+//       data: books,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       status: false,
+//       message: "Internal server error",
+//       error: error.message,
+//     });
+//   }
+// };
 export const bookmangmentTable = async (req, res) => {
   try {
-    
-    const books = await BookManagement.find(); 
-   
+    const books = await BookManagement.find().populate('publisher');
+
     if (!books || books.length === 0) {
       return res.status(404).json({
         status: false,
@@ -233,42 +277,50 @@ export const deleteBook = async (req, res) => {
   }
 };
 
-export const updateBook = async (req, res) => {
+export const updateBook = async (req, res) => {  
   const { id } = req.params;
   const {
     bookName,
     title,
     author,
     bookIssueDate,
-    publisherName,
+    publisherId,
     bookDistribution,
+    description
   } = req.body;
+  
+  const updatedFields = {
+    bookName,
+    title,
+    author,
+    bookIssueDate,
+    publisher: publisherId,
+    bookDistribution,
+    description,
+  };
+
+  if (req.file) {
+    updatedFields.upload_Book = req.file.path;
+  }
 
   try {
     const updatedBook = await BookManagement.findByIdAndUpdate(
       id,
-      {
-        bookName,
-        title,
-        author,
-        bookIssueDate,
-        publisherName,
-       
-        bookDistribution,
-      },
+      updatedFields,
       { new: true }
     );
 
     if (!updatedBook) {
-      return res.status(404).json({ message: "Book not found" });
+      return res.status(404).json({ message: 'Book not found' });
     }
 
-    res.status(200).json({ message: "Book updated successfully", updatedBook });
+    res.status(200).json({ message: 'Book updated successfully', updatedBook });
   } catch (error) {
-    console.error("Error updating book:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error('Error updating book:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 export const getBookCount = async (req, res) => {
   try {

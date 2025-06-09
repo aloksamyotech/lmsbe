@@ -26,6 +26,7 @@ import {
   getsubmitedBook,
   getsubmitedBookinvoice,
   monthwiseSubmission,
+  getSubmittedBookCount,
 } from "../controller/bookSubmission.js";
 import {
   addVenderBook,
@@ -56,7 +57,6 @@ import {
 } from "../controller/register.management.js";
 import {
   bookAllotment,
-  bookAllotmentCount,
   bookAllotmentReport,
   fetchBooks,
   findHistoryBookAllotmentUser,
@@ -161,7 +161,12 @@ router.get("/user/alotmentsbooks", bookAllotments);
 router.get("/user/bookManagement", bookManagement);
 router.get("/user/viewBookUser", viewBookUser);
 router.delete("/user/deleteBook/:id", verifyJWT, deleteBook);
-router.put("/user/editBook/:id", verifyJWT, updateBook);
+router.put(
+  "/user/editBook/:id",
+  verifyJWT,
+  upload.single("upload_Book"),
+  updateBook
+);
 router.get("/user/getBookCount", verifyJWT, getBookCount);
 router.get("/user/bookmangmentTable", verifyJWT, bookmangmentTable);
 router.get("/user/bookData/:id", verifyJWT, bookData);
@@ -170,7 +175,9 @@ router.get("/user/bookData/:id", verifyJWT, bookData);
 router.post("/user/submitedBook", verifyJWT, submitedBook);
 router.get("/user/getsubmitedBook", verifyJWT, getsubmitedBook);
 router.get("/user/getsubmitedBookinvoice", verifyJWT, getsubmitedBookinvoice);
-router.post("/user/monthwiseSubmission", verifyJWT ,monthwiseSubmission);
+router.post("/user/monthwiseSubmission", verifyJWT, monthwiseSubmission);
+router.get("/user/getSubmittedBookCount", verifyJWT, getSubmittedBookCount);
+
 //--------------   Vendor Management ------------------------
 
 router.post("/user/addVenderBook", verifyJWT, addVenderBook);
@@ -206,7 +213,12 @@ router.post(
 router.post("/user/registerMany", verifyJWT, registerMany);
 
 router.get("/user/registerManagement", verifyJWT, registerManagement);
-router.put("/user/editRegister/:id", verifyJWT, updateRegister);
+router.put(
+  "/user/editRegister/:id",
+  verifyJWT,
+  upload.single("upload_identity"),
+  updateRegister
+);
 router.delete("/user/deleteRegister/:id", verifyJWT, deleteRegister);
 router.get("/user/getRegisterStudentCount", verifyJWT, getRegisterStudentCount);
 router.post("/user/markFavorite/:id", verifyJWT, markFavorite);
@@ -238,12 +250,6 @@ router.get("/user/receiveBook", verifyJWT, receiveBook);
 router.post("/user/postReceiveBook", verifyJWT, postReceiveBook);
 router.post("/user/newReceiveBook", newReceiveBook);
 router.get("/user/viewBookAllotmentUser/:id", verifyJWT, viewBookAllotmentUser);
-
-router.get(
-  "/user/bookAllotmentCount/:studentId",
-  verifyJWT,
-  bookAllotmentCount
-);
 router.get("/user/getBookAllotedCount", verifyJWT, getBookAllotedCount);
 router.get(
   "/user/bookAllotmentReport/:startDate/:endDate",

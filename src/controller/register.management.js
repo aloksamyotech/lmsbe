@@ -33,7 +33,7 @@ export const addRegister = async (req, res) => {
     const admin = await Admin.findById(adminId);
 
     if (admin?.registrationEmail) {
-      await sendRegistrationEmail(email, student_Name,adminId);
+      await sendRegistrationEmail(email, student_Name, adminId);
     }
 
     return res.status(200).send(savedData);
@@ -50,10 +50,14 @@ export const registerMany = async (req, res) => {
   try {
     const emails = data.map((student) => student.email);
 
-    const existingStudents = await RegisterManagement.find({ email: { $in: emails } });
+    const existingStudents = await RegisterManagement.find({
+      email: { $in: emails },
+    });
     const existingEmails = existingStudents.map((s) => s.email);
 
-    const filteredData = data.filter((student) => !existingEmails.includes(student.email));
+    const filteredData = data.filter(
+      (student) => !existingEmails.includes(student.email)
+    );
 
     const registerData = filteredData.map((student) => {
       const {
@@ -77,10 +81,13 @@ export const registerMany = async (req, res) => {
     const admin = await Admin.findById(adminId);
 
     if (admin?.registrationEmail) {
-      
       for (const student of savedData) {
-        await sendRegistrationEmail(student.email, student.student_Name,adminId);
-      }  
+        await sendRegistrationEmail(
+          student.email,
+          student.student_Name,
+          adminId
+        );
+      }
     }
 
     return res.status(200).send({
@@ -88,7 +95,6 @@ export const registerMany = async (req, res) => {
       skippedEmails: existingEmails,
       message: `${savedData.length} students registered. ${existingEmails.length} emails skipped.`,
     });
-
   } catch (error) {
     console.error("Error in Register Management Bulk Insert", error);
     return res.status(500).send({ message: "Internal Server Error" });
@@ -152,30 +158,36 @@ export const deleteRegister = async (req, res) => {
 
 export const updateRegister = async (req, res) => {
   const { id } = req.params;
-  const {
-    student_Name,
-    email,
-    mobile_Number, 
-  } = req.body;
+  const { student_Name, email, mobile_Number, select_identity, register_Date } =
+    req.body;
 
   try {
+    const updateFields = {
+      student_Name,
+      email,
+      mobile_Number,
+      select_identity,
+      register_Date,
+    };
+
+    if (req.file) {
+      updateFields.upload_identity = req.file.path;
+    }
     const updatedRegister = await RegisterManagement.findByIdAndUpdate(
       id,
-      {
-        student_Name,
-        email,
-        mobile_Number, 
-      },
+      updateFields,
       { new: true }
     );
+
     if (!updatedRegister) {
       return res.status(404).json({ message: "Register not found" });
     }
+    
     res
       .status(200)
-      .json({ message: "Register updated successfully", updateRegister });
+      .json({ message: "Register updated successfully", updatedRegister });
   } catch (error) {
-    console.error("Error updating  Register:", error);
+    console.error("Error updating Register:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -252,8 +264,6 @@ export const getMarkFavorite = async (req, res) => {
       .json({ status: false, message: "Internal server error", error });
   }
 };
-
- 
 
 export const markSubscription = async (req, res) => {
   const { id } = req.params;

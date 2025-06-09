@@ -86,12 +86,27 @@ export const deletePurchaseBook = async (req, res) => {
 };
 
 export const updatePurchaseBook = async (req, res) => {
-  const { id, price, quantity, bookId } = req.body;
+  const {
+    id,
+    price,
+    quantity,
+    bookId,
+    vendorId,
+    bookIssueDate,
+    bookComment
+  } = req.body;
 
   try {
     const updatedPurchase = await PurchaseManagement.findByIdAndUpdate(
       id,
-      { price, quantity },
+      {
+        price,
+        quantity,
+        vendorId,
+        bookIssueDate,
+        bookComment,
+        bookId
+      },
       { new: true }
     );
 
@@ -102,7 +117,7 @@ export const updatePurchaseBook = async (req, res) => {
     const updatedBook = await BookManagement.findByIdAndUpdate(
       bookId,
       { bookQuantity: quantity },
-      { new: true }  
+      { new: true }
     );
 
     if (!updatedBook) {
@@ -120,7 +135,6 @@ export const updatePurchaseBook = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 export const purchaseManagement = async (req, res) => {
   try {

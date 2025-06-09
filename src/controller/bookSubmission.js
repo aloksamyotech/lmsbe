@@ -214,3 +214,25 @@ export const monthwiseSubmission = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
+export const getSubmittedBookCount = async (req, res) => {
+  try {
+    const result = await SubmittedBooks.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: "$quantity" },
+        },
+      },
+    ]);
+
+    const totalSubmitted = result.length > 0 ? result[0].totalQuantity : 0;
+
+    res.status(200).json({ totalSubmitted });
+  } catch (error) {
+    console.error("Error fetching submitted book count:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};

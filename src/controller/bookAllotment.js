@@ -13,26 +13,6 @@ import { SubscriptionType } from "../models/subscriptionType.model.js";
 import moment from "moment-timezone";
 import { sendAllotmentInvoiceEmail } from "./email.js";
 import { log } from "console";
-export const bookAllotmentCount = async (req, res) => {
-  const { studentId } = req.params;
-
-  try {
-    const student = await RegisterManagement.findById(studentId, {
-      active: false,
-    });
-
-    if (!studentId) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-    const allotmentsCount = await BookAllotment.countDocuments({
-      studentId: studentId,
-    });
-    return res.status(200).json({ allotmentsCount });
-  } catch (error) {
-    console.error("Error fetching book allotment count:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
 export const bookAllotment = async (req, res) => {
   const {
     bookId,
@@ -427,10 +407,22 @@ export const findHistoryBookAllotmentUser = async (req, res) => {
 };
 export const getBookAllotedCount = async (req, res) => {
   try {
-    const bookAllotedCount = await BookAllotment.countDocuments({});
-    res.status(200).json({ count: bookAllotedCount });
+    const result = await BookAllotment.aggregate([
+      { $unwind: "$books" },
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: "$books.quantity" }
+        }
+      }
+    ]);
+
+    const totalQuantity = result[0]?.totalQuantity || 0;
+
+    res.status(200).json({ totalQuantity });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching book count", error });
+    console.error("Error fetching book quantity:", error);
+    res.status(500).json({ message: "Error fetching book quantity", error });
   }
 };
 export const bookAllotmentReport = async (req, res) => {

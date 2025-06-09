@@ -21,11 +21,6 @@ const RegisterManagementSchema = new Schema({
     type: String,
     required: false,
   },
-  role: {
-    type: String,
-    enum: ["user", "admin"],
-    default: "user",
-  },
   register_Date: {
     type: Date,
     default: Date.now(),
@@ -33,15 +28,6 @@ const RegisterManagementSchema = new Schema({
   active: {
     type: Boolean,
     default: true,
-  },
-  favorite: {
-    type: Boolean,
-    default: false,
-  },
-  logo: {
-    type: String,
-    required: false,
-    default: "",
   },
   subscription: {
     type: Boolean,
