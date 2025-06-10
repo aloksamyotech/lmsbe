@@ -183,7 +183,7 @@ router.get("/user/getSubmittedBookCount", verifyJWT, getSubmittedBookCount);
 router.post("/user/addVenderBook", verifyJWT, addVenderBook);
 router.get("/user/venderManagement", verifyJWT, getVenderManagement);
 router.delete("/user/deleteVender/:id", verifyJWT, deleteVender);
-router.put("/user/editVender/:id", verifyJWT, updateVender);
+router.put("/user/editVender", verifyJWT, updateVender);
 router.get("/user/getVenderCount", verifyJWT, getVenderCount);
 router.get("/user/viewVendorDetails/:id", verifyJWT, viewVendorDetails);
 
@@ -198,7 +198,7 @@ router.delete("/user/deleteContact/:id", verifyJWT, deleteContact);
 
 router.post("/user/addPublications", verifyJWT, addPublications);
 router.get("/user/getPublications", verifyJWT, getPublications);
-router.put("/user/editPublications/:id", verifyJWT, editPublications);
+router.put("/user/editPublications", verifyJWT, editPublications);
 router.delete("/user/deletePublications/:id", verifyJWT, deletePublications);
 router.get("/user/getPublicationsCount", verifyJWT, getPublicationsCount);
 

@@ -1,17 +1,14 @@
- 
 import { PublicationsManagement } from "../models/publications.management.js";
 export const addPublications = async (req, res) => {
-  const { 
-    publisherName, 
-    address,
-    description,
-  } = req.body;
+  const { publisherName, address, description } = req.body;
 
   try {
     const normalizedPublisherName = publisherName.trim().toLowerCase();
 
     const existingPublisher = await PublicationsManagement.findOne({
-      publisherName: { $regex: new RegExp(`^${normalizedPublisherName}$`, 'i') }
+      publisherName: {
+        $regex: new RegExp(`^${normalizedPublisherName}$`, "i"),
+      },
     });
 
     if (existingPublisher) {
@@ -19,12 +16,13 @@ export const addPublications = async (req, res) => {
     }
 
     const PublicationsManagementSchema = new PublicationsManagement({
-      publisherName: normalizedPublisherName, 
-      address, 
+      publisherName: normalizedPublisherName,
+      address,
       description,
     });
 
-    const PublicationsManagementData = await PublicationsManagementSchema.save(); 
+    const PublicationsManagementData =
+      await PublicationsManagementSchema.save();
     return res.status(200).send(PublicationsManagementData);
   } catch (error) {
     return res.status(500).send({ message: "Internal Server Error" });
@@ -34,10 +32,11 @@ export const addPublications = async (req, res) => {
 export const getPublications = async (req, res) => {
   try {
     const PublicationsManagementTable =
-      await PublicationsManagement.find().populate("user_id", null, null, {   active: false ,
-         $sort: { _id: -1 } ,
+      await PublicationsManagement.find().populate("user_id", null, null, {
+        active: false,
+        $sort: { _id: -1 },
         strictPopulate: false,
-      }); 
+      });
     res.status(200).json({
       status: true,
       message: " Publication Management Table successful",
@@ -56,9 +55,10 @@ export const deletePublications = async (req, res) => {
   }
 
   try {
-    const deletedPublications =
-      await PublicationsManagement.findByIdAndDelete(id,  { active: false },
-        );
+    const deletedPublications = await PublicationsManagement.findByIdAndDelete(
+      id,
+      { active: false }
+    );
     if (!deletedPublications) {
       return res.status(404).json({ message: "Publication not found" });
     }
@@ -72,41 +72,26 @@ export const deletePublications = async (req, res) => {
   }
 };
 export const editPublications = async (req, res) => {
-  const { id } = req.params;
-  const {
-    publisherName,
-    bookName,
-    title,
-    author,
-    address, 
-    description,
-  } = req.body;
+  const { id, publisherName, address, description } = req.body;
 
   try {
-    const updatedPublications = await PublicationsManagement.findByIdAndUpdate(
-      id,  
-      {
-        publisherName,
-        bookName,
-        title,
-        author,
-        address, 
-        description,
-      },
+    const updatedPublication = await PublicationsManagement.findByIdAndUpdate(
+      id,
+      { publisherName, address, description },
       { new: true }
     );
-    if (!updatedPublications) {
-      return res.status(404).json({ message: "Publication not found" });
+
+    if (!updatedPublication) {
+      return res.status(404).json({ message: 'Publication not found' });
     }
-    res.status(200).json({
-      message: "Publication updated successfully",
-      updatedPublications,
-    });
+
+    res.status(200).json({ message: 'Publication updated', updatedPublication });
   } catch (error) {
-    console.error("Error updating Publications:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error('Error updating publication:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 export const getPublicationsCount = async (req, res) => {
   try {
@@ -116,5 +101,3 @@ export const getPublicationsCount = async (req, res) => {
     res.status(500).json({ message: "Error fetching book count", error });
   }
 };
-
- 

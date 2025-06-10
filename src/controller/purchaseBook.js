@@ -20,7 +20,6 @@ export const purchaseBook = async (req, res) => {
   } = req.body;
 
   try {
-   
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
       return res.status(400).json({ message: "Invalid bookId" });
     }
@@ -36,7 +35,7 @@ export const purchaseBook = async (req, res) => {
     });
 
     const PurchaseBookData = await PurchaseManagementSchema.save();
-   
+
     const book = await BookManagement.findById(bookId);
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
@@ -55,7 +54,7 @@ export const purchaseBook = async (req, res) => {
     const admin = await Admin.findById(adminId);
 
     if (admin?.purchesEmail) {
-      await sendpurchesInvoiceEmail( PurchaseBookData._id,adminId);
+      await sendpurchesInvoiceEmail(PurchaseBookData._id, adminId);
     }
     return res.status(200).json({
       purchase: PurchaseBookData,
@@ -67,7 +66,7 @@ export const purchaseBook = async (req, res) => {
   }
 };
 export const deletePurchaseBook = async (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
 
   try {
     const deletedPurchaseBook = await PurchaseManagement.findByIdAndDelete(id, {
@@ -86,15 +85,8 @@ export const deletePurchaseBook = async (req, res) => {
 };
 
 export const updatePurchaseBook = async (req, res) => {
-  const {
-    id,
-    price,
-    quantity,
-    bookId,
-    vendorId,
-    bookIssueDate,
-    bookComment
-  } = req.body;
+  const { id, price, quantity, bookId, vendorId, bookIssueDate, bookComment } =
+    req.body;
 
   try {
     const updatedPurchase = await PurchaseManagement.findByIdAndUpdate(
@@ -105,7 +97,7 @@ export const updatePurchaseBook = async (req, res) => {
         vendorId,
         bookIssueDate,
         bookComment,
-        bookId
+        bookId,
       },
       { new: true }
     );
@@ -114,22 +106,22 @@ export const updatePurchaseBook = async (req, res) => {
       return res.status(404).json({ message: "Purchase record not found" });
     }
 
-    const updatedBook = await BookManagement.findByIdAndUpdate(
-      bookId,
-      { bookQuantity: quantity },
-      { new: true }
-    );
-
-    if (!updatedBook) {
+    const book = await BookManagement.findById(bookId);
+    if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }
+
+    const updatedBook = await BookManagement.findByIdAndUpdate(
+      bookId,
+      { bookQuantity: book.bookQuantity + parseInt(quantity) },
+      { new: true }
+    );
 
     res.status(200).json({
       message: "Book & Purchase updated successfully",
       updatedPurchase,
       updatedBook,
     });
-
   } catch (error) {
     console.error("Error updating records:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -165,9 +157,10 @@ export const purchaseManagement = async (req, res) => {
       {
         $project: {
           _id: 1,
-          bookId:"$bookDetails._id",
+          bookId: "$bookDetails._id",
           bookName: "$bookDetails.bookName",
-          vendorId: "$vendorDetails.vendorName", 
+          vendorId: "$vendorDetails._id",
+          vendorName: "$vendorDetails.vendorName",
           quantity: 1,
           bookComment: 1,
           price: 1,

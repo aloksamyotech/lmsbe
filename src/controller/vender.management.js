@@ -1,4 +1,3 @@
- 
 import { VenderManagement } from "../models/vendor.management.js";
 import {PurchaseManagement} from "../models/purchase.js";
 import {BookManagement} from "../models/book.management.js"
@@ -84,36 +83,40 @@ export const deleteVender = async (req, res) => {
 };
 
 export const updateVender = async (req, res) => {
-  const { id } = req.params;
   const {
+    id, 
     vendorName,
     companyName,
-    address, 
+    address,
     phoneNumber,
+    email,
+    date
   } = req.body;
 
   try {
     const updatedVender = await VenderManagement.findByIdAndUpdate(
-      id,  
-      
+      id,
       {
         vendorName,
         companyName,
-        address, 
+        address,
         phoneNumber,
+        email,
+        date
       },
       { new: true }
     );
 
     if (!updatedVender) {
-      return res.status(404).json({ message: "Vender not found" });
+      return res.status(404).json({ message: "Vendor not found" });
     }
 
-    res
-      .status(200)
-      .json({ message: " Vender updated successfully", updatedVender });
+    res.status(200).json({
+      message: "Vendor updated successfully",
+      updatedVender
+    });
   } catch (error) {
-    console.error("Error updatingVender:", error);
+    console.error("Error updating vendor:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
