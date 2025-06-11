@@ -5,6 +5,8 @@ import multer from "multer";
 import path from "path";
 
 export const addRegister = async (req, res) => {
+  console.log("addRegister calling ");
+  
   const {
     student_Name,
     email,

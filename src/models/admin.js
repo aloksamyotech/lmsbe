@@ -33,7 +33,10 @@ const AdminSchema = new Schema({
   allotmentEmail:{type:Boolean, default:true},
   submissionEmail:{type:Boolean, default:true},
   purchesEmail:{type:Boolean, default:true},
-
+  company:{
+    type:String,
+    default:'Test'
+  },
 });
 
 

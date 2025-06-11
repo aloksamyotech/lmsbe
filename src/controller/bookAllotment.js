@@ -12,7 +12,6 @@ import { BookAllotmentHistory } from "../models/bookallotmentHistory.js";
 import { SubscriptionType } from "../models/subscriptionType.model.js";
 import moment from "moment-timezone";
 import { sendAllotmentInvoiceEmail } from "./email.js";
-import { log } from "console";
 export const bookAllotment = async (req, res) => {
   const {
     bookId,
@@ -412,9 +411,9 @@ export const getBookAllotedCount = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalQuantity: { $sum: "$books.quantity" }
-        }
-      }
+          totalQuantity: { $sum: "$books.quantity" },
+        },
+      },
     ]);
 
     const totalQuantity = result[0]?.totalQuantity || 0;
@@ -896,7 +895,7 @@ export const getAllSubmitBookDetails = async (req, res) => {
 export const fetchBooks = async (req, res) => {
   try {
     const response = await BookAllotment.find()
-      .populate("studentId", "student_Name email mobile_Number")
+      .populate("studentId", "student_Name email mobile_Number _id")
       .populate("books.bookId", "title author")
       .populate("books.paymentType", "title")
       .sort({ createdAt: -1 });
@@ -909,6 +908,7 @@ export const fetchBooks = async (req, res) => {
 
       return {
         allotmentId: item.id,
+        studentId: item.studentId?._id || "N/A",
         studentName: item.studentId?.student_Name || "N/A",
         studentEmail: item.studentId?.email || "N/A",
         studentMobile: item.studentId?.mobile_Number || "N/A",
@@ -990,7 +990,7 @@ export const trendingBooks = async (req, res) => {
       {
         $project: {
           bookId: "$books.bookId",
-          quantity: "$books.quantity"
+          quantity: "$books.quantity",
         },
       },
       {
@@ -1020,15 +1020,15 @@ export const trendingBooks = async (req, res) => {
           title: 1,
           author: 1,
           img: 1,
-          quantity: "$totalQuantity"
+          quantity: "$totalQuantity",
         },
       },
       {
-        $sort: { quantity: -1 }
+        $sort: { quantity: -1 },
       },
       {
-        $limit: 5
-      }
+        $limit: 5,
+      },
     ]);
 
     res.status(200).json({
@@ -1081,5 +1081,29 @@ export const monthviseData = async (req, res) => {
   } catch (error) {
     console.error("Error fetching month-wise data:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+export const getTotalEarnings = async (req, res) => {
+  try {
+    const result = await BookAllotment.aggregate([
+      { $unwind: "$books" },
+      {
+        $group: {
+          _id: null,
+          totalEarning: {
+            $sum: {
+              $multiply: ["$books.quantity", "$books.amount"],
+            },
+          },
+        },
+      },
+    ]);
+
+    const totalEarning = result[0]?.totalEarning || 0;
+
+    res.status(200).json({ success: true, totalEarning });
+  } catch (error) {
+    console.error("Error calculating total earnings:", error);
+    res.status(500).json({ message: "Internal Server Error", error });
   }
 };

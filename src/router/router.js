@@ -76,6 +76,7 @@ import {
   viewBookAllotmentUser,
   trendingBooks,
   monthviseData,
+  getTotalEarnings,
 } from "../controller/bookAllotment.js";
 
 import {
@@ -146,7 +147,7 @@ router.delete(
   verifyJWT,
   deleteSubscriptionType
 );
-router.put("/user/editSubscriptionType/:id", verifyJWT, updateSubscriptionType);
+router.put("/user/editSubscriptionType", verifyJWT, updateSubscriptionType);
 
 //------------------    BOOK MANAGEMENT ---------------------
 
@@ -258,7 +259,7 @@ router.get(
 );
 router.get("/user/trendingBooks", verifyJWT, trendingBooks);
 router.post("/user/monthviseData", verifyJWT, monthviseData);
-
+router.get("/user/getTotalEarnings", verifyJWT, getTotalEarnings);
 //  ---------------------- Purchase Book -----------------------
 
 router.post("/user/purchaseBook", verifyJWT, purchaseBook);

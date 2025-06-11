@@ -80,13 +80,11 @@ export const deleteSubscriptionType = async (req, res) => {
 };
 
 export const updateSubscriptionType = async (req, res) => {
-  const { id } = req.params;
-  const { title, amount, discount, numberOfDays } = req.body;
+  const { id, title, amount, discount, numberOfDays } = req.body;
 
   try {
     const updateSubscription = await SubscriptionType.findByIdAndUpdate(
       id,
-
       {
         title,
         amount,
@@ -101,11 +99,12 @@ export const updateSubscriptionType = async (req, res) => {
     }
 
     res.status(200).json({
-      message: " Subscription updated successfully",
+      message: "Subscription updated successfully",
       updateSubscription,
     });
   } catch (error) {
-    console.error("Error updatingVender:", error);
+    console.error("Error updating Subscription:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
