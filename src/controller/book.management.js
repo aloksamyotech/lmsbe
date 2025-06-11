@@ -284,7 +284,7 @@ export const updateBook = async (req, res) => {
     title,
     author,
     bookIssueDate,
-    publisherId,
+    publisher,
     bookDistribution,
     description
   } = req.body;
@@ -294,7 +294,7 @@ export const updateBook = async (req, res) => {
     title,
     author,
     bookIssueDate,
-    publisher: publisherId,
+    publisher: publisher,
     bookDistribution,
     description,
   };

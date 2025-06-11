@@ -141,7 +141,8 @@ export const loginAdmin = async (req, res) => {
       logo: admin.logo,
       email: admin.email,
       currencyCode:admin.currencyCode,
-      currencySymbol:admin.currencySymbol
+      currencySymbol:admin.currencySymbol,
+      company:admin.company
     };
 
     const userToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); 
