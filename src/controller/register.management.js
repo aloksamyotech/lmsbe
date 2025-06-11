@@ -4,9 +4,7 @@ import { Admin } from "../models/admin.js";
 import multer from "multer";
 import path from "path";
 
-export const addRegister = async (req, res) => {
-  console.log("addRegister calling ");
-  
+export const addRegister = async (req, res) => {  
   const {
     student_Name,
     email,
