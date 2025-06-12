@@ -21,6 +21,7 @@ export const createUser = async (req, res) => {
       password: hashedPassword, 
       logo, 
       role, 
+      company
     });
     await newUser.save();
     const token = jwt.sign({ userId: newUser._id, email: newUser.email }, JWT_SECRET, {
@@ -39,6 +40,7 @@ export const createUser = async (req, res) => {
         register_Date: newUser.register_Date,
         logo: newUser.logo,
         role: newUser.role,
+        company :newUser.company
       },
     });
   } catch (error) {
@@ -69,7 +71,7 @@ export const adminProfilePage = async (req, res) => {
 };
 export const adminUpdateProfilePage = async (req, res) => {
   const { id } = req.params;
-  let { email, mobile_Number, student_Name, register_Date, currencyCode, currencySymbol } = req.body;
+  let { email, mobile_Number, student_Name, register_Date, currencyCode, currencySymbol ,company} = req.body;
 
   if (register_Date && register_Date.includes("/")) {
     const [day, month, year] = register_Date.split('/');
@@ -85,6 +87,7 @@ export const adminUpdateProfilePage = async (req, res) => {
     logo,
     currencyCode,
     currencySymbol,
+    company
   };
   try {
     const updatedRegister = await Admin.findByIdAndUpdate(id, updatedData, {
