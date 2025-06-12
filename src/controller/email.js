@@ -33,7 +33,7 @@ const generateInvoicePdf = (invoiceData) => {
 
   doc.pipe(fs.createWriteStream(filePath));
 
-  doc.fontSize(24).text("SAMYOTECH", { align: "center" });
+  doc.fontSize(24).text(invoiceData.company, { align: "center" });
   doc.fontSize(18).text("Library Management System", { align: "center" });
   doc.moveDown();
   doc.fontSize(14).text(`Invoice`);
@@ -136,7 +136,7 @@ const generatePurchaseInvoicePdf = (purchaseData) => {
 
   doc.pipe(fs.createWriteStream(filePath));
 
-  doc.fontSize(24).text("SAMYOTECH", { align: "center" });
+  doc.fontSize(24).text(purchaseData.company, { align: "center" });
   doc.fontSize(18).text("Library Management System", { align: "center" });
   doc.moveDown();
   doc.fontSize(14).text(`Invoice`);
@@ -229,7 +229,7 @@ const generateSubmitInvoicePdf = (submissionData) => {
 
   doc.pipe(fs.createWriteStream(filePath));
 
-  doc.fontSize(24).text("SAMYOTECH", { align: "center" });
+  doc.fontSize(24).text(submissionData.company, { align: "center" });
   doc.fontSize(18).text("Library Management System", { align: "center" });
   doc.moveDown();
   doc.fontSize(14).text("Invoice");
@@ -350,22 +350,25 @@ const generateSubmitInvoicePdf = (submissionData) => {
   doc.end();
   return filePath;
 };
-export const sendRegistrationEmail = async (studentEmail, studentName, adminId) => {
-
-  const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
+export const sendRegistrationEmail = async (
+  studentEmail,
+  studentName,
+  adminId
+) => {
+  const admin = await Admin.findById(adminId, "smtpCode Sending_email company");
 
   if (!admin) {
     throw new Error("Admin not found.");
   }
 
   const formeamil = admin.Sending_email;
-
+  const company = admin.company;
   const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
     port: 587,
     secure: false,
     auth: {
-      user: process.env.BREVO_SMTP_USER, 
+      user: process.env.BREVO_SMTP_USER,
       pass: admin.smtpCode,
     },
   });
@@ -392,12 +395,11 @@ export const sendRegistrationEmail = async (studentEmail, studentName, adminId) 
           </div>
           <p style="font-size: 15px; margin-top: 30px;">Best regards,<br><strong>Library Team</strong></p>
           <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #888;">
-            <p>© ${new Date().getFullYear()} Library Management System</p>
+            <p>© ${new Date().getFullYear()} ${company}Library Management System</p>
           </div>
         </div>
       `,
     });
-
   } catch (error) {
     console.error("Error sending email:", error);
   }
@@ -407,18 +409,20 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
     if (!mongoose.Types.ObjectId.isValid(allotmentId)) {
       throw new Error("Invalid ObjectId format.");
     }
-    const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
+    const admin = await Admin.findById(adminId, "smtpCode Sending_email company");
     if (!admin) {
       throw new Error("Admin not found.");
     }
-    const formeamil = admin.Sending_email
+    const formeamil = admin.Sending_email;
+    const company = admin.company;
+
     const transporter = nodemailer.createTransport({
       host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
       auth: {
-        user:process.env.BREVO_SMTP_USER,
-        pass: admin.smtpCode, 
+        user: process.env.BREVO_SMTP_USER,
+        pass: admin.smtpCode,
       },
     });
     const bookAllotment = await BookAllotment.findById(allotmentId)
@@ -472,6 +476,7 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
         0
       ),
       currency,
+      company,
     };
     const pdfPath = generateInvoicePdf(invoiceData);
     const mailOptions = {
@@ -495,20 +500,21 @@ export const sendAllotmentInvoiceEmail = async (allotmentId, adminId) => {
   }
 };
 export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
-  const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
-    if (!admin) {
-      throw new Error("Admin not found.");
-    }
-    const formeamil = admin.Sending_email
-    const transporter = nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user:process.env.BREVO_SMTP_USER,
-        pass: admin.smtpCode, 
-      },
-    });
+  const admin = await Admin.findById(adminId, "smtpCode Sending_email company");
+  if (!admin) {
+    throw new Error("Admin not found.");
+  }
+  const formeamil = admin.Sending_email;
+  const company = admin.company;
+  const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_USER,
+      pass: admin.smtpCode,
+    },
+  });
   try {
     const purchase = await PurchaseManagement.findById(purchesId)
       .populate({
@@ -538,6 +544,7 @@ export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
       advancepayment: purchase.advancepayment || 0,
       discount: purchase.discount || 0,
       currency,
+      company,
     };
     const pdfPath = generatePurchaseInvoicePdf(purchesData);
     const mailOptions = {
@@ -563,20 +570,21 @@ export const sendpurchesInvoiceEmail = async (purchesId, adminId) => {
   }
 };
 export const sendSubmitInvoiceEmail = async (submitId, adminId) => {
-  const admin = await Admin.findById(adminId, 'smtpCode Sending_email');
-    if (!admin) {
-      throw new Error("Admin not found.");
-    }
-    const formeamil = admin.Sending_email
-    const transporter = nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user:process.env.BREVO_SMTP_USER,
-        pass: admin.smtpCode, 
-      },
-    });
+  const admin = await Admin.findById(adminId, "smtpCode Sending_email company");
+  if (!admin) {
+    throw new Error("Admin not found.");
+  }
+  const formeamil = admin.Sending_email;
+  const company = admin.company;
+  const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_USER,
+      pass: admin.smtpCode,
+    },
+  });
   try {
     const submission = await SubmittedBooks.findById(submitId)
       .populate({
@@ -618,6 +626,7 @@ export const sendSubmitInvoiceEmail = async (submitId, adminId) => {
       paymentType: submission.paymentType.title || "NaN",
       currency,
       totalAmount,
+      company,
     };
 
     const pdfPath = generateSubmitInvoicePdf(submissionData);
